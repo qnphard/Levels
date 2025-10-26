@@ -1,0 +1,52 @@
+:root {
+  /* Neutrals */
+  --sand-50: #FAF7F2;
+  --sand-100: #F4F0E8;
+  --sand-200: #E8E2D8;
+  --stone-600: #6D6A62;
+  --stone-800: #2C2B28;
+
+  /* Core axis */
+  --sage-400: #A9CABB;
+  --sage-600: #6FA491;
+  --teal-700: #3E7C75;
+  --mist-400: #B8D7E4;
+  --mist-700: #2E5D6A;
+
+  /* Warm accents */
+  --peach-300: #F3D7C6;
+  --gold-300: #E6CFA8;
+
+  /* Night */
+  --night-900: #0F1C1F;
+  --night-800: #15272B;
+  --night-700: #1C2D33;
+  --ice-50: #E8F1F2;
+  --ice-200: #B7C7C9;
+
+  /* Derived */
+  --bg-base: var(--sand-50);
+  --bg-card: var(--sand-100);
+  --text-strong: var(--stone-800);
+  --text-soft: var(--stone-600);
+  --brand: var(--sage-600);
+  --brand-strong: var(--teal-700);
+  --accent-warm: var(--peach-300);
+  --accent-gold: var(--gold-300);
+
+  --gradient-day: linear-gradient(180deg, #D7E6E8 0%, #BFD6C6 60%, #FAF7F2 100%);
+  --gradient-evening: linear-gradient(180deg, #E5D3C4 0%, #BACFC8 60%, #F4F0E8 100%);
+  --gradient-night: linear-gradient(180deg, #0F1C1F 0%, #112229 60%, #1C2D33 100%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-base: var(--night-900);
+    --bg-card: rgba(255, 255, 255, 0.03);
+    --text-strong: var(--ice-50);
+    --text-soft: var(--ice-200);
+    --brand: #5FB5A9;
+    --accent-warm: #D7BFA5;
+    --accent-gold: #C9B37F;
+  }
+}
