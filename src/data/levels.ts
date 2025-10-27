@@ -61,7 +61,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Forgiveness practices - both self-forgiveness and understanding that growth, not suffering, honors the past.',
     meditations: [],
     estimatedTime: 25,
-    color: '#E6CED5',
+    color: '#6C757D',
   },
   {
     id: 'apathy',
@@ -86,7 +86,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Micro-actions and willingness practices. Even 1% shift restores agency. Small steps break the paralysis.',
     meditations: [],
     estimatedTime: 15,
-    color: '#B8D5E8',
+    color: '#748FFC',
   },
   {
     id: 'grief',
@@ -111,7 +111,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Acceptance and gratitude practices. Honoring what was while releasing attachment to it. Grief transforms through allowing the waves.',
     meditations: [],
     estimatedTime: 30,
-    color: '#E6D4BC',
+    color: '#4DABF7',
   },
   {
     id: 'fear',
@@ -136,7 +136,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Courage practices that build trust and presence. Small acts of facing fear gently, orienting to actual safety in this moment.',
     meditations: [],
     estimatedTime: 25,
-    color: '#DED6A4',
+    color: '#FFD93D',
   },
   {
     id: 'desire',
@@ -161,7 +161,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Gratitude and sufficiency practices. Letting the urge crest and pass. Acting from integrity, not grasping.',
     meditations: [],
     estimatedTime: 20,
-    color: '#C4E3C0',
+    color: '#FFB347',
   },
   {
     id: 'anger',
@@ -186,7 +186,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Understanding and responsibility practices. Boundaries without blame. Softening the jaw, feeling the heat safely.',
     meditations: [],
     estimatedTime: 20,
-    color: '#BAD6E0',
+    color: '#FA5252',
   },
   {
     id: 'pride',
@@ -238,7 +238,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Integrity practices. Small acts of honesty and authenticity. Micro-steps in alignment with truth.',
     meditations: [],
     estimatedTime: 25,
-    color: '#E6D8CA',
+    color: '#FD7E14',
     isThreshold: true, // CRITICAL: This is the 200 threshold
   },
   {
@@ -264,7 +264,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Detachment practices. Equanimity without coldness. Holding things lightly while staying caring.',
     meditations: [],
     estimatedTime: 30,
-    color: '#E6DDB8',
+    color: '#ADB5BD',
   },
   {
     id: 'willingness',
@@ -289,7 +289,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Commitment practices. Saying yes from wholeness, not from seeking approval. Enthusiasm with wisdom.',
     meditations: [],
     estimatedTime: 25,
-    color: '#CBE3B4',
+    color: '#DA77F2',
   },
   {
     id: 'acceptance',
@@ -391,7 +391,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Bliss practices. Resting as the joy that is always here beneath the content of experience.',
     meditations: [],
     estimatedTime: 45,
-    color: '#E6E3D0',
+    color: '#FFC078',
   },
 
   // ENLIGHTENMENT CATEGORY (600 - Non-dual awareness)
@@ -418,7 +418,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Self-realization practices. No technique. Simply being. The recognition that you already are what you seek.',
     meditations: [],
     estimatedTime: 60,
-    color: '#CBDEE8',
+    color: '#51CF66',
   },
 ];
 

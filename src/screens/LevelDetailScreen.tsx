@@ -58,6 +58,32 @@ export default function LevelDetailScreen() {
 
   const isCurrentLevel = progress?.currentLevel === level.id;
 
+  // Generate vibrant gradient with opacity (like the check-in cards)
+  const getVibrantGradient = (baseColor: string) => {
+    // Create a lighter version and a slightly darker version for gradient
+    const darken = (color: string, amount: number): string => {
+      const num = parseInt(color.replace('#', ''), 16);
+      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
+      const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
+      return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+    };
+
+    const lighten = (color: string, amount: number): string => {
+      const num = parseInt(color.replace('#', ''), 16);
+      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
+      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
+      const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
+      return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
+    };
+
+    // Subtle gradient close to the original card color
+    return [baseColor, lighten(baseColor, 15), lighten(baseColor, 25)];
+  };
+
+  const backgroundGradient = getVibrantGradient(level.color);
+  const accentColor = level.color;
+
   const handleSetAsCurrent = async () => {
     await setCurrentLevel(level.id);
   };
@@ -71,10 +97,15 @@ export default function LevelDetailScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={backgroundGradient}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Header with gradient */}
       <LinearGradient
-        colors={[level.color, adjustColor(level.color, -20)]}
+        colors={[level.color, adjustColor(level.color, -45)]}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -139,7 +170,7 @@ export default function LevelDetailScreen() {
               <Ionicons
                 name="body-outline"
                 size={16}
-                color={theme.accentTeal}
+                color={accentColor}
               />
               <Text style={styles.listText}>{sign}</Text>
             </View>
@@ -156,9 +187,15 @@ export default function LevelDetailScreen() {
         </View>
 
         {/* The Way Through */}
-        <View style={[styles.section, styles.wayThroughSection]}>
+        <View style={[styles.section, {
+          backgroundColor: `${accentColor}20`,
+          padding: spacing.lg,
+          borderRadius: borderRadius.lg,
+          borderWidth: 1,
+          borderColor: accentColor,
+        }]}>
           <View style={styles.wayThroughHeader}>
-            <Ionicons name="compass" size={20} color={theme.accentTeal} />
+            <Ionicons name="compass" size={20} color={accentColor} />
             <Text style={styles.sectionTitle}>The Way Through</Text>
           </View>
           <Text style={styles.wayThroughText}>{level.wayThrough}</Text>
@@ -197,9 +234,12 @@ export default function LevelDetailScreen() {
           )}
 
           {isCurrentLevel && (
-            <View style={styles.currentFocusBadge}>
-              <Ionicons name="bookmark" size={20} color={theme.accentTeal} />
-              <Text style={styles.currentFocusText}>Your Current Focus</Text>
+            <View style={[styles.currentFocusBadge, {
+              backgroundColor: `${accentColor}20`,
+              borderColor: accentColor,
+            }]}>
+              <Ionicons name="bookmark" size={20} color={accentColor} />
+              <Text style={[styles.currentFocusText, { color: accentColor }]}>Your Current Focus</Text>
             </View>
           )}
 
@@ -209,7 +249,7 @@ export default function LevelDetailScreen() {
           />
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -226,7 +266,6 @@ const getStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
     },
     header: {
       paddingTop: 60,
@@ -337,11 +376,11 @@ const getStyles = (theme: ThemeColors) =>
       fontStyle: 'italic',
     },
     wayThroughSection: {
-      backgroundColor: theme.primarySubtle,
+      backgroundColor: 'rgba(147, 197, 253, 0.2)',
       padding: spacing.lg,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
-      borderColor: theme.accentTeal,
+      borderColor: '#60A5FA',
     },
     wayThroughHeader: {
       flexDirection: 'row',
@@ -401,16 +440,16 @@ const getStyles = (theme: ThemeColors) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.sm,
-      backgroundColor: theme.primarySubtle,
+      backgroundColor: 'rgba(147, 197, 253, 0.2)',
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      borderColor: theme.accentTeal,
+      borderColor: '#60A5FA',
     },
     currentFocusText: {
       fontSize: typography.body,
-      color: theme.accentTeal,
+      color: '#60A5FA',
       fontWeight: typography.semibold,
     },
     errorText: {

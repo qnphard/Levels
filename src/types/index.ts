@@ -43,12 +43,14 @@ export type Category =
 
 // Emotional check-in options
 export type Emotion =
-  | 'Stressed'
-  | 'Anxious'
+  | 'Anxious/Stressed'
   | 'Tired'
-  | 'Sad'
+  | 'Depressed/Sad'
+  | 'Angry'
   | 'Restless'
-  | 'Okay'
+  | 'Neutral'
+  | 'Motivated'
+  | 'Happy'
   | 'Peaceful';
 
 export interface UserProgress {
