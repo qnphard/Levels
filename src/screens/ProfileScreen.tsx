@@ -35,19 +35,25 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <LinearGradient colors={theme.gradients.horizonEvening} style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Ionicons name="person-circle" size={80} color={theme.headingOnGradient} />
+    <LinearGradient
+      colors={['#F3E5F5', '#E1BEE7', '#CE93D8']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.avatarContainer}>
+            <Ionicons name="person-circle" size={80} color="#FFFFFF" />
+          </View>
+          <Text style={styles.name}>{userStats.name}</Text>
+          {!userStats.isPremium && (
+            <TouchableOpacity style={styles.premiumButton}>
+              <Ionicons name="star" size={16} color="#F59E0B" />
+              <Text style={styles.premiumButtonText}>Upgrade to Premium</Text>
+            </TouchableOpacity>
+          )}
         </View>
-        <Text style={styles.name}>{userStats.name}</Text>
-        {!userStats.isPremium && (
-          <TouchableOpacity style={styles.premiumButton}>
-            <Ionicons name="star" size={16} color={theme.accentGold} />
-            <Text style={styles.premiumButtonText}>Upgrade to Premium</Text>
-          </TouchableOpacity>
-        )}
-      </LinearGradient>
 
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
@@ -86,7 +92,8 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         ))}
       </View>
-    </ScrollView>
+      </ScrollView>
+    </LinearGradient>
   );
 }
 
@@ -94,12 +101,15 @@ const getStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+    },
+    scrollView: {
+      flex: 1,
     },
     header: {
       alignItems: 'center',
       paddingVertical: spacing.lg,
       paddingBottom: spacing.xl,
+      paddingTop: 60,
     },
     avatarContainer: {
       marginBottom: spacing.sm,
@@ -107,21 +117,21 @@ const getStyles = (theme: ThemeColors) =>
     name: {
       fontSize: typography.h2,
       fontWeight: typography.bold,
-      color: theme.headingOnGradient,
+      color: '#FFFFFF',
       marginBottom: spacing.sm,
     },
     premiumButton: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.buttons.secondary.background,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
       paddingHorizontal: spacing.lg,
       paddingVertical: spacing.sm,
       borderRadius: borderRadius.round,
       borderWidth: 1,
-      borderColor: theme.buttons.secondary.border,
+      borderColor: 'rgba(255, 255, 255, 0.4)',
     },
     premiumButtonText: {
-      color: theme.buttons.secondary.text,
+      color: '#FFFFFF',
       fontWeight: typography.semibold,
       marginLeft: spacing.xs,
     },
@@ -191,7 +201,7 @@ const getStyles = (theme: ThemeColors) =>
     featuredMenuItem: {
       backgroundColor: theme.primarySubtle,
       borderBottomWidth: 2,
-      borderBottomColor: theme.accentTeal,
+      borderBottomColor: theme.primary,
     },
     featuredMenuItemText: {
       fontSize: typography.body,

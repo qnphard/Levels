@@ -176,7 +176,7 @@ export default function JourneyMapScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#EDE7F6', '#F3EEFF', '#FAF8FF']}
+        colors={['#F3E5F5', '#E1BEE7', '#CE93D8']}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -194,7 +194,7 @@ export default function JourneyMapScreen() {
       </LinearGradient>
 
       <LinearGradient
-        colors={['#FAFAFA', '#F8F9FA', '#F3F5F6']}
+        colors={['#F3E5F5', '#E1BEE7', '#CE93D8']}
         style={styles.scrollView}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
@@ -261,18 +261,18 @@ const getStyles = (theme: ThemeColors) =>
       backgroundColor: '#F3F5F6', // Neutral grounding tone as fallback
     },
     header: {
-      paddingTop: 16,
-      paddingBottom: 8,
+      paddingTop: 12,
+      paddingBottom: 6,
       paddingHorizontal: spacing.lg,
       alignItems: 'center',
     },
     logoContainer: {
       alignItems: 'center',
-      marginBottom: 4,
+      marginBottom: 2,
     },
     logo: {
-      width: 680,
-      height: 222,
+      width: 340,
+      height: 111,
     },
     headerSubtitle: {
       fontSize: typography.body,

@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
-  ImageBackground,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -57,16 +56,6 @@ export default function HomeScreen() {
     if (!article.url) return;
     Linking.openURL(article.url).catch(() => {});
   };
-  const headerGradient = useMemo(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 17) {
-      return theme.gradients.horizonDay;
-    }
-    if (hour >= 17 && hour < 21) {
-      return theme.gradients.horizonEvening;
-    }
-    return theme.gradients.horizonNight;
-  }, [theme]);
 
   const resolveChipStyles = (category: string, isActive: boolean) => {
     const chip =
@@ -81,10 +70,11 @@ export default function HomeScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/background-gradient.jpg')}
+    <LinearGradient
+      colors={['#E0F2FE', '#DBEAFE', '#F0F9FF']}
       style={styles.container}
-      resizeMode="cover"
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
     >
       <View style={styles.headerOverlay}>
         {/* Welcome Section */}
@@ -209,7 +199,7 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
       </ScrollView>
-    </ImageBackground>
+    </LinearGradient>
   );
 }
 
@@ -222,7 +212,6 @@ const createStyles = (theme: ThemeColors) =>
       paddingTop: 60,
       paddingBottom: spacing.xl,
       paddingHorizontal: spacing.lg,
-      backgroundColor: 'rgba(0, 0, 0, 0.15)', // Subtle overlay for text readability
     },
     scrollView: {
       flex: 1,
@@ -241,27 +230,27 @@ const createStyles = (theme: ThemeColors) =>
     welcomeText: {
       fontSize: typography.h1,
       fontWeight: typography.bold,
-      color: theme.headingOnGradient,
+      color: '#1E293B',
       marginBottom: spacing.xs,
       letterSpacing: -0.5,
     },
     subtitle: {
       fontSize: typography.body,
-      color: theme.textLight,
+      color: '#475569',
       fontWeight: typography.regular,
       opacity: 0.9,
       fontStyle: 'italic',
     },
     checkInButton: {
-      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      backgroundColor: 'rgba(91, 33, 182, 0.15)',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.3)',
+      borderColor: '#5B21B6',
     },
     checkInButtonText: {
-      color: theme.textLight,
+      color: '#5B21B6',
       fontSize: typography.small,
       fontWeight: typography.semibold,
       letterSpacing: 0.5,

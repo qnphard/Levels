@@ -13,6 +13,7 @@ import PlayerScreen from '../screens/PlayerScreen';
 import CheckInScreen from '../screens/CheckInScreen';
 import JourneyMapScreen from '../screens/JourneyMapScreen';
 import LevelDetailScreen from '../screens/LevelDetailScreen';
+import JournalScreen from '../screens/JournalScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
@@ -27,6 +28,7 @@ export type RootStackParamList = {
 export type MainTabParamList = {
   Home: undefined;
   Library: undefined;
+  Journal: undefined;
   Profile: undefined;
 };
 
@@ -46,6 +48,8 @@ function MainTabs() {
             iconName = focused ? 'map' : 'map-outline';
           } else if (route.name === 'Library') {
             iconName = focused ? 'library' : 'library-outline';
+          } else if (route.name === 'Journal') {
+            iconName = focused ? 'journal' : 'journal-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           }
@@ -81,6 +85,11 @@ function MainTabs() {
         name="Library"
         component={LibraryScreen}
         options={{ title: 'Explore' }}
+      />
+      <Tab.Screen
+        name="Journal"
+        component={JournalScreen}
+        options={{ title: 'Journal' }}
       />
       <Tab.Screen
         name="Profile"

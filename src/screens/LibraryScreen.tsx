@@ -1,3 +1,4 @@
+// LibraryScreen - Browse all meditations with lavender gradient
 import React, { useState } from 'react';
 import {
   View,
@@ -7,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -37,7 +39,12 @@ export default function LibraryScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#F3E5F5', '#E1BEE7', '#CE93D8']}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons
@@ -88,7 +95,7 @@ export default function LibraryScreen() {
           )}
         </View>
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -96,13 +103,14 @@ const getStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
     },
     searchContainer: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: theme.cardBackground,
-      margin: spacing.md,
+      marginHorizontal: spacing.md,
+      marginTop: 60,
+      marginBottom: spacing.md,
       paddingHorizontal: spacing.md,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
