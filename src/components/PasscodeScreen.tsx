@@ -123,7 +123,7 @@ export default function PasscodeScreen({
 
   return (
     <LinearGradient
-      colors={['#F3E5F5', '#E1BEE7', '#CE93D8']}
+      colors={theme.appBackgroundGradient}
       style={styles.container}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

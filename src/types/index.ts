@@ -85,6 +85,8 @@ export interface ConsciousnessLevel {
   meditations: string[]; // Meditation IDs (placeholders for now)
   estimatedTime: number; // Suggested minutes of practice
   color: string; // Visual theme color
+  gradient?: readonly [string, string]; // Optional gradient pair for UI treatments
+  gradientDark?: readonly [string, string];
   isThreshold?: boolean; // True for level 200 (Courage)
 }
 

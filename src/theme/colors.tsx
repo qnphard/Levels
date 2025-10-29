@@ -1,3 +1,10 @@
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from 'react';
 import { useColorScheme } from 'react-native';
 
 // Hawkins-inspired palette tuned for the Settle -> Notice -> Release -> Rest arc.
@@ -38,7 +45,7 @@ export const gradients = {
   horizonDay: ['#D7E6E8', '#BFD6C6', '#FAF7F2'],
   horizonEvening: ['#E5D3C4', '#BACFC8', '#F4F0E8'],
   horizonNight: ['#0F1C1F', '#112229', '#1C2D33'],
-};
+} as const;
 
 export type CategoryChipName =
   | 'All'
@@ -55,6 +62,8 @@ export interface ThemeColors {
   background: string;
   surface: string;
   cardBackground: string;
+  appBackgroundGradient: readonly [string, string, string];
+  canvasOverlay: string;
   elevatedCard: string;
   border: string;
   textPrimary: string;
@@ -70,9 +79,13 @@ export interface ThemeColors {
   deepMist: string;
   accentPeach: string;
   accentGold: string;
+  gold: string;
   shadowSoft: string;
   shadowMedium: string;
   white: string;
+  warning: string;
+  warningSubtle: string;
+  error: string;
   buttons: {
     primary: {
       background: string;
@@ -107,7 +120,10 @@ export interface ThemeColors {
 }
 
 const sharedCategoryChips = (mode: ThemeMode) => {
-  const base = {
+  const base: Record<
+    CategoryChipName,
+    { background: string; text: string; border?: string }
+  > = {
     All: {
       background: 'transparent',
       text: palette.stone600,
@@ -161,10 +177,18 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const background = isDark ? palette.night900 : palette.sand50;
   const surface = isDark ? palette.night800 : palette.sand100;
   const cardBackground = isDark ? 'rgba(255,255,255,0.03)' : palette.sand100;
+  const appBackgroundGradient = isDark
+    ? gradients.horizonNight
+    : ([
+        '#E8D9FA',
+        '#F3EAFB',
+        '#F8EEF6',
+      ] as const);
+  const canvasOverlay = isDark ? 'rgba(15,28,31,0.4)' : 'rgba(255,255,255,0.55)';
   const border = isDark ? 'rgba(255,255,255,0.07)' : palette.sand200;
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
-  const textSecondary = isDark ? palette.ice200 : palette.stone600;
-  const textMuted = isDark ? '#7C9196' : '#8F8B82';
+  const textSecondary = isDark ? '#D4E4E7' : palette.stone600;
+  const textMuted = isDark ? '#8FA6AA' : '#8F8B82';
   const primary = isDark ? palette.teal500 : palette.sage600;
   const primarySubtle = isDark ? '#315A62' : palette.sage400;
   const primaryContrast = isDark ? palette.night900 : '#FFFFFF';
@@ -176,12 +200,18 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const shadowMedium = isDark
     ? 'rgba(0,0,0,0.45)'
     : 'rgba(15, 28, 31, 0.16)';
+  const gold = isDark ? '#C9B37F' : palette.gold300;
+  const warning = palette.warning500;
+  const warningSubtle = isDark ? 'rgba(230,194,121,0.18)' : 'rgba(230,194,121,0.32)';
+  const error = palette.danger500;
 
   return {
     mode,
     background,
     surface,
     cardBackground,
+    appBackgroundGradient,
+    canvasOverlay,
     elevatedCard: isDark ? 'rgba(255,255,255,0.08)' : palette.sand100,
     border,
     textPrimary,
@@ -196,10 +226,14 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
     highlightMist,
     deepMist: isDark ? palette.night800 : palette.mist700,
     accentPeach: isDark ? palette.peach200 : palette.peach300,
-    accentGold: isDark ? '#C9B37F' : palette.gold300,
+    accentGold: gold,
+    gold,
     shadowSoft,
     shadowMedium,
     white: isDark ? palette.ice50 : '#FFFFFF',
+    warning,
+    warningSubtle,
+    error,
     buttons: {
       primary: {
         background: primary,
@@ -227,7 +261,7 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
     gradients,
     states: {
       success: palette.success500,
-      warning: palette.warning500,
+      warning,
       danger: palette.danger500,
     },
   };
@@ -238,9 +272,70 @@ export const themes = {
   dark: buildTheme('dark'),
 };
 
-export const useThemeColors = () => {
-  const scheme = useColorScheme();
-  return scheme === 'dark' ? themes.dark : themes.light;
+type ThemeContextValue = {
+  mode: ThemeMode;
+  colors: ThemeColors;
+  toggleTheme: () => void;
+  setTheme: (mode: ThemeMode) => void;
+};
+
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+export const ThemeProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const systemScheme = useColorScheme();
+  const initialMode = systemScheme === 'dark' ? 'dark' : 'light';
+  const [mode, setMode] = useState<ThemeMode>(initialMode);
+
+  const colors = useMemo(() => themes[mode], [mode]);
+
+  const toggleTheme = useCallback(() => {
+    setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
+  }, []);
+
+  const setTheme = useCallback((nextMode: ThemeMode) => {
+    setMode(nextMode);
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      mode,
+      colors,
+      toggleTheme,
+      setTheme,
+    }),
+    [mode, colors, toggleTheme, setTheme]
+  );
+
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
+};
+
+export const useThemeColors = (): ThemeColors => {
+  const ctx = useContext(ThemeContext);
+  if (!ctx) {
+    return themes.light;
+  }
+  return ctx.colors;
+};
+
+export const useThemeMode = (): ThemeMode => {
+  const ctx = useContext(ThemeContext);
+  return ctx?.mode ?? 'light';
+};
+
+export const useThemeToggle = (): (() => void) => {
+  const ctx = useContext(ThemeContext);
+  return ctx?.toggleTheme ?? (() => {});
+};
+
+export const useSetTheme = (): ((mode: ThemeMode) => void) => {
+  const ctx = useContext(ThemeContext);
+  return ctx?.setTheme ?? (() => {});
 };
 
 export const typography = {

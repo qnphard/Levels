@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Article } from '../types';
 import {
   useThemeColors,
@@ -12,9 +12,10 @@ import {
 interface ArticleCardProps {
   article: Article;
   onPress?: (article: Article) => void;
+  style?: ViewStyle;
 }
 
-export default function ArticleCard({ article, onPress }: ArticleCardProps) {
+export default function ArticleCard({ article, onPress, style }: ArticleCardProps) {
   const theme = useThemeColors();
   const styles = getStyles(theme);
   const stageKey = article.stage.toLowerCase() as keyof typeof theme.experience;
@@ -31,7 +32,7 @@ export default function ArticleCard({ article, onPress }: ArticleCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, style]}
       activeOpacity={pressable ? 0.85 : 1}
       onPress={pressable ? handlePress : undefined}
       disabled={!pressable}

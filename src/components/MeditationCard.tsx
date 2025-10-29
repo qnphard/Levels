@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Meditation } from '../types';
 import {
@@ -14,11 +14,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 interface MeditationCardProps {
   meditation: Meditation;
   onPress?: () => void;
+  style?: ViewStyle;
 }
 
 export default function MeditationCard({
   meditation,
   onPress,
+  style,
 }: MeditationCardProps) {
   const theme = useThemeColors();
   const styles = getStyles(theme);
@@ -34,7 +36,7 @@ export default function MeditationCard({
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[styles.card, style]}
       onPress={onPress}
       activeOpacity={0.8}
     >

@@ -58,31 +58,20 @@ export default function LevelDetailScreen() {
 
   const isCurrentLevel = progress?.currentLevel === level.id;
 
-  // Generate vibrant gradient with opacity (like the check-in cards)
-  const getVibrantGradient = (baseColor: string) => {
-    // Create a lighter version and a slightly darker version for gradient
-    const darken = (color: string, amount: number): string => {
-      const num = parseInt(color.replace('#', ''), 16);
-      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
-      const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
-      return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
-    };
-
-    const lighten = (color: string, amount: number): string => {
-      const num = parseInt(color.replace('#', ''), 16);
-      const r = Math.min(255, Math.max(0, (num >> 16) + amount));
-      const g = Math.min(255, Math.max(0, ((num >> 8) & 0x00ff) + amount));
-      const b = Math.min(255, Math.max(0, (num & 0x0000ff) + amount));
-      return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
-    };
-
-    // Subtle gradient close to the original card color
-    return [baseColor, lighten(baseColor, 15), lighten(baseColor, 25)];
-  };
-
-  const backgroundGradient = getVibrantGradient(level.color);
-  const accentColor = level.color;
+  const basePair =
+    level.gradient ??
+    ([
+      adjustColor(level.color, 12),
+      adjustColor(level.color, -16),
+    ] as const);
+  const darkPair = level.gradientDark ?? basePair;
+  const activePair = theme.mode === 'dark' ? darkPair : basePair;
+  const backgroundGradient = [
+    activePair[0],
+    activePair[1],
+    adjustColor(activePair[1], theme.mode === 'dark' ? -8 : -18),
+  ] as const;
+  const accentColor = activePair[0];
 
   const handleSetAsCurrent = async () => {
     await setCurrentLevel(level.id);
@@ -105,7 +94,7 @@ export default function LevelDetailScreen() {
     >
       {/* Header with gradient */}
       <LinearGradient
-        colors={[level.color, adjustColor(level.color, -45)]}
+        colors={[level.color, adjustColor(level.color, -45)] as const}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -459,3 +448,4 @@ const getStyles = (theme: ThemeColors) =>
       marginTop: spacing.xxl,
     },
   });
+

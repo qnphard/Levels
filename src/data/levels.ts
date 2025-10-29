@@ -36,7 +36,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Self-compassion practices that separate the feeling from your inherent worth. You are not shame - you are awareness experiencing shame.',
     meditations: [], // Will be populated with actual meditation IDs
     estimatedTime: 20,
-    color: '#D6C8E1',
+    color: '#FFB5C2',
+    gradient: ['#FFB5C2', '#FDE2E4'] as const,
+    gradientDark: ['#521A2E', '#8A2F56'] as const,
   },
   {
     id: 'guilt',
@@ -61,7 +63,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Forgiveness practices - both self-forgiveness and understanding that growth, not suffering, honors the past.',
     meditations: [],
     estimatedTime: 25,
-    color: '#6C757D',
+    color: '#FFD6A5',
+    gradient: ['#FFD6A5', '#FFF1C1'] as const,
+    gradientDark: ['#4A2A00', '#99601A'] as const,
   },
   {
     id: 'apathy',
@@ -86,7 +90,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Micro-actions and willingness practices. Even 1% shift restores agency. Small steps break the paralysis.',
     meditations: [],
     estimatedTime: 15,
-    color: '#748FFC',
+    color: '#A5C9FF',
+    gradient: ['#A5C9FF', '#E3F2FD'] as const,
+    gradientDark: ['#0C2D49', '#19618A'] as const,
   },
   {
     id: 'grief',
@@ -111,7 +117,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Acceptance and gratitude practices. Honoring what was while releasing attachment to it. Grief transforms through allowing the waves.',
     meditations: [],
     estimatedTime: 30,
-    color: '#4DABF7',
+    color: '#B5EAEA',
+    gradient: ['#B5EAEA', '#EDF6F9'] as const,
+    gradientDark: ['#103940', '#1F6B6E'] as const,
   },
   {
     id: 'fear',
@@ -136,7 +144,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Courage practices that build trust and presence. Small acts of facing fear gently, orienting to actual safety in this moment.',
     meditations: [],
     estimatedTime: 25,
-    color: '#FFD93D',
+    color: '#FFF6A3',
+    gradient: ['#FFF6A3', '#FDFCDC'] as const,
+    gradientDark: ['#3A3200', '#8A7600'] as const,
   },
   {
     id: 'desire',
@@ -161,7 +171,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Gratitude and sufficiency practices. Letting the urge crest and pass. Acting from integrity, not grasping.',
     meditations: [],
     estimatedTime: 20,
-    color: '#FFB347',
+    color: '#FFE7C6',
+    gradientDark: ['#4B2A00', '#9A5B0F'] as const,
   },
   {
     id: 'anger',
@@ -186,7 +197,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Understanding and responsibility practices. Boundaries without blame. Softening the jaw, feeling the heat safely.',
     meditations: [],
     estimatedTime: 20,
-    color: '#FA5252',
+    color: '#FFD6D6',
+    gradientDark: ['#4C1F1F', '#8B2C2C'] as const,
   },
   {
     id: 'pride',
@@ -211,7 +223,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Humility and teachability practices. Replacing "I know" with "Let me learn/serve". True strength is in ordinariness.',
     meditations: [],
     estimatedTime: 25,
-    color: '#DCC5E8',
+    color: '#FFE3F2',
+    gradientDark: ['#2F2244', '#5B4A7E'] as const,
   },
 
   // EMPOWERMENT CATEGORY (200-399 - Power, not force)
@@ -238,7 +251,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Integrity practices. Small acts of honesty and authenticity. Micro-steps in alignment with truth.',
     meditations: [],
     estimatedTime: 25,
-    color: '#FD7E14',
+    color: '#D1FAE5',
+    gradient: ['#D1FAE5', '#A7F3D0'] as const,
+    gradientDark: ['#0F5C49', '#1E8A6A'] as const,
     isThreshold: true, // CRITICAL: This is the 200 threshold
   },
   {
@@ -264,7 +279,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Detachment practices. Equanimity without coldness. Holding things lightly while staying caring.',
     meditations: [],
     estimatedTime: 30,
-    color: '#ADB5BD',
+    color: '#CBD5E1',
+    gradient: ['#CBD5E1', '#E2E8F0'] as const,
+    gradientDark: ['#1E293B', '#3B475C'] as const,
   },
   {
     id: 'willingness',
@@ -289,7 +306,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Commitment practices. Saying yes from wholeness, not from seeking approval. Enthusiasm with wisdom.',
     meditations: [],
     estimatedTime: 25,
-    color: '#DA77F2',
+    color: '#A7F3D0',
+    gradient: ['#A7F3D0', '#86EFAC'] as const,
+    gradientDark: ['#146C43', '#22A06B'] as const,
   },
   {
     id: 'acceptance',
@@ -314,7 +333,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Forgiveness practices. True acceptance includes all of reality, including your boundaries and needs.',
     meditations: [],
     estimatedTime: 30,
-    color: '#C5DAE8',
+    color: '#FBCFE8',
+    gradient: ['#FBCFE8', '#FCE7F3'] as const,
+    gradientDark: ['#463256', '#7A5A8B'] as const,
   },
   {
     id: 'reason',
@@ -339,7 +360,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Wisdom practices. Honoring intellect while recognizing its limits. Opening to knowing beyond thinking.',
     meditations: [],
     estimatedTime: 35,
-    color: '#E2CEE8',
+    color: '#C7D2FE',
+    gradient: ['#C7D2FE', '#E0E7FF'] as const,
+    gradientDark: ['#243B7A', '#4A72B8'] as const,
   },
 
   // SPIRITUAL CATEGORY (500-599 - Heart-centered reality)
@@ -366,7 +389,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Unconditional love practices. Letting love arise naturally from stillness. Service without identity.',
     meditations: [],
     estimatedTime: 40,
-    color: '#E6DDCE',
+    color: '#FFE7F5',
+    gradientDark: ['#5B1F3E', '#A23F6F'] as const,
   },
   {
     id: 'joy',
@@ -391,7 +415,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Bliss practices. Resting as the joy that is always here beneath the content of experience.',
     meditations: [],
     estimatedTime: 45,
-    color: '#FFC078',
+    color: '#FFF1D2',
+    gradientDark: ['#5C3A00', '#C38A12'] as const,
   },
 
   // ENLIGHTENMENT CATEGORY (600 - Non-dual awareness)
@@ -418,7 +443,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     wayThrough: 'Self-realization practices. No technique. Simply being. The recognition that you already are what you seek.',
     meditations: [],
     estimatedTime: 60,
-    color: '#51CF66',
+    color: '#E7FFF5',
+    gradientDark: ['#0F2742', '#2E496C'] as const,
   },
 ];
 
@@ -468,3 +494,5 @@ export const levelCategories = [
   'spiritual',
   'enlightenment',
 ] as const;
+
+

@@ -13,6 +13,7 @@ import PlayerScreen from '../screens/PlayerScreen';
 import CheckInScreen from '../screens/CheckInScreen';
 import JourneyMapScreen from '../screens/JourneyMapScreen';
 import LevelDetailScreen from '../screens/LevelDetailScreen';
+import LevelChapterScreen from '../screens/LevelChapterScreen';
 import JournalScreen from '../screens/JournalScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   CheckIn: undefined;
   JourneyMap: undefined;
   LevelDetail: { levelId: string };
+  LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles' };
 };
 
 export type MainTabParamList = {
@@ -127,6 +129,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="LevelDetail"
           component={LevelDetailScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LevelChapter"
+          component={LevelChapterScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>
