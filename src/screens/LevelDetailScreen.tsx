@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -29,12 +29,27 @@ export default function LevelDetailScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<LevelDetailRouteProp>();
   const theme = useThemeColors();
-  const styles = getStyles(theme);
-  const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
-    useUserProgress();
-
   const { levelId } = route.params;
   const level = getLevelById(levelId);
+  const luminousAccent = useMemo(() => {
+    if (!level) {
+      return theme.primary;
+    }
+    if (theme.mode === 'dark') {
+      return (
+        level.glowDark ||
+        level.gradientDark?.[0] ||
+        adjustColor(level.color, 8)
+      );
+    }
+    return level.gradient?.[0] ?? adjustColor(level.color, -8);
+  }, [level, theme]);
+  const styles = useMemo(
+    () => getStyles(theme, luminousAccent),
+    [theme, luminousAccent]
+  );
+  const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
+    useUserProgress();
 
   useEffect(() => {
     // Mark this level as explored when viewing
@@ -251,15 +266,38 @@ const adjustColor = (color: string, amount: number): string => {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 };
 
-const getStyles = (theme: ThemeColors) =>
+const toRgba = (color: string, alpha = 1): string => {
+  const hex = color.replace('#', '');
+  const expand = (value: string) =>
+    parseInt(value.length === 1 ? value + value : value, 16);
+  const r = expand(hex.substring(0, hex.length >= 6 ? 2 : 1));
+  const g = expand(
+    hex.substring(
+      hex.length >= 6 ? 2 : 1,
+      hex.length >= 6 ? 4 : 2
+    )
+  );
+  const b = expand(
+    hex.substring(
+      hex.length >= 6 ? 4 : 2,
+      hex.length >= 6 ? 6 : 3
+    )
+  );
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+};
+
+const getStyles = (theme: ThemeColors, accent: string) =>
   StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: theme.background,
     },
     header: {
       paddingTop: 60,
       paddingBottom: spacing.xxl,
       paddingHorizontal: spacing.lg,
+      position: 'relative',
     },
     backButton: {
       width: 40,
@@ -276,8 +314,14 @@ const getStyles = (theme: ThemeColors) =>
     levelTitle: {
       fontSize: typography.h1,
       fontWeight: typography.bold,
-      color: theme.white,
+      color: theme.mode === 'dark' ? '#F9FAFB' : theme.white,
       textAlign: 'center',
+      textShadowColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.45)
+          : 'rgba(255,255,255,0.45)',
+      textShadowOffset: { width: 0, height: 3 },
+      textShadowRadius: 14,
     },
     antithesisContainer: {
       flexDirection: 'row',
@@ -286,22 +330,36 @@ const getStyles = (theme: ThemeColors) =>
     },
     antithesisText: {
       fontSize: typography.h3,
-      color: theme.white,
+      color:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.85)
+          : theme.white,
       fontWeight: typography.medium,
     },
     thresholdBadge: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
-      backgroundColor: 'rgba(212, 175, 55, 0.3)',
+      backgroundColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.22)
+          : 'rgba(212, 175, 55, 0.3)',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: borderRadius.md,
       marginTop: spacing.sm,
+      borderWidth: 1,
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.45)
+          : 'rgba(212, 175, 55, 0.45)',
     },
     thresholdText: {
       fontSize: typography.small,
-      color: theme.gold,
+      color:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.95)
+          : theme.gold,
       fontWeight: typography.semibold,
     },
     scrollView: {
@@ -323,7 +381,10 @@ const getStyles = (theme: ThemeColors) =>
     },
     descriptionText: {
       fontSize: typography.body,
-      color: theme.textSecondary,
+      color:
+        theme.mode === 'dark'
+          ? toRgba('#E8F4F4', 0.82)
+          : theme.textSecondary,
       lineHeight: 24,
     },
     listItem: {
@@ -336,21 +397,31 @@ const getStyles = (theme: ThemeColors) =>
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: theme.primary,
+      backgroundColor:
+        theme.mode === 'dark' ? toRgba(accent, 0.8) : theme.primary,
       marginTop: 8,
     },
     listText: {
       flex: 1,
       fontSize: typography.body,
-      color: theme.textSecondary,
+      color:
+        theme.mode === 'dark'
+          ? toRgba('#E8F4F4', 0.78)
+          : theme.textSecondary,
       lineHeight: 22,
     },
     trapSection: {
-      backgroundColor: theme.warningSubtle,
+      backgroundColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.14)
+          : theme.warningSubtle,
       padding: spacing.lg,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
-      borderColor: theme.warning,
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.34)
+          : theme.warning,
     },
     trapHeader: {
       flexDirection: 'row',
@@ -360,16 +431,25 @@ const getStyles = (theme: ThemeColors) =>
     },
     trapText: {
       fontSize: typography.body,
-      color: theme.textPrimary,
+      color:
+        theme.mode === 'dark'
+          ? toRgba('#F8FAFC', 0.9)
+          : theme.textPrimary,
       lineHeight: 24,
       fontStyle: 'italic',
     },
     wayThroughSection: {
-      backgroundColor: 'rgba(147, 197, 253, 0.2)',
+      backgroundColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.18)
+          : 'rgba(147, 197, 253, 0.2)',
       padding: spacing.lg,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
-      borderColor: '#60A5FA',
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.4)
+          : '#60A5FA',
     },
     wayThroughHeader: {
       flexDirection: 'row',
@@ -379,18 +459,27 @@ const getStyles = (theme: ThemeColors) =>
     },
     wayThroughText: {
       fontSize: typography.body,
-      color: theme.textPrimary,
+      color:
+        theme.mode === 'dark'
+          ? toRgba('#F8FAFC', 0.88)
+          : theme.textPrimary,
       lineHeight: 24,
       fontWeight: typography.medium,
     },
     practicesPlaceholder: {
-      backgroundColor: theme.cardBackground,
+      backgroundColor:
+        theme.mode === 'dark'
+          ? 'rgba(4, 14, 22, 0.8)'
+          : theme.cardBackground,
       padding: spacing.xxl,
       borderRadius: borderRadius.lg,
       alignItems: 'center',
       gap: spacing.sm,
       borderWidth: 1,
-      borderColor: theme.border,
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.28)
+          : theme.border,
     },
     placeholderText: {
       fontSize: typography.body,
@@ -412,16 +501,25 @@ const getStyles = (theme: ThemeColors) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.sm,
-      backgroundColor: theme.cardBackground,
+      backgroundColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.18)
+          : theme.cardBackground,
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      borderColor: theme.primary,
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.38)
+          : theme.primary,
     },
     secondaryButtonText: {
       fontSize: typography.body,
-      color: theme.primary,
+      color:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.92)
+          : theme.primary,
       fontWeight: typography.semibold,
     },
     currentFocusBadge: {
@@ -429,16 +527,25 @@ const getStyles = (theme: ThemeColors) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: spacing.sm,
-      backgroundColor: 'rgba(147, 197, 253, 0.2)',
+      backgroundColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.24)
+          : 'rgba(147, 197, 253, 0.2)',
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      borderColor: '#60A5FA',
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.52)
+          : '#60A5FA',
     },
     currentFocusText: {
       fontSize: typography.body,
-      color: '#60A5FA',
+      color:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.92)
+          : '#60A5FA',
       fontWeight: typography.semibold,
     },
     errorText: {

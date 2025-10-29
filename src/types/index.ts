@@ -87,6 +87,7 @@ export interface ConsciousnessLevel {
   color: string; // Visual theme color
   gradient?: readonly [string, string]; // Optional gradient pair for UI treatments
   gradientDark?: readonly [string, string];
+  glowDark?: string;
   isThreshold?: boolean; // True for level 200 (Courage)
 }
 

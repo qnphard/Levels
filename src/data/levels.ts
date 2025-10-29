@@ -37,8 +37,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [], // Will be populated with actual meditation IDs
     estimatedTime: 20,
     color: '#FFB5C2',
-    gradient: ['#FFB5C2', '#FDE2E4'] as const,
-    gradientDark: ['#521A2E', '#8A2F56'] as const,
+    gradient: ['#BAABB0', '#D7BBC8'] as const,
+    gradientDark: ['#3B1120', '#8E3E63'] as const,
+    glowDark: '#F472B6',
   },
   {
     id: 'guilt',
@@ -64,8 +65,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 25,
     color: '#FFD6A5',
-    gradient: ['#FFD6A5', '#FFF1C1'] as const,
-    gradientDark: ['#4A2A00', '#99601A'] as const,
+    gradient: ['#BCB1A9', '#E4CCB0'] as const,
+    gradientDark: ['#40220A', '#B26E1F'] as const,
+    glowDark: '#FBBF24',
   },
   {
     id: 'apathy',
@@ -91,8 +93,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 15,
     color: '#A5C9FF',
-    gradient: ['#A5C9FF', '#E3F2FD'] as const,
-    gradientDark: ['#0C2D49', '#19618A'] as const,
+    gradient: ['#AAB5BB', '#ACC8D0'] as const,
+    gradientDark: ['#0D2C3F', '#14627A'] as const,
+    glowDark: '#38BDF8',
   },
   {
     id: 'grief',
@@ -118,8 +121,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 30,
     color: '#B5EAEA',
-    gradient: ['#B5EAEA', '#EDF6F9'] as const,
-    gradientDark: ['#103940', '#1F6B6E'] as const,
+    gradient: ['#ACBABB', '#B0CCCE'] as const,
+    gradientDark: ['#143A3D', '#1E7075'] as const,
+    glowDark: '#5EEAD4',
   },
   {
     id: 'fear',
@@ -145,8 +149,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 25,
     color: '#FFF6A3',
-    gradient: ['#FFF6A3', '#FDFCDC'] as const,
-    gradientDark: ['#3A3200', '#8A7600'] as const,
+    gradient: ['#BAB8A8', '#DDD6B0'] as const,
+    gradientDark: ['#3A3509', '#A08B1E'] as const,
+    glowDark: '#FACC15',
   },
   {
     id: 'desire',
@@ -172,7 +177,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 20,
     color: '#FFE7C6',
+    gradient: ['#BCB1A9', '#E0C6B1'] as const,
     gradientDark: ['#4B2A00', '#9A5B0F'] as const,
+    glowDark: '#FB923C',
   },
   {
     id: 'anger',
@@ -198,7 +205,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 20,
     color: '#FFD6D6',
+    gradient: ['#BEAEAE', '#DCB5B5'] as const,
     gradientDark: ['#4C1F1F', '#8B2C2C'] as const,
+    glowDark: '#F87171',
   },
   {
     id: 'pride',
@@ -224,7 +233,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 25,
     color: '#FFE3F2',
+    gradient: ['#B5B2BD', '#C6C0D0'] as const,
     gradientDark: ['#2F2244', '#5B4A7E'] as const,
+    glowDark: '#A78BFA',
   },
 
   // EMPOWERMENT CATEGORY (200-399 - Power, not force)
@@ -252,8 +263,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 25,
     color: '#D1FAE5',
-    gradient: ['#D1FAE5', '#A7F3D0'] as const,
-    gradientDark: ['#0F5C49', '#1E8A6A'] as const,
+    gradient: ['#A8BDB7', '#B0D6CA'] as const,
+    gradientDark: ['#094532', '#1E8A6A'] as const,
+    glowDark: '#34D399',
     isThreshold: true, // CRITICAL: This is the 200 threshold
   },
   {
@@ -280,8 +292,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 30,
     color: '#CBD5E1',
-    gradient: ['#CBD5E1', '#E2E8F0'] as const,
-    gradientDark: ['#1E293B', '#3B475C'] as const,
+    gradient: ['#B0B4BA', '#BABFC6'] as const,
+    gradientDark: ['#1E293B', '#3C4A5E'] as const,
+    glowDark: '#94A3B8',
   },
   {
     id: 'willingness',
@@ -307,8 +320,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 25,
     color: '#A7F3D0',
-    gradient: ['#A7F3D0', '#86EFAC'] as const,
-    gradientDark: ['#146C43', '#22A06B'] as const,
+    gradient: ['#ABC3BB', '#B2DDCB'] as const,
+    gradientDark: ['#11563E', '#25A06C'] as const,
+    glowDark: '#4ADE80',
   },
   {
     id: 'acceptance',
@@ -334,8 +348,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 30,
     color: '#FBCFE8',
-    gradient: ['#FBCFE8', '#FCE7F3'] as const,
-    gradientDark: ['#463256', '#7A5A8B'] as const,
+    gradient: ['#BBB5C2', '#D0C5DF'] as const,
+    gradientDark: ['#3F2E53', '#7A5BA5'] as const,
+    glowDark: '#C084FC',
   },
   {
     id: 'reason',
@@ -361,8 +376,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 35,
     color: '#C7D2FE',
-    gradient: ['#C7D2FE', '#E0E7FF'] as const,
-    gradientDark: ['#243B7A', '#4A72B8'] as const,
+    gradient: ['#B0B7C7', '#BEC9E3'] as const,
+    gradientDark: ['#1F3360', '#4666B0'] as const,
+    glowDark: '#60A5FA',
   },
 
   // SPIRITUAL CATEGORY (500-599 - Heart-centered reality)
@@ -390,7 +406,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 40,
     color: '#FFE7F5',
+    gradient: ['#C4AFB8', '#E5C0CB'] as const,
     gradientDark: ['#5B1F3E', '#A23F6F'] as const,
+    glowDark: '#F472B6',
   },
   {
     id: 'joy',
@@ -416,7 +434,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 45,
     color: '#FFF1D2',
+    gradient: ['#C5BAA5', '#EBD9AC'] as const,
     gradientDark: ['#5C3A00', '#C38A12'] as const,
+    glowDark: '#FACC15',
   },
 
   // ENLIGHTENMENT CATEGORY (600 - Non-dual awareness)
@@ -444,7 +464,9 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     meditations: [],
     estimatedTime: 60,
     color: '#E7FFF5',
+    gradient: ['#AAB1BA', '#B5C1CC'] as const,
     gradientDark: ['#0F2742', '#2E496C'] as const,
+    glowDark: '#93C5FD',
   },
 ];
 
@@ -494,5 +516,3 @@ export const levelCategories = [
   'spiritual',
   'enlightenment',
 ] as const;
-
-

@@ -174,31 +174,33 @@ const sharedCategoryChips = (mode: ThemeMode) => {
 
 const buildTheme = (mode: ThemeMode): ThemeColors => {
   const isDark = mode === 'dark';
-  const background = isDark ? palette.night900 : palette.sand50;
-  const surface = isDark ? palette.night800 : palette.sand100;
-  const cardBackground = isDark ? 'rgba(255,255,255,0.03)' : palette.sand100;
+  const background = isDark ? '#0B1520' : palette.sand50;
+  const surface = isDark ? '#0F1E29' : palette.sand100;
+  const cardBackground = isDark
+    ? 'rgba(6, 14, 22, 0.78)'
+    : palette.sand100;
   const appBackgroundGradient = isDark
-    ? gradients.horizonNight
+    ? (['#0B1520', '#11202C', '#162D3A'] as const)
     : ([
         '#E8D9FA',
         '#F3EAFB',
         '#F8EEF6',
       ] as const);
-  const canvasOverlay = isDark ? 'rgba(15,28,31,0.4)' : 'rgba(255,255,255,0.55)';
-  const border = isDark ? 'rgba(255,255,255,0.07)' : palette.sand200;
+  const canvasOverlay = isDark ? 'rgba(7,16,24,0.55)' : 'rgba(255,255,255,0.55)';
+  const border = isDark ? 'rgba(255,255,255,0.09)' : palette.sand200;
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
-  const textSecondary = isDark ? '#D4E4E7' : palette.stone600;
-  const textMuted = isDark ? '#8FA6AA' : '#8F8B82';
+  const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
+  const textMuted = isDark ? '#89A1A5' : '#8F8B82';
   const primary = isDark ? palette.teal500 : palette.sage600;
-  const primarySubtle = isDark ? '#315A62' : palette.sage400;
+  const primarySubtle = isDark ? '#1F4F5A' : palette.sage400;
   const primaryContrast = isDark ? palette.night900 : '#FFFFFF';
   const accentTeal = isDark ? palette.teal500 : palette.teal700;
-  const highlightMist = isDark ? '#3A5560' : palette.mist400;
+  const highlightMist = isDark ? '#2B4652' : palette.mist400;
   const shadowSoft = isDark
-    ? 'rgba(0,0,0,0.6)'
+    ? 'rgba(0,0,0,0.65)'
     : 'rgba(15, 28, 31, 0.08)';
   const shadowMedium = isDark
-    ? 'rgba(0,0,0,0.45)'
+    ? 'rgba(0,0,0,0.52)'
     : 'rgba(15, 28, 31, 0.16)';
   const gold = isDark ? '#C9B37F' : palette.gold300;
   const warning = palette.warning500;

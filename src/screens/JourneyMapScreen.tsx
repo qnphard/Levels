@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,8 @@ import {
   Platform,
   UIManager,
   GestureResponderEvent,
+  Animated,
+  Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -42,6 +44,7 @@ type CategoryKey = ConsciousnessLevel['category'];
 type ChapterView = 'overview' | 'meditations' | 'articles';
 
 const { width } = Dimensions.get('window');
+const canBlur = Platform.OS !== 'web';
 
 const categoryIcons: Record<
   CategoryKey,
@@ -68,10 +71,80 @@ export default function JourneyMapScreen() {
     const screenWidth = window.width || width;
     if (screenWidth >= 1024) return Math.min(screenWidth * 0.28, 340);
     if (screenWidth >= 768) return Math.min(screenWidth * 0.4, 320);
-    if (screenWidth >= 480) return Math.min(screenWidth * 0.46, 280);
-    return Math.min(screenWidth * 0.9, 260);
+    if (screenWidth >= 480) return Math.min(screenWidth * 0.42, 280);
+    if (screenWidth >= 360) return Math.min(screenWidth * 0.48, 240);
+    return Math.min(screenWidth * 0.92, 240);
   }, [window.width]);
   const styles = useMemo(() => getStyles(theme, cardWidth), [theme, cardWidth]);
+  const floatAnim = useRef(new Animated.Value(0)).current;
+  const auroraAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(floatAnim, {
+          toValue: 1,
+          duration: 6000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(floatAnim, {
+          toValue: 0,
+          duration: 6000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [floatAnim]);
+
+  useEffect(() => {
+    const auroraLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(auroraAnim, {
+          toValue: 1,
+          duration: 16000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+        Animated.timing(auroraAnim, {
+          toValue: 0,
+          duration: 16000,
+          easing: Easing.inOut(Easing.ease),
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    auroraLoop.start();
+    return () => auroraLoop.stop();
+  }, [auroraAnim]);
+
+  const floatTranslate = useMemo(
+    () =>
+      floatAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, -2.5],
+      }),
+    [floatAnim]
+  );
+  const auroraTranslate = useMemo(
+    () =>
+      auroraAnim.interpolate({
+        inputRange: [0, 1],
+        outputRange: [-65, 65],
+      }),
+    [auroraAnim]
+  );
+  const auroraOpacity = useMemo(
+    () =>
+      auroraAnim.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [0.28, 0.5, 0.28],
+      }),
+    [auroraAnim]
+  );
   const { progress } = useUserProgress();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [expandedSections, setExpandedSections] = useState<
@@ -181,11 +254,7 @@ export default function JourneyMapScreen() {
 
   const handleDismissDisclaimer = () => setShowDisclaimer(false);
 
-  const renderLevelCard = (
-    level: ConsciousnessLevel,
-    index: number,
-    total: number
-  ) => {
+  const renderLevelCard = (level: ConsciousnessLevel, index: number) => {
     const isExplored = progress?.exploredLevels.includes(level.id) ?? false;
     const isCurrent = progress?.currentLevel === level.id;
     const isCourage = level.isThreshold;
@@ -203,129 +272,269 @@ export default function JourneyMapScreen() {
     const darkGradient = level.gradientDark ? level.gradientDark : baseGradient;
     const gradientColors =
       theme.mode === 'dark' ? darkGradient : baseGradient;
+    const glowBase = level.glowDark ?? gradientColors[0];
+    const glowTint =
+      theme.mode === 'dark' ? glowBase : adjustColor(gradientColors[0], -12);
+    const floatScalar =
+      (index % 2 === 0 ? 1 : -1) * (1 + (index % 3) * 0.28);
+    const floatTranslateNode = Animated.multiply(floatTranslate, floatScalar);
 
     return (
-      <Pressable
+      <Animated.View
         key={level.id}
-        onPress={() => handleLevelPress(level)}
-        style={({ pressed }) => [
-          styles.levelCard,
-          isCurrent && styles.levelCardCurrent,
-          isCourage && styles.levelCardCourage,
-          pressed && styles.levelCardPressed,
+        style={[
+          styles.levelCardContainer,
+          { transform: [{ translateY: floatTranslateNode }] },
         ]}
       >
-        <LinearGradient
-          colors={gradientColors}
-          style={styles.levelGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <Pressable
+          onPress={() => handleLevelPress(level)}
+          style={({ pressed }) => [
+            styles.levelCard,
+            theme.mode === 'dark' && {
+              borderColor: toRgba(glowBase, isCurrent ? 0.45 : 0.32),
+              shadowColor: toRgba(glowBase, 0.5),
+              shadowOpacity: 0.34,
+              backgroundColor: 'rgba(9, 19, 28, 0.75)',
+            },
+            isCurrent && styles.levelCardCurrent,
+            isCourage && styles.levelCardCourage,
+            pressed && styles.levelCardPressed,
+          ]}
         >
-          <BlurView
-            intensity={40}
-            tint={theme.mode === 'dark' ? 'dark' : 'light'}
-            style={styles.levelBlur}
-          />
-          <View style={styles.textOverlay}>
-            <View style={styles.levelContent}>
-              <View style={styles.levelHeader}>
-                <Text style={styles.levelTitle}>
-                  {level.level < 200 ? `Transcending ${level.name}` : level.name}
+          <LinearGradient
+            colors={gradientColors}
+            style={styles.levelGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <View
+              pointerEvents="none"
+              style={[
+                styles.levelGlow,
+                {
+                  backgroundColor: toRgba(
+                    glowTint,
+                    theme.mode === 'dark' ? 0.18 : 0.12
+                  ),
+                  shadowColor: toRgba(
+                    glowTint,
+                    theme.mode === 'dark' ? 0.52 : 0.32
+                  ),
+                },
+              ]}
+            />
+            {canBlur ? (
+              <BlurView
+                intensity={45}
+                tint={theme.mode === 'dark' ? 'dark' : 'light'}
+                style={styles.levelBlur}
+              />
+            ) : (
+              <View
+                style={[
+                  styles.levelBlurFallback,
+                  {
+                    backgroundColor:
+                      theme.mode === 'dark'
+                        ? 'rgba(8, 18, 26, 0.78)'
+                        : 'rgba(255, 255, 255, 0.68)',
+                  },
+                ]}
+              />
+            )}
+            <View style={styles.textOverlay}>
+              <View style={styles.levelContent}>
+                <View style={styles.levelHeader}>
+                  <Text
+                    style={[
+                      styles.levelTitle,
+                      theme.mode === 'dark' && {
+                        textShadowColor: toRgba(glowBase, 0.58),
+                      },
+                    ]}
+                  >
+                    {level.level < 200
+                      ? `Transcending ${level.name}`
+                      : level.name}
+                  </Text>
+                  {isCurrent && (
+                    <View
+                      style={[
+                        styles.currentBadge,
+                        theme.mode === 'dark' && {
+                          backgroundColor: toRgba(glowBase, 0.32),
+                        },
+                      ]}
+                    >
+                      <Text style={styles.currentBadgeText}>Current</Text>
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.antithesisContainer}>
+                  <Ionicons
+                    name="arrow-forward"
+                    size={14}
+                    color={
+                      theme.mode === 'dark'
+                        ? toRgba(glowBase, 0.8)
+                        : theme.textSecondary
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.antithesisText,
+                      theme.mode === 'dark' && {
+                        color: toRgba(glowBase, 0.85),
+                      },
+                    ]}
+                  >
+                    {level.level < 200
+                      ? `Through ${level.antithesis}`
+                      : level.antithesis}
+                  </Text>
+                </View>
+
+                <Text
+                  style={[
+                    styles.levelDescription,
+                    theme.mode === 'dark' && {
+                      color: toRgba('#E9F1F6', 0.82),
+                    },
+                  ]}
+                  numberOfLines={2}
+                >
+                  {level.description}
                 </Text>
-                {isCurrent && (
-                  <View style={styles.currentBadge}>
-                    <Text style={styles.currentBadgeText}>Current</Text>
+
+                <View style={styles.levelActions}>
+                  <Pressable
+                    style={styles.primaryAction}
+                    onPress={(event: GestureResponderEvent) => {
+                      event.stopPropagation?.();
+                      openChapter(level, 'meditations');
+                    }}
+                  >
+                    <Ionicons
+                      name="headset-outline"
+                      size={16}
+                      color={theme.buttons.primary.text}
+                    />
+                    <Text style={styles.primaryActionText}>Meditations</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.secondaryAction,
+                      theme.mode === 'dark' && {
+                        backgroundColor: toRgba(glowBase, 0.18),
+                        borderColor: toRgba(glowBase, 0.42),
+                      },
+                    ]}
+                    onPress={(event: GestureResponderEvent) => {
+                      event.stopPropagation?.();
+                      openChapter(level, 'articles');
+                    }}
+                  >
+                    <Ionicons
+                      name="book-outline"
+                      size={16}
+                      color={
+                        theme.mode === 'dark'
+                          ? toRgba(glowBase, 0.92)
+                          : theme.textPrimary
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.secondaryActionText,
+                        theme.mode === 'dark' && {
+                          color: toRgba('#F8FAFC', 0.88),
+                        },
+                      ]}
+                    >
+                      Articles
+                    </Text>
+                  </Pressable>
+                </View>
+
+                <Pressable
+                  style={styles.chapterLink}
+                  onPress={(event: GestureResponderEvent) => {
+                    event.stopPropagation?.();
+                    openChapter(level, 'overview');
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.chapterLinkText,
+                      {
+                        color:
+                          theme.mode === 'dark'
+                            ? toRgba(glowBase, 0.86)
+                            : theme.accentTeal,
+                      },
+                    ]}
+                  >
+                    Chapter overview
+                  </Text>
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={
+                        theme.mode === 'dark'
+                        ? toRgba(glowBase, 0.8)
+                        : theme.textSecondary
+                      }
+                    />
+                </Pressable>
+
+                {isExplored && (
+                  <View style={styles.exploredIndicator}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color={
+                        theme.mode === 'dark'
+                          ? toRgba(glowBase, 0.9)
+                          : theme.accentTeal
+                      }
+                    />
+                    <Text
+                      style={[
+                        styles.exploredText,
+                        theme.mode === 'dark' && {
+                          color: toRgba('#E8F4F4', 0.82),
+                        },
+                      ]}
+                    >
+                      Explored - {completedCount} practice
+                      {completedCount !== 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                )}
+
+                {isCourage && (
+                  <View style={styles.thresholdBadge}>
+                    <Ionicons
+                      name="star"
+                      size={14}
+                      color={
+                        theme.mode === 'dark'
+                          ? toRgba(glowBase, 0.94)
+                          : theme.accentGold
+                      }
+                    />
+                    <Text style={styles.thresholdText}>
+                      Threshold - Where Power Begins
+                    </Text>
                   </View>
                 )}
               </View>
-
-              <View style={styles.antithesisContainer}>
-                <Ionicons
-                  name="arrow-forward"
-                  size={14}
-                  color={theme.textSecondary}
-                />
-                <Text style={styles.antithesisText}>
-                  {level.level < 200 ? `Through ${level.antithesis}` : level.antithesis}
-                </Text>
-              </View>
-
-              <Text style={styles.levelDescription} numberOfLines={2}>
-                {level.description}
-              </Text>
-
-              <View style={styles.levelActions}>
-                <Pressable
-                  style={styles.primaryAction}
-                  onPress={(event: GestureResponderEvent) => {
-                    event.stopPropagation?.();
-                    openChapter(level, 'meditations');
-                  }}
-                >
-              <Ionicons
-                name="headset-outline"
-                size={16}
-                color={theme.buttons.primary.text}
-              />
-                  <Text style={styles.primaryActionText}>Meditations</Text>
-                </Pressable>
-                <Pressable
-                  style={styles.secondaryAction}
-                  onPress={(event: GestureResponderEvent) => {
-                    event.stopPropagation?.();
-                    openChapter(level, 'articles');
-                  }}
-                >
-              <Ionicons
-                name="book-outline"
-                size={16}
-                color={theme.mode === 'dark' ? theme.accentGold : theme.textPrimary}
-              />
-                  <Text style={styles.secondaryActionText}>Articles</Text>
-                </Pressable>
-              </View>
-
-              <Pressable
-                style={styles.chapterLink}
-                onPress={(event: GestureResponderEvent) => {
-                  event.stopPropagation?.();
-                  openChapter(level, 'overview');
-                }}
-              >
-                <Text style={styles.chapterLinkText}>Chapter overview</Text>
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={theme.textSecondary}
-                />
-              </Pressable>
-
-              {isExplored && (
-                <View style={styles.exploredIndicator}>
-                  <Ionicons
-                    name="checkmark-circle"
-                    size={16}
-                    color={theme.accentTeal}
-                  />
-                  <Text style={styles.exploredText}>
-                    Explored - {completedCount} practice
-                    {completedCount !== 1 ? 's' : ''}
-                  </Text>
-                </View>
-              )}
-
-              {isCourage && (
-                <View style={styles.thresholdBadge}>
-                  <Ionicons name="star" size={14} color={theme.accentGold} />
-                  <Text style={styles.thresholdText}>
-                    Threshold - Where Power Begins
-                  </Text>
-                </View>
-              )}
             </View>
-          </View>
-        </LinearGradient>
-      </Pressable>
+          </LinearGradient>
+        </Pressable>
+      </Animated.View>
     );
   };
 
@@ -384,7 +593,7 @@ export default function JourneyMapScreen() {
         {expanded && (
           <View style={styles.levelsGrid}>
             {levels.map((level, index) =>
-              renderLevelCard(level, index, levels.length)
+              renderLevelCard(level, index)
             )}
           </View>
         )}
@@ -394,6 +603,29 @@ export default function JourneyMapScreen() {
 
   return (
     <View style={styles.container}>
+      {theme.mode === 'dark' && (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            styles.auroraLayer,
+            {
+              opacity: auroraOpacity,
+              transform: [{ translateX: auroraTranslate }],
+            },
+          ]}
+        >
+          <LinearGradient
+            colors={[
+              'rgba(46, 93, 106, 0.45)',
+              'rgba(108, 62, 115, 0.35)',
+              'rgba(37, 92, 124, 0.4)',
+            ]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFill}
+          />
+        </Animated.View>
+      )}
       <LinearGradient
         colors={
           theme.mode === 'light'
@@ -503,12 +735,38 @@ const adjustColor = (color: string, amount: number): string => {
   return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0')}`;
 };
 
+const toRgba = (color: string, alpha = 1): string => {
+  const sanitized = color.replace('#', '');
+  const expand = (value: string) =>
+    parseInt(value.length === 1 ? value + value : value, 16);
+  const r = expand(sanitized.substring(0, sanitized.length >= 6 ? 2 : 1));
+  const g = expand(
+    sanitized.substring(
+      sanitized.length >= 6 ? 2 : 1,
+      sanitized.length >= 6 ? 4 : 2
+    )
+  );
+  const b = expand(
+    sanitized.substring(
+      sanitized.length >= 6 ? 4 : 2,
+      sanitized.length >= 6 ? 6 : 3
+    )
+  );
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+};
+
 const getStyles = (theme: ThemeColors, cardWidth: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor:
-        theme.mode === 'dark' ? theme.background : 'transparent',
+      backgroundColor: theme.background,
+      position: 'relative',
+      overflow: 'hidden',
+    },
+    auroraLayer: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: -1,
     },
     header: {
       paddingTop: spacing.lg,
@@ -666,25 +924,35 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       paddingTop: spacing.md,
       paddingBottom: spacing.xl,
     },
-    levelCard: {
+    levelCardContainer: {
       width: cardWidth,
       maxWidth: 360,
       flexGrow: 1,
+      marginBottom: spacing.md,
+    },
+    levelCard: {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
-      shadowColor: theme.shadowSoft,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
-      shadowRadius: 14,
-      elevation: 3,
-      marginBottom: spacing.md,
+      position: 'relative',
+      minHeight: 220,
+      shadowColor:
+        theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.65)' : theme.shadowSoft,
+      shadowOffset: {
+        width: 0,
+        height: theme.mode === 'dark' ? 10 : 4,
+      },
+      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.12,
+      shadowRadius: theme.mode === 'dark' ? 22 : 14,
+      elevation: theme.mode === 'dark' ? 6 : 3,
       borderWidth: theme.mode === 'dark' ? 1 : 0.5,
       borderColor:
         theme.mode === 'dark'
-          ? 'rgba(255,255,255,0.12)'
+          ? 'rgba(255,255,255,0.06)'
           : 'rgba(15, 28, 31, 0.08)',
       backgroundColor:
-        theme.mode === 'dark' ? 'rgba(8, 18, 24, 0.55)' : theme.cardBackground,
+        theme.mode === 'dark'
+          ? 'rgba(6, 14, 22, 0.7)'
+          : theme.cardBackground,
     },
     levelCardPressed: {
       transform: [{ translateY: 2 }],
@@ -701,7 +969,19 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     levelGradient: {
       borderRadius: borderRadius.lg,
     },
+    levelGlow: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: borderRadius.lg,
+      opacity: 1,
+      shadowOffset: { width: 0, height: 18 },
+      shadowOpacity: 0.18,
+      shadowRadius: 38,
+    },
     levelBlur: {
+      ...StyleSheet.absoluteFillObject,
+      borderRadius: borderRadius.lg,
+    },
+    levelBlurFallback: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: borderRadius.lg,
     },
@@ -712,7 +992,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       padding: spacing.lg,
       backgroundColor:
         theme.mode === 'dark'
-          ? 'rgba(8, 18, 22, 0.7)'
+          ? 'rgba(5, 14, 20, 0.7)'
           : 'rgba(255, 255, 255, 0.58)',
       borderRadius: borderRadius.lg,
       borderWidth: 1,
@@ -878,3 +1158,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       fontStyle: 'italic',
     },
   });
+
+
+
+
