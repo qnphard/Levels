@@ -292,10 +292,11 @@ export default function JourneyMapScreen() {
           style={({ pressed }) => [
             styles.levelCard,
             theme.mode === 'dark' && {
-              borderColor: toRgba(glowBase, isCurrent ? 0.45 : 0.32),
-              shadowColor: toRgba(glowBase, 0.5),
+              borderColor: theme.bioluminescence.glow,
+              shadowColor: theme.bioluminescence.glow,
               shadowOpacity: 0.34,
               backgroundColor: 'rgba(9, 19, 28, 0.75)',
+              boxShadow: `0 0 30px ${theme.bioluminescence.glow}88, 0 0 60px ${theme.bioluminescence.glow}44, inset 0 0 20px ${theme.bioluminescence.glow}22`,
             },
             isCurrent && styles.levelCardCurrent,
             isCourage && styles.levelCardCourage,
@@ -818,14 +819,18 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       backgroundColor: theme.cardBackground,
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
-      borderWidth: 1,
-      borderColor: theme.border,
-      shadowColor: theme.shadowSoft,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
-      shadowRadius: 12,
-      elevation: 3,
-    },
+      borderWidth: theme.mode === 'dark' ? 2 : 1,
+      borderColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.border,
+      shadowColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 4 },
+      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.12,
+      shadowRadius: theme.mode === 'dark' ? 18 : 12,
+      elevation: theme.mode === 'dark' ? 6 : 3,
+      // Web-specific glow
+      ...(theme.mode === 'dark' && {
+        boxShadow: `0 0 25px ${theme.bioluminescence.glow}66, 0 0 50px ${theme.bioluminescence.glow}33`,
+      }),
+    } as any,
     guidanceText: {
       fontSize: typography.body,
       color: theme.textSecondary,
@@ -932,28 +937,31 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     levelCard: {
       borderRadius: borderRadius.lg,
-      overflow: 'hidden',
       position: 'relative',
       minHeight: 220,
       shadowColor:
-        theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.65)' : theme.shadowSoft,
+        theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
       shadowOffset: {
         width: 0,
-        height: theme.mode === 'dark' ? 10 : 4,
+        height: theme.mode === 'dark' ? 0 : 4,
       },
-      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.12,
-      shadowRadius: theme.mode === 'dark' ? 22 : 14,
-      elevation: theme.mode === 'dark' ? 6 : 3,
-      borderWidth: theme.mode === 'dark' ? 1 : 0.5,
+      shadowOpacity: theme.mode === 'dark' ? 0.7 : 0.12,
+      shadowRadius: theme.mode === 'dark' ? 24 : 14,
+      elevation: theme.mode === 'dark' ? 8 : 3,
+      borderWidth: theme.mode === 'dark' ? 2 : 0.5,
       borderColor:
         theme.mode === 'dark'
-          ? 'rgba(255,255,255,0.06)'
+          ? theme.bioluminescence.glow
           : 'rgba(15, 28, 31, 0.08)',
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(6, 14, 22, 0.7)'
           : theme.cardBackground,
-    },
+      // Web-specific glow effect using boxShadow
+      ...(theme.mode === 'dark' && {
+        boxShadow: `0 0 30px ${theme.bioluminescence.glow}88, 0 0 60px ${theme.bioluminescence.glow}44, inset 0 0 20px ${theme.bioluminescence.glow}22`,
+      }),
+    } as any,
     levelCardPressed: {
       transform: [{ translateY: 2 }],
       shadowOpacity: 0.05,
@@ -1142,14 +1150,18 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       backgroundColor: theme.primarySubtle,
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
-      borderWidth: 1,
-      borderColor: theme.primary,
-      shadowColor: theme.shadowSoft,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.08,
-      shadowRadius: 8,
-      elevation: 2,
-    },
+      borderWidth: theme.mode === 'dark' ? 2 : 1,
+      borderColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.primary,
+      shadowColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 2 },
+      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.08,
+      shadowRadius: theme.mode === 'dark' ? 18 : 8,
+      elevation: theme.mode === 'dark' ? 6 : 2,
+      // Web-specific glow
+      ...(theme.mode === 'dark' && {
+        boxShadow: `0 0 25px ${theme.bioluminescence.glow}66, 0 0 50px ${theme.bioluminescence.glow}33`,
+      }),
+    } as any,
     reminderText: {
       flex: 1,
       fontSize: typography.body,

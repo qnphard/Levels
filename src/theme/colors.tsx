@@ -39,6 +39,11 @@ export const palette = {
   ice200: '#B7C7C9',
 
   teal500: '#5FB5A9',
+
+  // Bioluminescent glow colors
+  bioGlow: '#5FB5A9', // Primary bioluminescent teal
+  bioCore: '#8BE9FD', // Bright cyan core
+  bioPulse: 'rgba(95, 181, 169, 0.4)', // Pulsing outer glow
 };
 
 export const gradients = {
@@ -86,6 +91,11 @@ export interface ThemeColors {
   warning: string;
   warningSubtle: string;
   error: string;
+  bioluminescence: {
+    glow: string;
+    core: string;
+    pulse: string;
+  };
   buttons: {
     primary: {
       background: string;
@@ -174,20 +184,21 @@ const sharedCategoryChips = (mode: ThemeMode) => {
 
 const buildTheme = (mode: ThemeMode): ThemeColors => {
   const isDark = mode === 'dark';
-  const background = isDark ? '#0B1520' : palette.sand50;
-  const surface = isDark ? '#0F1E29' : palette.sand100;
+  // Enhanced dark theme with deeper cosmic tones
+  const background = isDark ? '#0f172a' : palette.sand50;
+  const surface = isDark ? '#1e293b' : palette.sand100;
   const cardBackground = isDark
-    ? 'rgba(6, 14, 22, 0.78)'
+    ? 'rgba(30, 41, 59, 0.65)' // More translucent for glow effects
     : palette.sand100;
   const appBackgroundGradient = isDark
-    ? (['#0B1520', '#11202C', '#162D3A'] as const)
+    ? (['#0f172a', '#1e293b', '#334155'] as const) // Aurora-inspired gradient
     : ([
         '#E8D9FA',
         '#F3EAFB',
         '#F8EEF6',
       ] as const);
-  const canvasOverlay = isDark ? 'rgba(7,16,24,0.55)' : 'rgba(255,255,255,0.55)';
-  const border = isDark ? 'rgba(255,255,255,0.09)' : palette.sand200;
+  const canvasOverlay = isDark ? 'rgba(15,23,42,0.55)' : 'rgba(255,255,255,0.55)';
+  const border = isDark ? 'rgba(255,255,255,0.12)' : palette.sand200; // Slightly more visible
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
   const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
   const textMuted = isDark ? '#89A1A5' : '#8F8B82';
@@ -206,6 +217,13 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const warning = palette.warning500;
   const warningSubtle = isDark ? 'rgba(230,194,121,0.18)' : 'rgba(230,194,121,0.32)';
   const error = palette.danger500;
+
+  // Bioluminescent colors for ripple effects
+  const bioluminescence = {
+    glow: isDark ? palette.bioGlow : palette.sage600,
+    core: isDark ? palette.bioCore : palette.sage400,
+    pulse: isDark ? 'rgba(95, 181, 169, 0.4)' : 'rgba(111, 164, 145, 0.3)',
+  };
 
   return {
     mode,
@@ -236,6 +254,7 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
     warning,
     warningSubtle,
     error,
+    bioluminescence,
     buttons: {
       primary: {
         background: primary,
