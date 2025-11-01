@@ -315,7 +315,7 @@ export default function JourneyMapScreen() {
                       shadowOffset: { width: 0, height: 16 },
                       elevation: 8,
                       backgroundColor: theme.cardBackground,
-                      // Stronger base shadow + multi‑ring colored halo
+                      // Stronger base shadow + multi?ring colored halo
                       boxShadow: [
                         `0 18px 50px rgba(2, 6, 23, 0.22)`,
                         `0 2px 8px rgba(2, 6, 23, 0.10)`,
@@ -704,7 +704,6 @@ export default function JourneyMapScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-      >
         <Image
           source={require('../../assets/images/levels-logo.png')}
           style={styles.logo}
@@ -720,7 +719,6 @@ export default function JourneyMapScreen() {
         style={styles.bodyGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-      >
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
