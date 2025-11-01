@@ -5,6 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AppNavigator from './src/navigation/AppNavigator';
 import { UserProgressProvider } from './src/context/UserProgressContext';
 import ThemeToggleButton from './src/components/ThemeToggleButton';
+import ErrorBoundary from './src/components/ErrorBoundary';
 import {
   ThemeProvider,
   useThemeColors,
@@ -42,9 +43,11 @@ function AppContent() {
 export default function App() {
   return (
     <ThemeProvider>
-      <UserProgressProvider>
-        <AppContent />
-      </UserProgressProvider>
+      <ErrorBoundary>
+        <UserProgressProvider>
+          <AppContent />
+        </UserProgressProvider>
+      </ErrorBoundary>
     </ThemeProvider>
   );
 }

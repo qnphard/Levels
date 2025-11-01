@@ -14,6 +14,8 @@ import {
   GestureResponderEvent,
   Animated,
   Easing,
+  type StyleProp,
+  type ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
@@ -45,7 +47,8 @@ type CategoryKey = ConsciousnessLevel['category'];
 type ChapterView = 'overview' | 'meditations' | 'articles';
 
 const { width } = Dimensions.get('window');
-const canBlur = Platform.OS !== 'web';
+const isWeb = Platform.OS === 'web';
+const canBlur = !isWeb;
 const CARD_HEIGHT = 280;
 
 const categoryIcons: Record<
@@ -265,8 +268,8 @@ export default function JourneyMapScreen() {
         key={level.id}
         style={[
           styles.levelCardContainer,
-          theme.mode === 'light' && !glowEnabled
-            ? ({ boxShadow: 'none', filter: 'none' } as any)
+          theme.mode === 'light' && !glowEnabled && isWeb
+            ? ({ boxShadow: 'none' } as any)
             : null,
         ]}
       >
@@ -278,71 +281,87 @@ export default function JourneyMapScreen() {
         )}
         <Pressable
           onPress={() => handleLevelPress(level)}
-          style={({ pressed }) => [
-            styles.levelCard,
-            // Apply "current" and "courage" base tweaks first
-            isCurrent && styles.levelCardCurrent,
-            isCourage && styles.levelCardCourage,
-            // Then apply theme + glow so it wins for shadow/border
-            theme.mode === 'dark'
-              ? (glowEnabled
-                  ? {
-                      borderWidth: 2,
-                      borderColor: toRgba(glowTint, 0.8),
-                      shadowColor: glowTint,
-                      shadowOpacity: 0.34,
-                      backgroundColor: 'rgba(9, 19, 28, 0.75)',
-                      boxShadow: [
-                        `0 0 30px ${toRgba(glowTint, 0.53)}`,
-                        `0 0 60px ${toRgba(glowTint, 0.27)}`,
-                        `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
-                      ].join(', '),
-                    }
-                  : {
-                      borderWidth: 1,
-                      borderColor: 'rgba(255,255,255,0.08)',
-                      shadowColor: '#000',
-                      shadowOpacity: 0.2,
-                      backgroundColor: 'rgba(9, 19, 28, 0.7)',
-                    })
-              : (glowEnabled
-                  ? {
-                      borderWidth: 2,
-                      borderColor: toRgba(glowTint, 0.95), // brighter edge
-                      shadowColor: glowTint,
-                      shadowOpacity: 0.55,
-                      shadowRadius: 36,
-                      shadowOffset: { width: 0, height: 16 },
-                      elevation: 8,
-                      backgroundColor: theme.cardBackground,
-                      // Stronger base shadow + multi‑ring colored halo
-                      boxShadow: [
-                        `0 18px 50px rgba(2, 6, 23, 0.22)`,
-                        `0 2px 8px rgba(2, 6, 23, 0.10)`,
-                        `0 0 2px ${toRgba(glowTint, 0.9)}`,
-                        `0 0 80px ${toRgba(glowTint, 0.65)}`,
-                        `0 0 160px ${toRgba(glowTint, 0.4)}`,
-                      ].join(', '),
-                      transform: pressed ? [{ translateY: -3 }] : undefined,
-                    }
-                  : {
-                      borderWidth: 1,
-                      borderColor: 'rgba(2,6,23,0.08)',
-                      shadowColor: 'rgba(2,6,23,0.32)',
-                      shadowOpacity: 1,
-                      shadowRadius: 22,
-                      shadowOffset: { width: 0, height: 12 },
-                      elevation: 6,
-                      backgroundColor: theme.cardBackground,
-                      // Real shadow for separation
-                      boxShadow: [
-                        `0 12px 24px rgba(15, 23, 42, 0.10)`,
-                        `0 8px 20px rgba(15, 23, 42, 0.08)`,
-                        `0 1px 2px rgba(2, 6, 23, 0.06)`,
-                      ].join(', '),
-                      transform: pressed ? [{ translateY: -3 }] : undefined,
-                    }),
-          ]}
+          style={({ pressed }) => {
+            const darkGlowStyle: ViewStyle = {
+              borderWidth: 2,
+              borderColor: toRgba(glowTint, 0.8),
+              shadowColor: glowTint,
+              shadowOpacity: 0.34,
+              backgroundColor: 'rgba(9, 19, 28, 0.75)',
+            };
+            if (isWeb) {
+              (darkGlowStyle as any).boxShadow = [
+                `0 0 30px ${toRgba(glowTint, 0.53)}`,
+                `0 0 60px ${toRgba(glowTint, 0.27)}`,
+                `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
+              ].join(', ');
+            }
+
+            const darkBaseStyle: ViewStyle = {
+              borderWidth: 1,
+              borderColor: 'rgba(255,255,255,0.08)',
+              shadowColor: '#000',
+              shadowOpacity: 0.2,
+              backgroundColor: 'rgba(9, 19, 28, 0.7)',
+            };
+
+            const lightGlowStyle: ViewStyle = {
+              borderWidth: 2,
+              borderColor: toRgba(glowTint, 0.95),
+              shadowColor: glowTint,
+              shadowOpacity: 0.55,
+              shadowRadius: 36,
+              shadowOffset: { width: 0, height: 16 },
+              elevation: 8,
+              backgroundColor: theme.cardBackground,
+            };
+            if (isWeb) {
+              (lightGlowStyle as any).boxShadow = [
+                `0 18px 50px rgba(2, 6, 23, 0.22)`,
+                `0 2px 8px rgba(2, 6, 23, 0.10)`,
+                `0 0 2px ${toRgba(glowTint, 0.9)}`,
+                `0 0 80px ${toRgba(glowTint, 0.65)}`,
+                `0 0 160px ${toRgba(glowTint, 0.4)}`,
+              ].join(', ');
+            }
+
+            const lightBaseStyle: ViewStyle = {
+              borderWidth: 1,
+              borderColor: 'rgba(2,6,23,0.08)',
+              shadowColor: 'rgba(2,6,23,0.32)',
+              shadowOpacity: 1,
+              shadowRadius: 22,
+              shadowOffset: { width: 0, height: 12 },
+              elevation: 6,
+              backgroundColor: theme.cardBackground,
+            };
+            if (isWeb) {
+              (lightBaseStyle as any).boxShadow = [
+                `0 12px 24px rgba(15, 23, 42, 0.10)`,
+                `0 8px 20px rgba(15, 23, 42, 0.08)`,
+                `0 1px 2px rgba(2, 6, 23, 0.06)`,
+              ].join(', ');
+            }
+
+            const accentStyle =
+              theme.mode === 'dark'
+                ? glowEnabled
+                  ? darkGlowStyle
+                  : darkBaseStyle
+                : glowEnabled
+                  ? lightGlowStyle
+                  : lightBaseStyle;
+
+            const composedStyles = [
+              styles.levelCard,
+              isCurrent && styles.levelCardCurrent,
+              isCourage && styles.levelCardCourage,
+              accentStyle,
+              pressed && styles.levelCardPressed,
+            ].filter(Boolean) as StyleProp<ViewStyle>;
+
+            return composedStyles;
+          }}
         >
           <LinearGradient
             key={`${theme.mode}-${glowEnabled ? 1 : 0}-${level.id}`}
@@ -387,13 +406,15 @@ export default function JourneyMapScreen() {
                   pointerEvents="none"
                   style={[
                     styles.lightHalo,
-                    {
-                      // big, soft outside-only halo using screen blend
-                      boxShadow: [
-                        `0 0 96px ${toRgba(glowTint, 0.18)}`,
-                        `0 0 128px ${toRgba(glowTint, 0.16)}`,
-                      ].join(', '),
-                    },
+                    isWeb
+                      ? {
+                          // big, soft outside-only halo using screen blend
+                          boxShadow: [
+                            `0 0 96px ${toRgba(glowTint, 0.18)}`,
+                            `0 0 128px ${toRgba(glowTint, 0.16)}`,
+                          ].join(', '),
+                        }
+                      : null,
                   ]}
                 />
               )
@@ -1107,7 +1128,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
         theme.mode === 'dark'
           ? 'transparent'
           : '#E5E7EB', // mid-gray border for definition
-      ...(theme.mode === 'light'
+      ...(theme.mode === 'light' && isWeb
         ? ({
             backdropFilter: 'saturate(120%) blur(6px)',
             boxShadow:

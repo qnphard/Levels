@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Text } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { UserLevelProgress } from '../types';
 import { getSuggestedStartingLevel } from '../data/levels';
@@ -30,6 +31,16 @@ const getDefaultProgress = (): UserLevelProgress => ({
 export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const renderChildrenSafely = React.useCallback(
+    (node: React.ReactNode) =>
+      React.Children.map(node, (child, index) => {
+        if (typeof child === 'string' || typeof child === 'number') {
+          return <Text key={`progress-child-${index}`}>{child}</Text>;
+        }
+        return child;
+      }),
+    []
+  );
   const [progress, setProgress] = useState<UserLevelProgress | null>(null);
 
   // Load progress from storage on mount
@@ -182,7 +193,7 @@ export const UserProgressProvider: React.FC<{ children: React.ReactNode }> = ({
         resetProgress,
       }}
     >
-      {children}
+      {renderChildrenSafely(children)}
     </UserProgressContext.Provider>
   );
 };

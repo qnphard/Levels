@@ -1,12 +1,11 @@
 import React, {
   createContext,
-  useCallback,
   useContext,
   useMemo,
   useState,
   useEffect,
 } from 'react';
-import { useColorScheme } from 'react-native';
+import { Text, useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Hawkins-inspired palette tuned for the Settle -> Notice -> Release -> Rest arc.
@@ -325,6 +324,18 @@ export const ThemeProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const renderChildrenSafely = React.useCallback(
+    (node: React.ReactNode) =>
+      React.Children.map(node, (child, index) => {
+        if (typeof child === 'string' || typeof child === 'number') {
+          return (
+            <Text key={`theme-child-${index}`}>{child}</Text>
+          );
+        }
+        return child;
+      }),
+    []
+  );
   const systemScheme = useColorScheme();
   const initialMode = systemScheme === 'dark' ? 'dark' : 'light';
   const [mode, setMode] = useState<ThemeMode>(initialMode);
@@ -372,7 +383,9 @@ export const ThemeProvider = ({
   );
 
   return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>
+      {renderChildrenSafely(children)}
+    </ThemeContext.Provider>
   );
 };
 
