@@ -43,6 +43,25 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type CategoryKey = ConsciousnessLevel['category'];
 type ChapterView = 'overview' | 'meditations' | 'articles';
 
+const lightGlowPalette: Record<string, string> = {
+  shame: '#F472B6',
+  guilt: '#FBBF24',
+  apathy: '#38BDF8',
+  grief: '#5EEAD4',
+  fear: '#FACC15',
+  desire: '#FB923C',
+  anger: '#F87171',
+  pride: '#A78BFA',
+  courage: '#34D399',
+  neutrality: '#94A3B8',
+  willingness: '#4ADE80',
+  acceptance: '#C084FC',
+  reason: '#60A5FA',
+  love: '#F472B6',
+  joy: '#FACC15',
+  peace: '#93C5FD',
+};
+
 const { width } = Dimensions.get('window');
 const canBlur = Platform.OS !== 'web';
 
@@ -284,7 +303,10 @@ export default function JourneyMapScreen() {
       (index % 2 === 0 ? 1 : -1) * (1 + (index % 3) * 0.28);
     const floatTranslateNode = Animated.multiply(floatTranslate, floatScalar);
 
-    const levelGlowColor = theme.mode === 'dark' ? glowBase : gradientColors[0];
+    const levelGlowColor =
+      theme.mode === 'dark'
+        ? glowBase
+        : lightGlowPalette[level.id] ?? gradientColors[0];
     const levelGlowStyle: Record<string, unknown> = {
       borderColor: levelGlowColor,
       shadowColor: levelGlowColor,
@@ -956,28 +978,35 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       position: 'relative',
       overflow: 'visible',
       minHeight: 220,
-      shadowColor:
-        theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
-      shadowOffset: {
-        width: 0,
-        height: theme.mode === 'dark' ? 0 : 4,
-      },
-      shadowOpacity: theme.mode === 'dark' ? 0.7 : 0.12,
-      shadowRadius: theme.mode === 'dark' ? 24 : 14,
-      elevation: theme.mode === 'dark' ? 8 : 3,
-      borderWidth: theme.mode === 'dark' ? 2 : 0.5,
-      borderColor:
-        theme.mode === 'dark'
-          ? theme.bioluminescence.glow
-          : 'rgba(15, 28, 31, 0.08)',
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(6, 14, 22, 0.7)'
-          : theme.cardBackground,
-      // Web-specific glow effect using boxShadow
-      ...(theme.mode === 'dark' && {
-        boxShadow: `0 0 30px ${theme.bioluminescence.glow}88, 0 0 60px ${theme.bioluminescence.glow}44, inset 0 0 20px ${theme.bioluminescence.glow}22`,
-      }),
+          : 'rgba(255,255,255,0.72)',
+      borderWidth: theme.mode === 'dark' ? 2 : 1,
+      borderColor:
+        theme.mode === 'dark'
+          ? theme.bioluminescence.glow
+          : 'rgba(15, 23, 42, 0.08)',
+      shadowColor:
+        theme.mode === 'dark'
+          ? theme.bioluminescence.glow
+          : 'rgba(15, 23, 42, 0.12)',
+      shadowOffset: {
+        width: 0,
+        height: theme.mode === 'dark' ? 0 : 12,
+      },
+      shadowOpacity: theme.mode === 'dark' ? 0.7 : 0.18,
+      shadowRadius: theme.mode === 'dark' ? 24 : 18,
+      elevation: theme.mode === 'dark' ? 8 : 4,
+      ...(theme.mode === 'dark'
+        ? {
+            boxShadow: `0 0 38px ${theme.bioluminescence.glow}88, 0 0 80px ${theme.bioluminescence.glow}44, inset 0 0 24px ${theme.bioluminescence.glow}22`,
+          }
+        : {
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+          }),
     } as any,
     levelCardPressed: {
       transform: [{ translateY: 2 }],
