@@ -71,10 +71,11 @@ export default function HomeScreen() {
 
   return (
     <LinearGradient
-      colors={['#E0F2FE', '#DBEAFE', '#F0F9FF']}
+      colors={theme.appBackgroundGradient}
       style={styles.container}
       start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      end={{ x: 1, y: 1 }}
+      locations={[0, 0.45, 1]}
     >
       <View style={styles.headerOverlay}>
         {/* Welcome Section */}
@@ -242,15 +243,15 @@ const createStyles = (theme: ThemeColors) =>
       fontStyle: 'italic',
     },
     checkInButton: {
-      backgroundColor: 'rgba(91, 33, 182, 0.15)',
+      backgroundColor: theme.primarySubtle,
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
-      borderColor: '#5B21B6',
+      borderColor: theme.primary,
     },
     checkInButtonText: {
-      color: '#5B21B6',
+      color: theme.primary,
       fontSize: typography.small,
       fontWeight: typography.semibold,
       letterSpacing: 0.5,

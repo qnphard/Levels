@@ -29,6 +29,7 @@ import {
   spacing,
   borderRadius,
   ThemeColors,
+  useGlowEnabled,
 } from '../theme/colors';
 import { useUserProgress } from '../context/UserProgressContext';
 
@@ -45,6 +46,7 @@ type ChapterView = 'overview' | 'meditations' | 'articles';
 
 const { width } = Dimensions.get('window');
 const canBlur = Platform.OS !== 'web';
+const CARD_HEIGHT = 280;
 
 const categoryIcons: Record<
   CategoryKey,
@@ -66,6 +68,7 @@ const categoryDescriptions: Record<CategoryKey, string> = {
 export default function JourneyMapScreen() {
   const navigation = useNavigation<NavigationProp>();
   const theme = useThemeColors();
+  const glowEnabled = useGlowEnabled();
   const window = useWindowDimensions();
   const cardWidth = useMemo(() => {
     const screenWidth = window.width || width;
@@ -76,29 +79,7 @@ export default function JourneyMapScreen() {
     return Math.min(screenWidth * 0.92, 240);
   }, [window.width]);
   const styles = useMemo(() => getStyles(theme, cardWidth), [theme, cardWidth]);
-  const floatAnim = useRef(new Animated.Value(0)).current;
   const auroraAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(floatAnim, {
-          toValue: 1,
-          duration: 6000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-        Animated.timing(floatAnim, {
-          toValue: 0,
-          duration: 6000,
-          easing: Easing.inOut(Easing.ease),
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [floatAnim]);
 
   useEffect(() => {
     const auroraLoop = Animated.loop(
@@ -121,14 +102,6 @@ export default function JourneyMapScreen() {
     return () => auroraLoop.stop();
   }, [auroraAnim]);
 
-  const floatTranslate = useMemo(
-    () =>
-      floatAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, -2.5],
-      }),
-    [floatAnim]
-  );
   const auroraTranslate = useMemo(
     () =>
       auroraAnim.interpolate({
@@ -175,6 +148,11 @@ export default function JourneyMapScreen() {
   const horizonGradient = useMemo<readonly [string, string, string]>(() => {
     const pick = (colors: readonly string[]) =>
       [colors[0], colors[1], colors[2]] as const;
+    // In dark mode, always use the night gradient to ensure a truly dark canvas
+    if (theme.mode === 'dark') {
+      return pick(theme.gradients.horizonNight);
+    }
+    // Light mode: vary by time of day
     const hour = new Date().getHours();
     if (hour >= 20 || hour < 5) {
       return pick(theme.gradients.horizonNight);
@@ -270,63 +248,112 @@ export default function JourneyMapScreen() {
           adjustColor(level.color, -10),
         ] as const);
     const darkGradient = level.gradientDark ? level.gradientDark : baseGradient;
-    const gradientColors =
-      theme.mode === 'dark' ? darkGradient : baseGradient;
-    const glowBase = level.glowDark ?? gradientColors[0];
-    const glowTint =
-      theme.mode === 'dark' ? glowBase : adjustColor(gradientColors[0], -12);
-    const floatScalar =
-      (index % 2 === 0 ? 1 : -1) * (1 + (index % 3) * 0.28);
-    const floatTranslateNode = Animated.multiply(floatTranslate, floatScalar);
+    // Always use a neutral surface in light mode; keep gradients only in dark mode
+    const effectiveGradient = theme.mode === 'dark'
+      ? darkGradient
+      : ([theme.cardBackground, theme.cardBackground] as const);
+    
+    // Compute glow color directly from level color to avoid dependency on gradient repaint
+    const glowBase = theme.mode === 'dark'
+      ? (level.glowDark || darkGradient[0])
+      : level.color;
+    const glowTint = theme.mode === 'dark' ? glowBase : adjustColor(glowBase, -12);
+    // Removed the old float/bobbing animation to keep cards stable
 
     return (
-      <Animated.View
+      <View
         key={level.id}
         style={[
           styles.levelCardContainer,
-          { transform: [{ translateY: floatTranslateNode }] },
+          theme.mode === 'light' && !glowEnabled
+            ? ({ boxShadow: 'none', filter: 'none' } as any)
+            : null,
         ]}
       >
+        {theme.mode === 'light' && (
+          <View
+            pointerEvents="none"
+            style={styles.lightLiftShadow}
+          />
+        )}
         <Pressable
           onPress={() => handleLevelPress(level)}
           style={({ pressed }) => [
             styles.levelCard,
-            theme.mode === 'dark' && {
-              borderColor: toRgba(glowBase, isCurrent ? 0.45 : 0.32),
-              shadowColor: toRgba(glowBase, 0.5),
-              shadowOpacity: 0.34,
-              backgroundColor: 'rgba(9, 19, 28, 0.75)',
-            },
+            // Apply "current" and "courage" base tweaks first
             isCurrent && styles.levelCardCurrent,
             isCourage && styles.levelCardCourage,
-            pressed && styles.levelCardPressed,
+            // Then apply theme + glow so it wins for shadow/border
+            theme.mode === 'dark'
+              ? (glowEnabled
+                  ? {
+                      borderWidth: 2,
+                      borderColor: toRgba(glowTint, 0.8),
+                      shadowColor: glowTint,
+                      shadowOpacity: 0.34,
+                      backgroundColor: 'rgba(9, 19, 28, 0.75)',
+                      boxShadow: [
+                        `0 0 30px ${toRgba(glowTint, 0.53)}`,
+                        `0 0 60px ${toRgba(glowTint, 0.27)}`,
+                        `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
+                      ].join(', '),
+                    }
+                  : {
+                      borderWidth: 1,
+                      borderColor: 'rgba(255,255,255,0.08)',
+                      shadowColor: '#000',
+                      shadowOpacity: 0.2,
+                      backgroundColor: 'rgba(9, 19, 28, 0.7)',
+                    })
+              : (glowEnabled
+                  ? {
+                      borderWidth: 2,
+                      borderColor: toRgba(glowTint, 0.95), // brighter edge
+                      shadowColor: glowTint,
+                      shadowOpacity: 0.55,
+                      shadowRadius: 36,
+                      shadowOffset: { width: 0, height: 16 },
+                      elevation: 8,
+                      backgroundColor: theme.cardBackground,
+                      // Stronger base shadow + multi‑ring colored halo
+                      boxShadow: [
+                        `0 18px 50px rgba(2, 6, 23, 0.22)`,
+                        `0 2px 8px rgba(2, 6, 23, 0.10)`,
+                        `0 0 2px ${toRgba(glowTint, 0.9)}`,
+                        `0 0 80px ${toRgba(glowTint, 0.65)}`,
+                        `0 0 160px ${toRgba(glowTint, 0.4)}`,
+                      ].join(', '),
+                      transform: pressed ? [{ translateY: -3 }] : undefined,
+                    }
+                  : {
+                      borderWidth: 1,
+                      borderColor: 'rgba(2,6,23,0.08)',
+                      shadowColor: 'rgba(2,6,23,0.32)',
+                      shadowOpacity: 1,
+                      shadowRadius: 22,
+                      shadowOffset: { width: 0, height: 12 },
+                      elevation: 6,
+                      backgroundColor: theme.cardBackground,
+                      // Real shadow for separation
+                      boxShadow: [
+                        `0 12px 24px rgba(15, 23, 42, 0.10)`,
+                        `0 8px 20px rgba(15, 23, 42, 0.08)`,
+                        `0 1px 2px rgba(2, 6, 23, 0.06)`,
+                      ].join(', '),
+                      transform: pressed ? [{ translateY: -3 }] : undefined,
+                    }),
           ]}
         >
           <LinearGradient
-            colors={gradientColors}
-            style={styles.levelGradient}
+            key={`${theme.mode}-${glowEnabled ? 1 : 0}-${level.id}`}
+            colors={effectiveGradient}
+            style={[styles.levelGradient, { width: '100%', height: '100%' }]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <View
-              pointerEvents="none"
-              style={[
-                styles.levelGlow,
-                {
-                  backgroundColor: toRgba(
-                    glowTint,
-                    theme.mode === 'dark' ? 0.18 : 0.12
-                  ),
-                  shadowColor: toRgba(
-                    glowTint,
-                    theme.mode === 'dark' ? 0.52 : 0.32
-                  ),
-                },
-              ]}
-            />
             {canBlur ? (
               <BlurView
-                intensity={45}
+                intensity={theme.mode === 'dark' ? 45 : 20} // Less blur in light mode
                 tint={theme.mode === 'dark' ? 'dark' : 'light'}
                 style={styles.levelBlur}
               />
@@ -338,10 +365,38 @@ export default function JourneyMapScreen() {
                     backgroundColor:
                       theme.mode === 'dark'
                         ? 'rgba(8, 18, 26, 0.78)'
-                        : 'rgba(255, 255, 255, 0.68)',
+                        : 'transparent', // Fully transparent in light mode to show gradient
                   },
                 ]}
               />
+            )}
+            {glowEnabled && (
+              theme.mode === 'dark' ? (
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.levelGlow,
+                    {
+                      backgroundColor: toRgba(glowTint, 0.18),
+                      shadowColor: toRgba(glowTint, 0.52),
+                    },
+                  ]}
+                />
+              ) : (
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.lightHalo,
+                    {
+                      // big, soft outside-only halo using screen blend
+                      boxShadow: [
+                        `0 0 96px ${toRgba(glowTint, 0.18)}`,
+                        `0 0 128px ${toRgba(glowTint, 0.16)}`,
+                      ].join(', '),
+                    },
+                  ]}
+                />
+              )
             )}
             <View style={styles.textOverlay}>
               <View style={styles.levelContent}>
@@ -534,7 +589,7 @@ export default function JourneyMapScreen() {
             </View>
           </LinearGradient>
         </Pressable>
-      </Animated.View>
+      </View>
     );
   };
 
@@ -544,6 +599,9 @@ export default function JourneyMapScreen() {
   ) => {
     const meta = categoryVisuals[category];
     const expanded = expandedSections[category];
+    const heroGradient = theme.mode === 'dark'
+      ? meta.gradient
+      : ([theme.cardBackground, theme.cardBackground] as const);
 
     return (
       <View key={category} style={styles.categorySection}>
@@ -555,7 +613,8 @@ export default function JourneyMapScreen() {
           ]}
         >
           <LinearGradient
-            colors={meta.gradient}
+            key={`hero-${category}-${theme.mode}-${glowEnabled ? 1 : 0}`}
+            colors={heroGradient}
             style={styles.categoryHeroGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -602,7 +661,7 @@ export default function JourneyMapScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <View key={`${theme.mode}-${glowEnabled ? 1 : 0}` as const} style={styles.container}>
       {theme.mode === 'dark' && (
         <Animated.View
           pointerEvents="none"
@@ -626,20 +685,26 @@ export default function JourneyMapScreen() {
           />
         </Animated.View>
       )}
+      {theme.mode === 'light' && (
+        <View pointerEvents="none" style={styles.vignetteLayer}>
+          <LinearGradient
+            colors={[
+              'transparent',
+              'transparent',
+              'rgba(2, 6, 23, 0.035)', // subtle edge vignette (~3.5%)
+            ]}
+            locations={[0, 0.7, 1]}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+      )}
       <LinearGradient
-        colors={
-          theme.mode === 'light'
-            ? theme.appBackgroundGradient
-            : horizonGradient
-        }
+        colors={theme.appBackgroundGradient}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={20} color={theme.white} />
-          <Text style={styles.backButtonText}>Back</Text>
-        </Pressable>
+      >
         <Image
           source={require('../../assets/images/levels-logo.png')}
           style={styles.logo}
@@ -651,14 +716,11 @@ export default function JourneyMapScreen() {
       </LinearGradient>
 
       <LinearGradient
-        colors={
-          theme.mode === 'light'
-            ? theme.appBackgroundGradient
-            : horizonGradient
-        }
+        colors={theme.appBackgroundGradient}
         style={styles.bodyGradient}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 1 }}
+      >
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -760,11 +822,15 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
+      backgroundColor: theme.mode === 'dark' ? theme.background : 'transparent',
       position: 'relative',
       overflow: 'hidden',
     },
     auroraLayer: {
+      ...StyleSheet.absoluteFillObject,
+      zIndex: -1,
+    },
+    vignetteLayer: {
       ...StyleSheet.absoluteFillObject,
       zIndex: -1,
     },
@@ -867,6 +933,15 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     categoryHero: {
       borderRadius: borderRadius.xl,
       overflow: 'hidden',
+      ...(theme.mode === 'light' && {
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.7)',
+        shadowColor: 'rgba(15, 23, 42, 0.05)',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 1,
+        shadowRadius: 2,
+      }),
     },
     categoryHeroPressed: {
       transform: [{ scale: 0.99 }],
@@ -874,6 +949,9 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     categoryHeroGradient: {
       borderRadius: borderRadius.xl,
+      ...(theme.mode === 'light' && {
+        opacity: 0.5, // Reduce gradient intensity in light mode
+      }),
     },
     categoryHeroBlur: {
       ...StyleSheet.absoluteFillObject,
@@ -883,7 +961,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.md,
-      paddingVertical: spacing.lg,
+      paddingVertical: theme.mode === 'light' ? spacing.md : spacing.lg,
       paddingHorizontal: spacing.lg,
     },
     categoryIconWrap: {
@@ -901,11 +979,11 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     categoryTitle: {
       fontSize: typography.h4,
       fontWeight: typography.semibold,
-      color: theme.textPrimary,
+      color: theme.mode === 'dark' ? theme.textPrimary : '#334155', // slate-700 for light mode
     },
     categoryDescription: {
       fontSize: typography.small,
-      color: theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textSecondary : '#475569', // slate-600 for light mode
       lineHeight: 20,
     },
     categoryToggle: {
@@ -919,41 +997,38 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     levelsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: spacing.md,
+      gap: theme.mode === 'light' ? spacing.lg + 4 : spacing.md, // +4px oxygen in light mode
       justifyContent: 'flex-start',
+      alignItems: 'stretch',
+      alignContent: 'flex-start',
       paddingTop: spacing.md,
       paddingBottom: spacing.xl,
     },
     levelCardContainer: {
       width: cardWidth,
       maxWidth: 360,
-      flexGrow: 1,
+      height: CARD_HEIGHT,
+      flexGrow: 0,
+      flexShrink: 0,
       marginBottom: spacing.md,
+      position: 'relative',
     },
     levelCard: {
       borderRadius: borderRadius.lg,
-      overflow: 'hidden',
+      overflow: 'hidden', // Changed back to hidden so gradient shows
       position: 'relative',
-      minHeight: 220,
-      shadowColor:
-        theme.mode === 'dark' ? 'rgba(0, 0, 0, 0.65)' : theme.shadowSoft,
+      height: CARD_HEIGHT, // Fixed height for all cards (tallest card size)
       shadowOffset: {
         width: 0,
-        height: theme.mode === 'dark' ? 10 : 4,
+        height: theme.mode === 'dark' ? 0 : 10,
       },
-      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.12,
-      shadowRadius: theme.mode === 'dark' ? 22 : 14,
-      elevation: theme.mode === 'dark' ? 6 : 3,
-      borderWidth: theme.mode === 'dark' ? 1 : 0.5,
-      borderColor:
-        theme.mode === 'dark'
-          ? 'rgba(255,255,255,0.06)'
-          : 'rgba(15, 28, 31, 0.08)',
+      shadowRadius: theme.mode === 'dark' ? 24 : 24,
+      elevation: theme.mode === 'dark' ? 8 : 3,
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(6, 14, 22, 0.7)'
-          : theme.cardBackground,
-    },
+          : 'transparent', // Let gradient show through in light mode
+    } as any,
     levelCardPressed: {
       transform: [{ translateY: 2 }],
       shadowOpacity: 0.05,
@@ -967,7 +1042,9 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       borderColor: theme.accentGold,
     },
     levelGradient: {
+      flex: 1,
       borderRadius: borderRadius.lg,
+      minHeight: CARD_HEIGHT,
     },
     levelGlow: {
       ...StyleSheet.absoluteFillObject,
@@ -976,34 +1053,74 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       shadowOffset: { width: 0, height: 18 },
       shadowOpacity: 0.18,
       shadowRadius: 38,
+      zIndex: 2,
+    },
+    lightHalo: {
+      ...StyleSheet.absoluteFillObject,
+      left: -24,
+      right: -24,
+      top: -24,
+      bottom: -24,
+      borderRadius: borderRadius.lg + 24,
+      zIndex: 1,
+      ...(Platform.OS === 'web'
+        ? ({ mixBlendMode: 'screen' } as any)
+        : null),
+    },
+    lightLiftShadow: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 12,
+      bottom: -12,
+      borderRadius: borderRadius.lg,
+      zIndex: 0,
+      // Big, soft floor shadow under the card (web only)
+      ...(Platform.OS === 'web'
+        ? ({ boxShadow: '0 30px 60px rgba(2, 6, 23, 0.25), 0 10px 24px rgba(2, 6, 23, 0.12)' } as any)
+        : null),
     },
     levelBlur: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: borderRadius.lg,
+      zIndex: 1,
     },
     levelBlurFallback: {
       ...StyleSheet.absoluteFillObject,
       borderRadius: borderRadius.lg,
+      zIndex: 1,
     },
     textOverlay: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
+      flex: 1, // Fill entire card height
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      justifyContent: 'space-between',
       gap: spacing.md,
-      padding: spacing.lg,
+      padding: theme.mode === 'light' ? spacing.xl : spacing.lg, // More padding in light mode
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(5, 14, 20, 0.7)'
-          : 'rgba(255, 255, 255, 0.58)',
+          : '#FFFFFF', // pristine white face
       borderRadius: borderRadius.lg,
-      borderWidth: 1,
+      borderWidth: theme.mode === 'dark' ? 0 : 1,
       borderColor:
         theme.mode === 'dark'
-          ? 'rgba(255,255,255,0.08)'
-          : 'rgba(15, 28, 31, 0.08)',
+          ? 'transparent'
+          : '#E5E7EB', // mid-gray border for definition
+      ...(theme.mode === 'light'
+        ? ({
+            backdropFilter: 'saturate(120%) blur(6px)',
+            boxShadow:
+              'inset 0 0 0 1px rgba(255,255,255,0.7)', // tiny inner white stroke
+          } as any)
+        : null),
+      zIndex: 3,
     },
     levelContent: {
       flex: 1,
       gap: spacing.xs,
+      justifyContent: 'space-between',
+      height: '100%',
     },
     levelHeader: {
       flexDirection: 'row',
@@ -1013,12 +1130,13 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     levelTitle: {
       fontSize: typography.h3,
-      fontWeight: typography.bold,
-      color: theme.textPrimary,
+      fontWeight: typography.semibold, // semibold for better readability
+      color: theme.mode === 'dark' ? theme.textPrimary : '#0F172A', // slate-900 for light mode
       flex: 1,
-      textShadowColor: 'rgba(255, 255, 255, 0.6)',
-      textShadowOffset: { width: 0, height: 1 },
-      textShadowRadius: 2,
+      letterSpacing: -0.5, // tracking-tight
+      textShadowColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : undefined,
+      textShadowOffset: theme.mode === 'dark' ? { width: 0, height: 1 } : undefined,
+      textShadowRadius: theme.mode === 'dark' ? 2 : undefined,
     },
     currentBadge: {
       backgroundColor: theme.accentTeal,
@@ -1039,13 +1157,13 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     antithesisText: {
       fontSize: typography.body,
-      color: theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textSecondary : '#475569', // slate-600 for light mode
       fontWeight: typography.medium,
       fontStyle: 'italic',
     },
     levelDescription: {
       fontSize: typography.body,
-      color: theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textSecondary : '#475569', // slate-600 for light mode
       lineHeight: 20,
       letterSpacing: 0.1,
     },

@@ -21,7 +21,8 @@ function AppContent() {
         colors={theme.appBackgroundGradient}
         style={StyleSheet.absoluteFillObject}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 1 }}
+        locations={[0, 0.45, 1]}
         pointerEvents="none"
       />
       <View

@@ -36,10 +36,11 @@ export default function ProfileScreen() {
 
   return (
     <LinearGradient
-      colors={['#F3E5F5', '#E1BEE7', '#CE93D8']}
+      colors={theme.appBackgroundGradient}
       style={styles.container}
       start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
+      end={{ x: 1, y: 1 }}
+      locations={[0, 0.45, 1]}
     >
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>

@@ -186,10 +186,11 @@ export default function JournalScreen() {
       keyboardVerticalOffset={0}
     >
       <LinearGradient
-        colors={['#FFF8F0', '#FFF5EB', '#FFFAF5']}
+        colors={theme.appBackgroundGradient}
         style={styles.gradientBackground}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 1 }}
+        locations={[0, 0.45, 1]}
       >
         <ScrollView
           style={styles.scrollView}

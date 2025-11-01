@@ -4,8 +4,10 @@ import React, {
   useContext,
   useMemo,
   useState,
+  useEffect,
 } from 'react';
 import { useColorScheme } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Hawkins-inspired palette tuned for the Settle -> Notice -> Release -> Rest arc.
 // Each hue carries a psychological intent (sage = safety, sand = groundedness, gold/peach = gentle humanity).
@@ -39,6 +41,26 @@ export const palette = {
   ice200: '#B7C7C9',
 
   teal500: '#5FB5A9',
+
+  // Bioluminescent glow colors
+  bioGlow: '#5FB5A9', // Primary bioluminescent teal
+  bioCore: '#8BE9FD', // Bright cyan core
+  bioPulse: 'rgba(95, 181, 169, 0.4)', // Pulsing outer glow
+
+  // Per-level luminous glow tokens (light mode - low opacity ≤0.20)
+  glowShame: 'rgba(244, 114, 182, 0.20)',
+  glowGuilt: 'rgba(251, 191, 36, 0.20)',
+  glowApathy: 'rgba(56, 189, 248, 0.18)',
+  glowGrief: 'rgba(94, 234, 212, 0.18)',
+  glowFear: 'rgba(250, 204, 21, 0.20)',
+  glowDesire: 'rgba(251, 146, 60, 0.20)',
+  glowAnger: 'rgba(248, 113, 113, 0.20)',
+  glowPride: 'rgba(167, 139, 250, 0.20)',
+  glowCourage: 'rgba(52, 211, 153, 0.20)',
+  glowNeutral: 'rgba(148, 163, 184, 0.16)',
+  glowWilling: 'rgba(74, 222, 128, 0.20)',
+  glowAccept: 'rgba(192, 132, 252, 0.20)',
+  glowReason: 'rgba(96, 165, 250, 0.18)',
 };
 
 export const gradients = {
@@ -86,6 +108,11 @@ export interface ThemeColors {
   warning: string;
   warningSubtle: string;
   error: string;
+  bioluminescence: {
+    glow: string;
+    core: string;
+    pulse: string;
+  };
   buttons: {
     primary: {
       background: string;
@@ -174,19 +201,19 @@ const sharedCategoryChips = (mode: ThemeMode) => {
 
 const buildTheme = (mode: ThemeMode): ThemeColors => {
   const isDark = mode === 'dark';
-  const background = isDark ? '#0B1520' : palette.sand50;
-  const surface = isDark ? '#0F1E29' : palette.sand100;
+  const background = isDark ? '#0E1F25' : '#EDEFF2'; // Light canvas in L* ~90 for airy glow
+  const surface = isDark ? '#132A31' : palette.sand100; // Softer dark surface
   const cardBackground = isDark
-    ? 'rgba(6, 14, 22, 0.78)'
+    ? 'rgba(15, 28, 34, 0.72)'
     : palette.sand100;
   const appBackgroundGradient = isDark
-    ? (['#0B1520', '#11202C', '#162D3A'] as const)
+    ? (['#0E1F25', '#16323B', '#1D4250'] as const) // Slate-teal night gradient (brighter)
     : ([
-        '#E8D9FA',
-        '#F3EAFB',
-        '#F8EEF6',
+        '#E7ECF0', // Misty Slate top
+        '#DCE4EB', // Balanced middle
+        '#EAEFF3', // Soft base
       ] as const);
-  const canvasOverlay = isDark ? 'rgba(7,16,24,0.55)' : 'rgba(255,255,255,0.55)';
+  const canvasOverlay = isDark ? 'rgba(7,16,24,0.35)' : 'rgba(255,255,255,0)';
   const border = isDark ? 'rgba(255,255,255,0.09)' : palette.sand200;
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
   const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
@@ -206,6 +233,13 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const warning = palette.warning500;
   const warningSubtle = isDark ? 'rgba(230,194,121,0.18)' : 'rgba(230,194,121,0.32)';
   const error = palette.danger500;
+
+  // Bioluminescent colors for ripple effects
+  const bioluminescence = {
+    glow: isDark ? palette.bioGlow : palette.sage600,
+    core: isDark ? palette.bioCore : palette.sage400,
+    pulse: isDark ? 'rgba(95, 181, 169, 0.4)' : 'rgba(111, 164, 145, 0.3)',
+  };
 
   return {
     mode,
@@ -236,6 +270,7 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
     warning,
     warningSubtle,
     error,
+    bioluminescence,
     buttons: {
       primary: {
         background: primary,
@@ -279,6 +314,8 @@ type ThemeContextValue = {
   colors: ThemeColors;
   toggleTheme: () => void;
   setTheme: (mode: ThemeMode) => void;
+  glowEnabled: boolean;
+  toggleGlow: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -291,8 +328,20 @@ export const ThemeProvider = ({
   const systemScheme = useColorScheme();
   const initialMode = systemScheme === 'dark' ? 'dark' : 'light';
   const [mode, setMode] = useState<ThemeMode>(initialMode);
+  const [glowEnabled, setGlowEnabled] = useState<boolean>(true);
 
   const colors = useMemo(() => themes[mode], [mode]);
+
+  // Persisted preference for card glow (default: on)
+  const GLOW_STORAGE_KEY = '@meditation_app:glow_enabled';
+  useEffect(() => {
+    (async () => {
+      try {
+        const stored = await AsyncStorage.getItem(GLOW_STORAGE_KEY);
+        if (stored === '0' || stored === 'false') setGlowEnabled(false);
+      } catch {}
+    })();
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
@@ -302,14 +351,24 @@ export const ThemeProvider = ({
     setMode(nextMode);
   }, []);
 
+  const toggleGlow = useCallback(() => {
+    setGlowEnabled((prev) => {
+      const next = !prev;
+      AsyncStorage.setItem(GLOW_STORAGE_KEY, next ? '1' : '0').catch(() => {});
+      return next;
+    });
+  }, []);
+
   const value = useMemo(
     () => ({
       mode,
       colors,
       toggleTheme,
       setTheme,
+      glowEnabled,
+      toggleGlow,
     }),
-    [mode, colors, toggleTheme, setTheme]
+    [mode, colors, toggleTheme, setTheme, glowEnabled, toggleGlow]
   );
 
   return (
@@ -338,6 +397,16 @@ export const useThemeToggle = (): (() => void) => {
 export const useSetTheme = (): ((mode: ThemeMode) => void) => {
   const ctx = useContext(ThemeContext);
   return ctx?.setTheme ?? (() => {});
+};
+
+export const useGlowEnabled = (): boolean => {
+  const ctx = useContext(ThemeContext);
+  return ctx?.glowEnabled ?? true;
+};
+
+export const useGlowToggle = (): (() => void) => {
+  const ctx = useContext(ThemeContext);
+  return ctx?.toggleGlow ?? (() => {});
 };
 
 export const typography = {

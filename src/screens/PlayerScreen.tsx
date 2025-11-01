@@ -52,8 +52,11 @@ export default function PlayerScreen() {
 
   return (
     <LinearGradient
-      colors={theme.gradients.horizonNight}
+      colors={theme.appBackgroundGradient}
       style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      locations={[0, 0.45, 1]}
     >
       {/* Close Button */}
       <TouchableOpacity

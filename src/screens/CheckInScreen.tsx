@@ -199,19 +199,20 @@ export default function CheckInScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Calm blue gradient background */}
+      {/* Themed gradient background */}
       <LinearGradient
-        colors={['#E0F2FE', '#DBEAFE', '#F0F9FF']}
+        colors={theme.appBackgroundGradient}
         style={styles.gradientBackground}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 1 }}
+        locations={[0, 0.45, 1]}
       >
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.closeButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="close" size={28} color="#5B21B6" />
+            <Ionicons name="close" size={28} color={theme.headingOnGradient} />
           </TouchableOpacity>
           <Animated.View
             style={{
@@ -358,7 +359,7 @@ const getStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#F3F5F6',
+      backgroundColor: theme.background,
     },
     gradientBackground: {
       flex: 1,
@@ -371,23 +372,23 @@ const getStyles = (theme: ThemeColors) =>
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: 'rgba(255, 255, 255, 0.5)',
+      backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.25)' : 'rgba(255, 255, 255, 0.5)',
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: spacing.md,
       borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.8)',
+      borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.18)' : 'rgba(255, 255, 255, 0.8)',
     },
     headerTitle: {
       fontSize: typography.h2,
       fontWeight: typography.bold,
-      color: '#1E293B',
+      color: theme.textPrimary,
       marginBottom: spacing.xs,
       letterSpacing: -0.3,
     },
     headerSubtitle: {
       fontSize: typography.body,
-      color: '#475569',
+      color: theme.textSecondary,
       fontWeight: typography.medium,
       lineHeight: 22,
     },
