@@ -291,10 +291,12 @@ export default function JournalScreen() {
                     )}
                   </View>
 
-                  <Text style={styles.privacyNote}>
+                  <View style={styles.privacyNote}>
                     <Ionicons name="lock-closed" size={14} color={theme.textMuted} />
-                    {' '}Private and saved only on your device
-                  </Text>
+                    <Text style={styles.privacyNoteText}>
+                      {' '}Private and saved only on your device
+                    </Text>
+                  </View>
                 </View>
 
                 {/* View Past Entries Link */}
@@ -491,6 +493,12 @@ const getStyles = (theme: ThemeColors) =>
       fontWeight: typography.semibold,
     },
     privacyNote: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: spacing.sm,
+    },
+    privacyNoteText: {
       fontSize: typography.small,
       color: theme.textMuted,
       textAlign: 'center',

@@ -69,15 +69,15 @@ export default function JourneyMapScreen() {
   const navigation = useNavigation<NavigationProp>();
   const theme = useThemeColors();
   const glowEnabled = useGlowEnabled();
-  const window = useWindowDimensions();
+  const windowDimensions = useWindowDimensions();
   const cardWidth = useMemo(() => {
-    const screenWidth = window.width || width;
+    const screenWidth = windowDimensions.width || width;
     if (screenWidth >= 1024) return Math.min(screenWidth * 0.28, 340);
     if (screenWidth >= 768) return Math.min(screenWidth * 0.4, 320);
     if (screenWidth >= 480) return Math.min(screenWidth * 0.42, 280);
     if (screenWidth >= 360) return Math.min(screenWidth * 0.48, 240);
     return Math.min(screenWidth * 0.92, 240);
-  }, [window.width]);
+  }, [windowDimensions.width]);
   const styles = useMemo(() => getStyles(theme, cardWidth), [theme, cardWidth]);
   const auroraAnim = useRef(new Animated.Value(0)).current;
 
@@ -265,9 +265,7 @@ export default function JourneyMapScreen() {
         key={level.id}
         style={[
           styles.levelCardContainer,
-          theme.mode === 'light' && !glowEnabled
-            ? ({ boxShadow: 'none', filter: 'none' } as any)
-            : null,
+          null,
         ]}
       >
         {theme.mode === 'light' && (
@@ -292,11 +290,13 @@ export default function JourneyMapScreen() {
                       shadowColor: glowTint,
                       shadowOpacity: 0.34,
                       backgroundColor: 'rgba(9, 19, 28, 0.75)',
-                      boxShadow: [
-                        `0 0 30px ${toRgba(glowTint, 0.53)}`,
-                        `0 0 60px ${toRgba(glowTint, 0.27)}`,
-                        `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
-                      ].join(', '),
+                      ...(Platform.OS === 'web' ? {
+                        boxShadow: [
+                          `0 0 30px ${toRgba(glowTint, 0.53)}`,
+                          `0 0 60px ${toRgba(glowTint, 0.27)}`,
+                          `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
+                        ].join(', '),
+                      } as any : {}),
                     }
                   : {
                       borderWidth: 1,
@@ -315,14 +315,16 @@ export default function JourneyMapScreen() {
                       shadowOffset: { width: 0, height: 16 },
                       elevation: 8,
                       backgroundColor: theme.cardBackground,
-                      // Stronger base shadow + multi?ring colored halo
-                      boxShadow: [
-                        `0 18px 50px rgba(2, 6, 23, 0.22)`,
-                        `0 2px 8px rgba(2, 6, 23, 0.10)`,
-                        `0 0 2px ${toRgba(glowTint, 0.9)}`,
-                        `0 0 80px ${toRgba(glowTint, 0.65)}`,
-                        `0 0 160px ${toRgba(glowTint, 0.4)}`,
-                      ].join(', '),
+                      // Stronger base shadow + multi?ring colored halo (web-only)
+                      ...(Platform.OS === 'web' ? {
+                        boxShadow: [
+                          `0 18px 50px rgba(2, 6, 23, 0.22)`,
+                          `0 2px 8px rgba(2, 6, 23, 0.10)`,
+                          `0 0 2px ${toRgba(glowTint, 0.9)}`,
+                          `0 0 80px ${toRgba(glowTint, 0.65)}`,
+                          `0 0 160px ${toRgba(glowTint, 0.4)}`,
+                        ].join(', '),
+                      } as any : {}),
                       transform: pressed ? [{ translateY: -3 }] : undefined,
                     }
                   : {
@@ -334,12 +336,14 @@ export default function JourneyMapScreen() {
                       shadowOffset: { width: 0, height: 12 },
                       elevation: 6,
                       backgroundColor: theme.cardBackground,
-                      // Real shadow for separation
-                      boxShadow: [
-                        `0 12px 24px rgba(15, 23, 42, 0.10)`,
-                        `0 8px 20px rgba(15, 23, 42, 0.08)`,
-                        `0 1px 2px rgba(2, 6, 23, 0.06)`,
-                      ].join(', '),
+                      // Real shadow for separation (web-only)
+                      ...(Platform.OS === 'web' ? {
+                        boxShadow: [
+                          `0 12px 24px rgba(15, 23, 42, 0.10)`,
+                          `0 8px 20px rgba(15, 23, 42, 0.08)`,
+                          `0 1px 2px rgba(2, 6, 23, 0.06)`,
+                        ].join(', '),
+                      } as any : {}),
                       transform: pressed ? [{ translateY: -3 }] : undefined,
                     }),
           ]}
@@ -388,11 +392,13 @@ export default function JourneyMapScreen() {
                   style={[
                     styles.lightHalo,
                     {
-                      // big, soft outside-only halo using screen blend
-                      boxShadow: [
-                        `0 0 96px ${toRgba(glowTint, 0.18)}`,
-                        `0 0 128px ${toRgba(glowTint, 0.16)}`,
-                      ].join(', '),
+                      // big, soft outside-only halo using screen blend (web-only)
+                      ...(Platform.OS === 'web' ? {
+                        boxShadow: [
+                          `0 0 96px ${toRgba(glowTint, 0.18)}`,
+                          `0 0 128px ${toRgba(glowTint, 0.16)}`,
+                        ].join(', '),
+                      } as any : {}),
                     },
                   ]}
                 />
@@ -1074,9 +1080,9 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       borderRadius: borderRadius.lg,
       zIndex: 0,
       // Big, soft floor shadow under the card (web only)
-      ...(Platform.OS === 'web'
-        ? ({ boxShadow: '0 30px 60px rgba(2, 6, 23, 0.25), 0 10px 24px rgba(2, 6, 23, 0.12)' } as any)
-        : null),
+      ...(Platform.OS === 'web' ? {
+        boxShadow: '0 30px 60px rgba(2, 6, 23, 0.25), 0 10px 24px rgba(2, 6, 23, 0.12)',
+      } as any : {}),
     },
     levelBlur: {
       ...StyleSheet.absoluteFillObject,
@@ -1105,13 +1111,13 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
         theme.mode === 'dark'
           ? 'transparent'
           : '#E5E7EB', // mid-gray border for definition
-      ...(theme.mode === 'light'
+      ...(theme.mode === 'light' && Platform.OS === 'web'
         ? ({
             backdropFilter: 'saturate(120%) blur(6px)',
             boxShadow:
               'inset 0 0 0 1px rgba(255,255,255,0.7)', // tiny inner white stroke
           } as any)
-        : null),
+        : {}),
       zIndex: 3,
     },
     levelContent: {
