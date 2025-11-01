@@ -175,6 +175,11 @@ export default function JourneyMapScreen() {
   const horizonGradient = useMemo<readonly [string, string, string]>(() => {
     const pick = (colors: readonly string[]) =>
       [colors[0], colors[1], colors[2]] as const;
+
+    if (theme.mode === 'dark') {
+      return ['#03070F', '#0B1626', '#102436'] as const;
+    }
+
     const hour = new Date().getHours();
     if (hour >= 20 || hour < 5) {
       return pick(theme.gradients.horizonNight);
@@ -640,9 +645,9 @@ export default function JourneyMapScreen() {
       )}
       <LinearGradient
         colors={
-          theme.mode === 'light'
-            ? theme.appBackgroundGradient
-            : horizonGradient
+          theme.mode === 'dark'
+            ? horizonGradient
+            : theme.appBackgroundGradient
         }
         style={styles.header}
         start={{ x: 0, y: 0 }}
@@ -664,9 +669,9 @@ export default function JourneyMapScreen() {
 
       <LinearGradient
         colors={
-          theme.mode === 'light'
-            ? theme.appBackgroundGradient
-            : horizonGradient
+          theme.mode === 'dark'
+            ? horizonGradient
+            : theme.appBackgroundGradient
         }
         style={styles.bodyGradient}
         start={{ x: 0, y: 0 }}
