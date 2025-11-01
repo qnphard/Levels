@@ -28,6 +28,13 @@ export default function useAudioPlayer() {
 
   const loadAudio = async (audioUrl: string) => {
     try {
+      // Don't load if URL is empty or invalid
+      if (!audioUrl || audioUrl.trim() === '') {
+        console.warn('Audio URL is empty, skipping load');
+        setIsLoading(false);
+        return;
+      }
+
       setIsLoading(true);
 
       // Unload previous sound if exists
@@ -47,6 +54,8 @@ export default function useAudioPlayer() {
     } catch (error) {
       console.error('Error loading audio:', error);
       setIsLoading(false);
+      // Reset sound state on error
+      setSound(null);
     }
   };
 
