@@ -279,6 +279,22 @@ export default function JourneyMapScreen() {
       (index % 2 === 0 ? 1 : -1) * (1 + (index % 3) * 0.28);
     const floatTranslateNode = Animated.multiply(floatTranslate, floatScalar);
 
+    const levelGlowColor = theme.mode === 'dark' ? glowBase : gradientColors[0];
+    const levelGlowStyle: Record<string, unknown> = {
+      borderColor: levelGlowColor,
+      shadowColor: levelGlowColor,
+      shadowOpacity: theme.mode === 'dark' ? 0.55 : 0.25,
+      shadowRadius: theme.mode === 'dark' ? 24 : 14,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 6 },
+      elevation: theme.mode === 'dark' ? 8 : 3,
+    };
+
+    if (Platform.OS === 'web') {
+      levelGlowStyle.boxShadow = theme.mode === 'dark'
+        ? `0 0 38px ${toRgba(levelGlowColor, 0.7)}, 0 0 120px ${toRgba(levelGlowColor, 0.4)}, inset 0 0 28px ${toRgba(levelGlowColor, 0.28)}`
+        : `0 0 24px ${toRgba(levelGlowColor, 0.3)}, 0 0 50px ${toRgba(levelGlowColor, 0.18)}`;
+    }
+
     return (
       <Animated.View
         key={level.id}
@@ -291,13 +307,8 @@ export default function JourneyMapScreen() {
           onPress={() => handleLevelPress(level)}
           style={({ pressed }) => [
             styles.levelCard,
-            theme.mode === 'dark' && {
-              borderColor: theme.bioluminescence.glow,
-              shadowColor: theme.bioluminescence.glow,
-              shadowOpacity: 0.34,
-              backgroundColor: 'rgba(9, 19, 28, 0.75)',
-              boxShadow: `0 0 30px ${theme.bioluminescence.glow}88, 0 0 60px ${theme.bioluminescence.glow}44, inset 0 0 20px ${theme.bioluminescence.glow}22`,
-            },
+            theme.mode === 'dark' && { backgroundColor: 'rgba(9, 19, 28, 0.75)' },
+            levelGlowStyle,
             isCurrent && styles.levelCardCurrent,
             isCourage && styles.levelCardCourage,
             pressed && styles.levelCardPressed,
@@ -938,6 +949,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     levelCard: {
       borderRadius: borderRadius.lg,
       position: 'relative',
+      overflow: 'visible',
       minHeight: 220,
       shadowColor:
         theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
