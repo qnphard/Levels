@@ -297,30 +297,46 @@ export default function JourneyMapScreen() {
     const gradientColors =
       theme.mode === 'dark' ? darkGradient : baseGradient;
     const glowBase = level.glowDark ?? gradientColors[0];
-    const glowTint =
-      theme.mode === 'dark' ? glowBase : adjustColor(gradientColors[0], -12);
+    const glowLight =
+      lightGlowPalette[level.id] ?? adjustColor(gradientColors[0], -12);
     const floatScalar =
       (index % 2 === 0 ? 1 : -1) * (1 + (index % 3) * 0.28);
     const floatTranslateNode = Animated.multiply(floatTranslate, floatScalar);
 
-    const levelGlowColor =
-      theme.mode === 'dark'
-        ? glowBase
-        : lightGlowPalette[level.id] ?? gradientColors[0];
+    const levelGlowColor = theme.mode === 'dark' ? glowBase : glowLight;
     const levelGlowStyle: Record<string, unknown> = {
-      borderColor: levelGlowColor,
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(levelGlowColor, isCurrent ? 0.6 : 0.45)
+          : toRgba(levelGlowColor, 0.22),
       shadowColor: levelGlowColor,
-      shadowOpacity: theme.mode === 'dark' ? 0.55 : 0.25,
-      shadowRadius: theme.mode === 'dark' ? 24 : 14,
-      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 6 },
-      elevation: theme.mode === 'dark' ? 8 : 3,
+      shadowOpacity: theme.mode === 'dark' ? 0.6 : 0.24,
+      shadowRadius: theme.mode === 'dark' ? 30 : 18,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 10 },
+      elevation: theme.mode === 'dark' ? 8 : 4,
     };
 
     if (Platform.OS === 'web') {
-      levelGlowStyle.boxShadow = theme.mode === 'dark'
-        ? `0 0 38px ${toRgba(levelGlowColor, 0.7)}, 0 0 120px ${toRgba(levelGlowColor, 0.4)}, inset 0 0 28px ${toRgba(levelGlowColor, 0.28)}`
-        : `0 0 24px ${toRgba(levelGlowColor, 0.3)}, 0 0 50px ${toRgba(levelGlowColor, 0.18)}`;
+      levelGlowStyle.boxShadow =
+        theme.mode === 'dark'
+          ? `0 0 44px ${toRgba(levelGlowColor, 0.55)}, 0 0 120px ${toRgba(levelGlowColor, 0.32)}, inset 0 0 28px ${toRgba(levelGlowColor, 0.22)}`
+          : `0 10px 32px rgba(15, 23, 42, 0.12), 0 0 60px ${toRgba(levelGlowColor, 0.24)}, 0 0 110px ${toRgba(levelGlowColor, 0.16)}`;
     }
+
+    const antithesisColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.85) : theme.textSecondary;
+    const descriptionColor =
+      theme.mode === 'dark' ? toRgba('#E9F1F6', 0.82) : theme.textSecondary;
+    const chapterLinkColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.86) : theme.accentTeal;
+    const secondaryIconColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.92) : theme.textPrimary;
+    const exploredTextColor =
+      theme.mode === 'dark' ? toRgba('#E8F4F4', 0.82) : theme.textPrimary;
+    const exploredIconColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.9) : theme.accentTeal;
+    const thresholdIconColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.94) : theme.accentGold;
 
     return (
       <Animated.View
@@ -334,8 +350,10 @@ export default function JourneyMapScreen() {
           onPress={() => handleLevelPress(level)}
           style={({ pressed }) => [
             styles.levelCard,
-            theme.mode === 'dark' && { backgroundColor: 'rgba(9, 19, 28, 0.75)' },
             levelGlowStyle,
+            theme.mode === 'dark' && {
+              backgroundColor: 'rgba(10, 24, 30, 0.82)',
+            },
             isCurrent && styles.levelCardCurrent,
             isCourage && styles.levelCardCourage,
             pressed && styles.levelCardPressed,
@@ -353,12 +371,12 @@ export default function JourneyMapScreen() {
                 styles.levelGlow,
                 {
                   backgroundColor: toRgba(
-                    glowTint,
-                    theme.mode === 'dark' ? 0.18 : 0.12
+                    levelGlowColor,
+                    theme.mode === 'dark' ? 0.22 : 0.14
                   ),
                   shadowColor: toRgba(
-                    glowTint,
-                    theme.mode === 'dark' ? 0.52 : 0.32
+                    levelGlowColor,
+                    theme.mode === 'dark' ? 0.55 : 0.34
                   ),
                 },
               ]}
@@ -389,7 +407,8 @@ export default function JourneyMapScreen() {
                     style={[
                       styles.levelTitle,
                       theme.mode === 'dark' && {
-                        textShadowColor: toRgba(glowBase, 0.58),
+                        textShadowColor: toRgba(levelGlowColor, 0.38),
+                        textShadowRadius: 6,
                       },
                     ]}
                   >
@@ -402,7 +421,7 @@ export default function JourneyMapScreen() {
                       style={[
                         styles.currentBadge,
                         theme.mode === 'dark' && {
-                          backgroundColor: toRgba(glowBase, 0.32),
+                          backgroundColor: toRgba(levelGlowColor, 0.32),
                         },
                       ]}
                     >
@@ -415,18 +434,12 @@ export default function JourneyMapScreen() {
                   <Ionicons
                     name="arrow-forward"
                     size={14}
-                    color={
-                      theme.mode === 'dark'
-                        ? toRgba(glowBase, 0.8)
-                        : theme.textSecondary
-                    }
+                    color={antithesisColor}
                   />
                   <Text
                     style={[
                       styles.antithesisText,
-                      theme.mode === 'dark' && {
-                        color: toRgba(glowBase, 0.85),
-                      },
+                      { color: antithesisColor },
                     ]}
                   >
                     {level.level < 200
@@ -438,9 +451,7 @@ export default function JourneyMapScreen() {
                 <Text
                   style={[
                     styles.levelDescription,
-                    theme.mode === 'dark' && {
-                      color: toRgba('#E9F1F6', 0.82),
-                    },
+                    { color: descriptionColor },
                   ]}
                   numberOfLines={2}
                 >
@@ -478,11 +489,7 @@ export default function JourneyMapScreen() {
                     <Ionicons
                       name="book-outline"
                       size={16}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.92)
-                          : theme.textPrimary
-                      }
+                      color={secondaryIconColor}
                     />
                     <Text
                       style={[
@@ -507,25 +514,20 @@ export default function JourneyMapScreen() {
                   <Text
                     style={[
                       styles.chapterLinkText,
-                      {
-                        color:
-                          theme.mode === 'dark'
-                            ? toRgba(glowBase, 0.86)
-                            : theme.accentTeal,
-                      },
+                      { color: chapterLinkColor },
                     ]}
                   >
                     Chapter overview
                   </Text>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={16}
-                      color={
-                        theme.mode === 'dark'
-                        ? toRgba(glowBase, 0.8)
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={
+                      theme.mode === 'dark'
+                        ? toRgba(levelGlowColor, 0.8)
                         : theme.textSecondary
-                      }
-                    />
+                    }
+                  />
                 </Pressable>
 
                 {isExplored && (
@@ -533,18 +535,12 @@ export default function JourneyMapScreen() {
                     <Ionicons
                       name="checkmark-circle"
                       size={16}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.9)
-                          : theme.accentTeal
-                      }
+                      color={exploredIconColor}
                     />
                     <Text
                       style={[
                         styles.exploredText,
-                        theme.mode === 'dark' && {
-                          color: toRgba('#E8F4F4', 0.82),
-                        },
+                        { color: exploredTextColor },
                       ]}
                     >
                       Explored - {completedCount} practice
@@ -558,11 +554,7 @@ export default function JourneyMapScreen() {
                     <Ionicons
                       name="star"
                       size={14}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.94)
-                          : theme.accentGold
-                      }
+                      color={thresholdIconColor}
                     />
                     <Text style={styles.thresholdText}>
                       Threshold - Where Power Begins
@@ -576,7 +568,6 @@ export default function JourneyMapScreen() {
       </Animated.View>
     );
   };
-
   const renderCategorySection = (
     category: CategoryKey,
     levels: ConsciousnessLevel[]
@@ -703,6 +694,7 @@ export default function JourneyMapScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
+          <View style={(styles as any).stageSurface}>
           <Pressable
             style={styles.guidanceCard}
             onPress={() => navigation.navigate('CheckIn')}
@@ -758,6 +750,7 @@ export default function JourneyMapScreen() {
               Transcending a level once does not mean you are done. Life brings
               new layers. Revisiting is sacred.
             </Text>
+          </View>
           </View>
         </ScrollView>
       </LinearGradient>
@@ -1216,6 +1209,11 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       fontStyle: 'italic',
     },
   });
+
+
+
+
+
 
 
 

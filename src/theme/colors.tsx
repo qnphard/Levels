@@ -185,20 +185,16 @@ const sharedCategoryChips = (mode: ThemeMode) => {
 const buildTheme = (mode: ThemeMode): ThemeColors => {
   const isDark = mode === 'dark';
   // Enhanced dark theme with deeper cosmic tones
-  const background = isDark ? '#0f172a' : palette.sand50;
-  const surface = isDark ? '#1e293b' : palette.sand100;
+  const background = isDark ? '#0f172a' : '#F6F7FB';
+  const surface = isDark ? '#1e293b' : 'rgba(255,255,255,0.72)';
   const cardBackground = isDark
-    ? 'rgba(30, 41, 59, 0.65)' // More translucent for glow effects
-    : palette.sand100;
+    ? 'rgba(30, 41, 59, 0.65)'
+    : 'rgba(255,255,255,0.78)';
   const appBackgroundGradient = isDark
-    ? (['#0f172a', '#1e293b', '#334155'] as const) // Aurora-inspired gradient
-    : ([
-        '#E8D9FA',
-        '#F3EAFB',
-        '#F8EEF6',
-      ] as const);
-  const canvasOverlay = isDark ? 'rgba(15,23,42,0.55)' : 'rgba(255,255,255,0.55)';
-  const border = isDark ? 'rgba(255,255,255,0.12)' : palette.sand200; // Slightly more visible
+    ? (['#0f172a', '#1e293b', '#334155'] as const)
+    : (['#F6F7FB', '#FBFAFE', '#F9F6F8'] as const);
+  const canvasOverlay = isDark ? 'rgba(15,23,42,0.55)' : 'rgba(255,255,255,0.5)';
+  const border = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.08)';
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
   const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
   const textMuted = isDark ? '#89A1A5' : '#8F8B82';
