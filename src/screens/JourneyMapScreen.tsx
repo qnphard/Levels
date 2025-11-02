@@ -72,12 +72,21 @@ export default function JourneyMapScreen() {
   const window = useWindowDimensions();
   const cardWidth = useMemo(() => {
     const screenWidth = window.width || width;
+    const horizontalPadding = spacing.lg * 2; // padding on both sides (24px * 2 = 48px)
+    const gap = Platform.OS === 'android' 
+      ? (theme.mode === 'light' ? spacing.md : spacing.sm)
+      : spacing.lg; // gap between cards
+    const availableWidth = screenWidth - horizontalPadding - gap; // subtract gap for 2 cards
+    const cardWidthForTwo = Math.floor(availableWidth / 2);
+    
+    // For tablets and larger screens, allow more cards per row
     if (screenWidth >= 1024) return Math.min(screenWidth * 0.28, 340);
     if (screenWidth >= 768) return Math.min(screenWidth * 0.4, 320);
-    if (screenWidth >= 480) return Math.min(screenWidth * 0.42, 280);
-    if (screenWidth >= 360) return Math.min(screenWidth * 0.48, 240);
-    return Math.min(screenWidth * 0.92, 240);
-  }, [window.width]);
+    // For mobile screens (360-1024px), always show 2 cards per row
+    if (screenWidth >= 360) return Math.max(cardWidthForTwo, 150); // Ensure minimum 150px width
+    // For very small screens, still try to fit 2 cards
+    return Math.max(cardWidthForTwo, 140);
+  }, [window.width, theme.mode]);
   const styles = useMemo(() => getStyles(theme, cardWidth), [theme, cardWidth]);
   const auroraAnim = useRef(new Animated.Value(0)).current;
 
@@ -323,7 +332,7 @@ export default function JourneyMapScreen() {
                         `0 0 80px ${toRgba(glowTint, 0.65)}`,
                         `0 0 160px ${toRgba(glowTint, 0.4)}`,
                       ].join(', '),
-                      transform: pressed ? [{ translateY: -3 }] : undefined,
+                      transform: pressed ? [{ translateY: -3 }] : [],
                     }
                   : {
                       borderWidth: 1,
@@ -340,7 +349,7 @@ export default function JourneyMapScreen() {
                         `0 8px 20px rgba(15, 23, 42, 0.08)`,
                         `0 1px 2px rgba(2, 6, 23, 0.06)`,
                       ].join(', '),
-                      transform: pressed ? [{ translateY: -3 }] : undefined,
+                      transform: pressed ? [{ translateY: -3 }] : [],
                     }),
           ]}
         >
@@ -458,9 +467,9 @@ export default function JourneyMapScreen() {
                       color: toRgba('#E9F1F6', 0.82),
                     },
                   ]}
-                  numberOfLines={2}
+                  numberOfLines={Platform.OS === 'android' ? 4 : 2}
                 >
-                  {level.description}
+                  {String(level.description || '')}
                 </Text>
 
                 <View style={styles.levelActions}>
@@ -669,7 +678,7 @@ export default function JourneyMapScreen() {
             styles.auroraLayer,
             {
               opacity: auroraOpacity,
-              transform: [{ translateX: auroraTranslate }],
+              transform: auroraTranslate != null ? [{ translateX: auroraTranslate }] : [],
             },
           ]}
         >
@@ -997,20 +1006,24 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     levelsGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: theme.mode === 'light' ? spacing.lg + 4 : spacing.md, // +4px oxygen in light mode
+      gap: Platform.OS === 'android' 
+        ? (theme.mode === 'light' ? spacing.md : spacing.sm)
+        : (theme.mode === 'light' ? spacing.lg + 4 : spacing.md),
       justifyContent: 'flex-start',
       alignItems: 'stretch',
       alignContent: 'flex-start',
       paddingTop: spacing.md,
-      paddingBottom: spacing.xl,
+      paddingBottom: Platform.OS === 'android' ? spacing.lg : spacing.xl,
+      width: '100%',
     },
     levelCardContainer: {
       width: cardWidth,
-      maxWidth: 360,
+      maxWidth: Platform.OS === 'android' ? 340 : 360,
+      minWidth: Platform.OS === 'android' ? 150 : 160,
       height: CARD_HEIGHT,
       flexGrow: 0,
-      flexShrink: 0,
-      marginBottom: spacing.md,
+      flexShrink: 1,
+      marginBottom: Platform.OS === 'android' ? spacing.sm : spacing.md,
       position: 'relative',
     },
     levelCard: {
@@ -1096,7 +1109,9 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       alignItems: 'stretch',
       justifyContent: 'space-between',
       gap: spacing.md,
-      padding: theme.mode === 'light' ? spacing.xl : spacing.lg, // More padding in light mode
+      padding: Platform.OS === 'android' 
+        ? (theme.mode === 'light' ? spacing.md : spacing.sm)
+        : (theme.mode === 'light' ? spacing.xl : spacing.lg), // Less padding on Android for 2-card layout
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(5, 14, 20, 0.7)'
@@ -1118,7 +1133,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     levelContent: {
       flex: 1,
-      gap: spacing.xs,
+      gap: Platform.OS === 'android' ? 2 : spacing.xs, // Tighter spacing on Android
       justifyContent: 'space-between',
       height: '100%',
     },
@@ -1129,11 +1144,13 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       flexWrap: 'wrap',
     },
     levelTitle: {
-      fontSize: typography.h3,
+      fontSize: Platform.OS === 'android' ? typography.h4 : typography.h3, // Smaller on Android for 2-card layout
       fontWeight: typography.semibold, // semibold for better readability
       color: theme.mode === 'dark' ? theme.textPrimary : '#0F172A', // slate-900 for light mode
       flex: 1,
-      letterSpacing: -0.5, // tracking-tight
+      flexShrink: 1,
+      letterSpacing: Platform.OS === 'android' ? -0.2 : -0.5,
+      lineHeight: Platform.OS === 'android' ? 22 : 26,
       textShadowColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : undefined,
       textShadowOffset: theme.mode === 'dark' ? { width: 0, height: 1 } : undefined,
       textShadowRadius: theme.mode === 'dark' ? 2 : undefined,
@@ -1156,29 +1173,31 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       gap: spacing.xs,
     },
     antithesisText: {
-      fontSize: typography.body,
+      fontSize: Platform.OS === 'android' ? typography.small : typography.body, // Smaller on Android
       color: theme.mode === 'dark' ? theme.textSecondary : '#475569', // slate-600 for light mode
       fontWeight: typography.medium,
       fontStyle: 'italic',
+      lineHeight: Platform.OS === 'android' ? 18 : 20,
     },
     levelDescription: {
-      fontSize: typography.body,
+      fontSize: Platform.OS === 'android' ? typography.small : typography.body, // Smaller on Android
       color: theme.mode === 'dark' ? theme.textSecondary : '#475569', // slate-600 for light mode
-      lineHeight: 20,
+      lineHeight: Platform.OS === 'android' ? 18 : 20,
       letterSpacing: 0.1,
+      flexShrink: 1,
     },
     levelActions: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: spacing.sm,
-      marginTop: spacing.sm,
+      gap: Platform.OS === 'android' ? spacing.xs : spacing.sm, // Tighter gap on Android
+      marginTop: Platform.OS === 'android' ? spacing.xs : spacing.sm,
     },
     primaryAction: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
+      paddingHorizontal: Platform.OS === 'android' ? spacing.sm : spacing.md,
+      paddingVertical: Platform.OS === 'android' ? spacing.xs : spacing.sm,
       borderRadius: borderRadius.roundedChip,
       backgroundColor: theme.buttons.primary.background,
       shadowColor: theme.buttons.primary.shadow,
@@ -1189,16 +1208,16 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     primaryActionText: {
       color: theme.buttons.primary.text,
-      fontSize: typography.small,
+      fontSize: Platform.OS === 'android' ? typography.tiny : typography.small, // Smaller on Android
       fontWeight: typography.semibold,
-      letterSpacing: 0.2,
+      letterSpacing: Platform.OS === 'android' ? 0.1 : 0.2,
     },
     secondaryAction: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: spacing.xs,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
+      paddingHorizontal: Platform.OS === 'android' ? spacing.sm : spacing.md,
+      paddingVertical: Platform.OS === 'android' ? spacing.xs : spacing.sm,
       borderRadius: borderRadius.roundedChip,
       backgroundColor:
         theme.mode === 'dark'
@@ -1212,7 +1231,7 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     },
     secondaryActionText: {
       color: theme.textPrimary,
-      fontSize: typography.small,
+      fontSize: Platform.OS === 'android' ? typography.tiny : typography.small, // Smaller on Android
       fontWeight: typography.medium,
     },
     chapterLink: {
@@ -1222,10 +1241,10 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       marginTop: spacing.sm,
     },
     chapterLinkText: {
-      fontSize: typography.small,
+      fontSize: Platform.OS === 'android' ? typography.tiny : typography.small, // Smaller on Android
       color: theme.mode === 'dark' ? theme.white : theme.accentTeal,
       fontWeight: typography.semibold,
-      letterSpacing: 0.3,
+      letterSpacing: Platform.OS === 'android' ? 0.2 : 0.3,
     },
     exploredIndicator: {
       flexDirection: 'row',
