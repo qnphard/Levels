@@ -66,7 +66,7 @@ export default function PlayerScreen() {
         <Ionicons
           name="chevron-down"
           size={32}
-          color={theme.headingOnGradient}
+          color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary}
         />
       </TouchableOpacity>
 
@@ -76,7 +76,7 @@ export default function PlayerScreen() {
           <Ionicons
             name="musical-notes"
             size={80}
-            color={theme.headingOnGradient}
+            color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary}
           />
         </View>
 
@@ -98,7 +98,7 @@ export default function PlayerScreen() {
           minimumValue={0}
           maximumValue={1}
           minimumTrackTintColor={theme.accentGold}
-          maximumTrackTintColor="rgba(255,255,255,0.2)"
+          maximumTrackTintColor={theme.mode === 'dark' ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}
           thumbTintColor={theme.buttons.primary.background}
         />
         <View style={styles.timeContainer}>
@@ -113,7 +113,7 @@ export default function PlayerScreen() {
           onPress={() => skip(-15)}
           style={styles.controlButton}
         >
-          <Ionicons name="play-back" size={36} color={theme.headingOnGradient} />
+          <Ionicons name="play-back" size={36} color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary} />
           <Text style={styles.skipText}>15</Text>
         </TouchableOpacity>
 
@@ -137,7 +137,7 @@ export default function PlayerScreen() {
           onPress={() => skip(15)}
           style={styles.controlButton}
         >
-          <Ionicons name="play-forward" size={36} color={theme.headingOnGradient} />
+          <Ionicons name="play-forward" size={36} color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary} />
           <Text style={styles.skipText}>15</Text>
         </TouchableOpacity>
       </View>
@@ -169,7 +169,7 @@ const getStyles = (theme: ThemeColors) =>
       width: 200,
       height: 200,
       borderRadius: 100,
-      backgroundColor: 'rgba(255,255,255,0.08)',
+      backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: spacing.lg,
@@ -177,23 +177,23 @@ const getStyles = (theme: ThemeColors) =>
     title: {
       fontSize: typography.h2,
       fontWeight: typography.bold,
-      color: theme.headingOnGradient,
+      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
       textAlign: 'center',
       marginBottom: spacing.xs,
     },
     instructor: {
       fontSize: typography.body,
-      color: theme.textLight,
+      color: theme.mode === 'dark' ? theme.textLight : theme.textSecondary,
       marginBottom: spacing.sm,
     },
     categoryBadge: {
-      backgroundColor: 'rgba(255,255,255,0.15)',
+      backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs,
       borderRadius: borderRadius.round,
     },
     categoryText: {
-      color: theme.headingOnGradient,
+      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
       fontWeight: typography.semibold,
     },
     progressContainer: {
@@ -210,7 +210,7 @@ const getStyles = (theme: ThemeColors) =>
       paddingHorizontal: spacing.xs,
     },
     timeText: {
-      color: theme.textLight,
+      color: theme.mode === 'dark' ? theme.textLight : theme.textSecondary,
       fontSize: typography.small,
     },
     controls: {
@@ -241,7 +241,7 @@ const getStyles = (theme: ThemeColors) =>
     skipText: {
       position: 'absolute',
       fontSize: typography.tiny,
-      color: theme.headingOnGradient,
+      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
       fontWeight: typography.bold,
       bottom: spacing.sm,
       alignSelf: 'center',
@@ -252,7 +252,7 @@ const getStyles = (theme: ThemeColors) =>
     },
     description: {
       fontSize: typography.body,
-      color: theme.textLight,
+      color: theme.mode === 'dark' ? theme.textLight : theme.textSecondary,
       textAlign: 'center',
       lineHeight: 24,
     },

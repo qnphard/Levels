@@ -44,20 +44,20 @@ export default function ArticleCard({ article, onPress, style }: ArticleCardProp
           { backgroundColor: stageToken.accent ?? theme.primarySubtle },
         ]}
       >
-        <Text style={styles.stageText}>{article.stage}</Text>
+        <Text style={styles.stageText}>{String(article.stage || '')}</Text>
       </View>
 
       <Text style={styles.title} numberOfLines={2}>
-        {article.title}
+        {String(article.title || '')}
       </Text>
       <Text style={styles.summary} numberOfLines={3}>
-        {article.summary}
+        {String(article.summary || '')}
       </Text>
 
       <View style={styles.metaRow}>
-        <Text style={styles.metaText}>{article.source}</Text>
+        <Text style={styles.metaText}>{String(article.source || '')}</Text>
         <View style={styles.metaDot} />
-        <Text style={styles.metaText}>{article.readingTime} min read</Text>
+        <Text style={styles.metaText}>{String(article.readingTime || 0)} min read</Text>
       </View>
     </TouchableOpacity>
   );

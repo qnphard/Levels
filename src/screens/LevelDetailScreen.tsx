@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import {
 } from '../theme/colors';
 import { useUserProgress } from '../context/UserProgressContext';
 import PrimaryButton from '../components/PrimaryButton';
+import WhyFeelingSheet from '../components/WhyFeelingSheet';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type LevelDetailRouteProp = RouteProp<RootStackParamList, 'LevelDetail'>;
@@ -50,6 +51,7 @@ export default function LevelDetailScreen() {
   );
   const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
     useUserProgress();
+  const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
 
   useEffect(() => {
     // Mark this level as explored when viewing
@@ -96,7 +98,7 @@ export default function LevelDetailScreen() {
     // For now, show a placeholder - will integrate with meditation player later
     // In production, this would navigate to the first meditation for this level
     alert(
-      `Practice sessions for ${level.name} will be available soon. The meditation scripts are being crafted with care.`
+      `Practice sessions for ${String(level.name || '')} will be available soon. The meditation scripts are being crafted with care.`
     );
   };
 
@@ -122,14 +124,22 @@ export default function LevelDetailScreen() {
         </TouchableOpacity>
 
         <View style={styles.headerContent}>
-          <Text style={styles.levelTitle}>
-            {level.level < 200 ? `Transcending ${level.name}` : level.name}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.levelTitle}>
+              {level.level < 200 ? `Transcending ${String(level.name || '')}` : String(level.name || '')}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setShowWhyFeelingSheet(true)}
+              style={styles.infoButton}
+            >
+              <Ionicons name="information-circle-outline" size={24} color={theme.white} />
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.antithesisContainer}>
             <Ionicons name="arrow-forward" size={18} color={theme.white} />
             <Text style={styles.antithesisText}>
-              {level.level < 200 ? `Through ${level.antithesis}` : level.antithesis}
+              {level.level < 200 ? `Through ${String(level.antithesis || '')}` : String(level.antithesis || '')}
             </Text>
           </View>
 
@@ -151,8 +161,8 @@ export default function LevelDetailScreen() {
       >
         {/* Description */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Understanding {level.name}</Text>
-          <Text style={styles.descriptionText}>{level.description}</Text>
+          <Text style={styles.sectionTitle}>Understanding {String(level.name || '')}</Text>
+          <Text style={styles.descriptionText}>{String(level.description || '')}</Text>
         </View>
 
         {/* Characteristics */}
@@ -187,7 +197,7 @@ export default function LevelDetailScreen() {
             <Ionicons name="alert-circle" size={20} color={theme.warning} />
             <Text style={styles.sectionTitle}>The Trap</Text>
           </View>
-          <Text style={styles.trapText}>{level.trapDescription}</Text>
+          <Text style={styles.trapText}>{String(level.trapDescription || '')}</Text>
         </View>
 
         {/* The Way Through */}
@@ -253,6 +263,12 @@ export default function LevelDetailScreen() {
           />
         </View>
       </ScrollView>
+      
+      <WhyFeelingSheet
+        visible={showWhyFeelingSheet}
+        onClose={() => setShowWhyFeelingSheet(false)}
+        prefillEmotion={level.name}
+      />
     </LinearGradient>
   );
 }
@@ -311,7 +327,18 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       gap: spacing.sm,
       paddingTop: spacing.md,
     },
+    titleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.sm,
+      width: '100%',
+    },
+    infoButton: {
+      padding: spacing.xs,
+    },
     levelTitle: {
+      flex: 1,
       fontSize: typography.h1,
       fontWeight: typography.bold,
       color: theme.mode === 'dark' ? '#F9FAFB' : theme.white,

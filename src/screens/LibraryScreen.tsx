@@ -15,6 +15,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { sampleMeditations } from '../data/meditations';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import MeditationCard from '../components/MeditationCard';
+import FeelingsExplainedCard from '../components/FeelingsExplainedCard';
+import WhyFeelingSheet from '../components/WhyFeelingSheet';
 import {
   useThemeColors,
   spacing,
@@ -28,6 +30,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export default function LibraryScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [searchQuery, setSearchQuery] = useState('');
+  const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
   const theme = useThemeColors();
   const styles = getStyles(theme);
 
@@ -71,6 +74,14 @@ export default function LibraryScreen() {
       {/* Results */}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
+          {!searchQuery && (
+            <FeelingsExplainedCard
+              onOpenChapters={() => navigation.navigate('LearnHub')}
+              onOpenQuickHelp={() => setShowWhyFeelingSheet(true)}
+              style={styles.feelingsCard}
+            />
+          )}
+          
           <Text style={styles.sectionTitle}>
             {searchQuery
               ? `Found ${filteredMeditations.length} meditations`
@@ -96,6 +107,11 @@ export default function LibraryScreen() {
           )}
         </View>
       </ScrollView>
+      
+      <WhyFeelingSheet
+        visible={showWhyFeelingSheet}
+        onClose={() => setShowWhyFeelingSheet(false)}
+      />
     </LinearGradient>
   );
 }
@@ -136,6 +152,9 @@ const getStyles = (theme: ThemeColors) =>
     },
     content: {
       padding: spacing.md,
+    },
+    feelingsCard: {
+      marginBottom: spacing.lg,
     },
     sectionTitle: {
       fontSize: typography.h3,

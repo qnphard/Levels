@@ -16,7 +16,9 @@ import {
   Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
+import SafeBlurView from '../components/SafeBlurView';
+import FeelingsExplainedCard from '../components/FeelingsExplainedCard';
+import WhyFeelingSheet from '../components/WhyFeelingSheet';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -79,12 +81,8 @@ export default function JourneyMapScreen() {
     const availableWidth = screenWidth - horizontalPadding - gap; // subtract gap for 2 cards
     const cardWidthForTwo = Math.floor(availableWidth / 2);
     
-    // For tablets and larger screens, allow more cards per row
-    if (screenWidth >= 1024) return Math.min(screenWidth * 0.28, 340);
-    if (screenWidth >= 768) return Math.min(screenWidth * 0.4, 320);
-    // For mobile screens (360-1024px), always show 2 cards per row
-    if (screenWidth >= 360) return Math.max(cardWidthForTwo, 150); // Ensure minimum 150px width
-    // For very small screens, still try to fit 2 cards
+    // Always show 2 cards per row regardless of screen size
+    // Ensure minimum width but maintain 2 cards per row
     return Math.max(cardWidthForTwo, 140);
   }, [window.width, theme.mode]);
   const styles = useMemo(() => getStyles(theme, cardWidth), [theme, cardWidth]);
@@ -129,6 +127,7 @@ export default function JourneyMapScreen() {
   );
   const { progress } = useUserProgress();
   const [showDisclaimer, setShowDisclaimer] = useState(false);
+  const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
   const [expandedSections, setExpandedSections] = useState<
     Record<CategoryKey, boolean>
   >({
@@ -361,7 +360,7 @@ export default function JourneyMapScreen() {
             end={{ x: 1, y: 1 }}
           >
             {canBlur ? (
-              <BlurView
+              <SafeBlurView
                 intensity={theme.mode === 'dark' ? 45 : 20} // Less blur in light mode
                 tint={theme.mode === 'dark' ? 'dark' : 'light'}
                 style={styles.levelBlur}
@@ -419,8 +418,8 @@ export default function JourneyMapScreen() {
                     ]}
                   >
                     {level.level < 200
-                      ? `Transcending ${level.name}`
-                      : level.name}
+                      ? `Transcending ${String(level.name || '')}`
+                      : String(level.name || '')}
                   </Text>
                   {isCurrent && (
                     <View
@@ -455,8 +454,8 @@ export default function JourneyMapScreen() {
                     ]}
                   >
                     {level.level < 200
-                      ? `Through ${level.antithesis}`
-                      : level.antithesis}
+                      ? `Through ${String(level.antithesis || '')}`
+                      : String(level.antithesis || '')}
                   </Text>
                 </View>
 
@@ -572,7 +571,7 @@ export default function JourneyMapScreen() {
                         },
                       ]}
                     >
-                      Explored - {completedCount} practice
+                      Explored - {String(completedCount)} practice
                       {completedCount !== 1 ? 's' : ''}
                     </Text>
                   </View>
@@ -607,6 +606,7 @@ export default function JourneyMapScreen() {
     levels: ConsciousnessLevel[]
   ) => {
     const meta = categoryVisuals[category];
+    if (!meta) return null; // Safety check for undefined meta
     const expanded = expandedSections[category];
     const heroGradient = theme.mode === 'dark'
       ? meta.gradient
@@ -628,7 +628,7 @@ export default function JourneyMapScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <BlurView
+            <SafeBlurView
               intensity={50}
               tint={theme.mode === 'dark' ? 'dark' : 'light'}
               style={styles.categoryHeroBlur}
@@ -642,9 +642,9 @@ export default function JourneyMapScreen() {
                 />
               </View>
               <View style={styles.categoryTextWrap}>
-                <Text style={styles.categoryTitle}>{meta.title}</Text>
+                <Text style={styles.categoryTitle}>{String(meta?.title || '')}</Text>
                 <Text style={styles.categoryDescription}>
-                  {categoryDescriptions[category]}
+                  {String(categoryDescriptions[category] || '')}
                 </Text>
               </View>
               <View style={styles.categoryToggle}>
@@ -713,7 +713,6 @@ export default function JourneyMapScreen() {
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
       >
-      >
         <Image
           source={require('../../assets/images/levels-logo.png')}
           style={styles.logo}
@@ -729,7 +728,6 @@ export default function JourneyMapScreen() {
         style={styles.bodyGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-      >
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -773,6 +771,14 @@ export default function JourneyMapScreen() {
             </Pressable>
           )}
 
+          {/* Feelings Explained Section */}
+          <View style={styles.feelingsSection}>
+            <FeelingsExplainedCard
+              onOpenChapters={() => navigation.navigate('LearnHub')}
+              onOpenQuickHelp={() => setShowWhyFeelingSheet(true)}
+            />
+          </View>
+
           {categoryOrder.map((category) => {
             const levels = levelsByCategory[category];
             return levels.length
@@ -793,6 +799,11 @@ export default function JourneyMapScreen() {
           </View>
         </ScrollView>
       </LinearGradient>
+      
+      <WhyFeelingSheet
+        visible={showWhyFeelingSheet}
+        onClose={() => setShowWhyFeelingSheet(false)}
+      />
     </View>
   );
 }
@@ -870,10 +881,11 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
     logo: {
       width: 280,
       height: 90,
+      alignSelf: 'center',
     },
     headerSubtitle: {
       fontSize: typography.body,
-      color: theme.headingOnGradient,
+      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
       fontWeight: typography.medium,
       textAlign: 'center',
     },
@@ -1271,6 +1283,10 @@ const getStyles = (theme: ThemeColors, cardWidth: number) =>
       fontSize: typography.tiny,
       color: theme.accentGold,
       fontWeight: typography.semibold,
+    },
+    feelingsSection: {
+      marginTop: spacing.xl,
+      marginBottom: spacing.lg,
     },
     reminderCard: {
       flexDirection: 'row',

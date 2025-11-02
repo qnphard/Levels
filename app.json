@@ -4,7 +4,7 @@
     "slug": "meditation-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/images/levels-logo.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -16,19 +16,27 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/images/levels-logo.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.meditationapp"
+      "package": "com.anonymous.meditationapp",
+      "permissions": [
+        "INTERNET",
+        "WAKE_LOCK"
+      ],
+      "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/images/levels-logo.png"
     },
     "extra": {
       "eas": {
         "projectId": "c5126454-5b79-4b01-8fcc-afa954b0e275"
       }
     },
-    "owner": "qnphard"
+    "owner": "qnphard",
+    "plugins": [
+      "expo-dev-client"
+    ]
   }
 }

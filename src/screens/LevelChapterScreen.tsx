@@ -41,7 +41,7 @@ export default function LevelChapterScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<LevelChapterRouteProp>();
   const theme = useThemeColors();
-  const { levelId, initialView } = route.params;
+  const { levelId, initialView, sourceFeeling } = route.params;
   const level = getLevelById(levelId);
   const luminousAccent = useMemo(() => {
     if (!level) {
@@ -117,6 +117,17 @@ export default function LevelChapterScreen() {
 
   const renderOverview = (item: ConsciousnessLevel) => (
     <View style={styles.sectionStack}>
+      {sourceFeeling && (
+        <View style={styles.sourceFeelingCard}>
+          <Ionicons name="sparkles-outline" size={20} color={luminousAccent} />
+          <View style={{ flex: 1, marginLeft: spacing.sm }}>
+            <Text style={styles.sourceFeelingTitle}>Why this shows up</Text>
+            <Text style={styles.sourceFeelingText}>
+              You selected "{sourceFeeling}". This level helps you understand and transcend that feeling.
+            </Text>
+          </View>
+        </View>
+      )}
       <View style={styles.infoCard}>
         <Text style={styles.sectionTitle}>What this level feels like</Text>
         <Text style={styles.sectionBody}>{item.description}</Text>
@@ -154,7 +165,7 @@ export default function LevelChapterScreen() {
           <Ionicons name='hourglass-outline' size={28} color={theme.textMuted} />
           <Text style={styles.emptyTitle}>Practices in progress</Text>
           <Text style={styles.emptySubtitle}>
-            We are composing meditations tuned exactly for {level.name}. Check back soon.
+            We are composing meditations tuned exactly for {String(level.name || '')}. Check back soon.
           </Text>
         </View>
       )}
@@ -183,7 +194,7 @@ export default function LevelChapterScreen() {
           <Ionicons name='book-outline' size={28} color={theme.textMuted} />
           <Text style={styles.emptyTitle}>Guides arriving soon</Text>
           <Text style={styles.emptySubtitle}>
-            Essays and prompts for {level.name} are being distilled now.
+            Essays and prompts for {String(level.name || '')} are being distilled now.
           </Text>
         </View>
       )}
@@ -211,12 +222,12 @@ export default function LevelChapterScreen() {
             Level {level.level}
           </Text>
           <Text style={styles.levelTitle}>
-            {level.level < 200 ? `Transcending ${level.name}` : level.name}
+            {level.level < 200 ? `Transcending ${String(level.name || '')}` : String(level.name || '')}
           </Text>
           <View style={styles.levelPill}>
             <Ionicons name="sparkles-outline" size={16} color={theme.white} />
             <Text style={styles.levelPillText}>
-              Through {level.antithesis}
+              Through {String(level.antithesis || '')}
             </Text>
           </View>
         </View>
@@ -452,6 +463,35 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       shadowOpacity: theme.mode === 'dark' ? 0.32 : 0.1,
       shadowRadius: theme.mode === 'dark' ? 24 : 12,
       elevation: theme.mode === 'dark' ? 6 : 3,
+    },
+    sourceFeelingCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      backgroundColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.15)
+          : toRgba(accent, 0.08),
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      borderWidth: 1,
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(accent, 0.3)
+          : toRgba(accent, 0.2),
+      marginBottom: spacing.sm,
+    },
+    sourceFeelingTitle: {
+      fontSize: typography.small,
+      fontWeight: typography.semibold,
+      color: theme.textPrimary,
+      marginBottom: spacing.xs,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    sourceFeelingText: {
+      fontSize: typography.body,
+      color: theme.textSecondary,
+      lineHeight: 20,
     },
     infoCard: {
       gap: spacing.sm,

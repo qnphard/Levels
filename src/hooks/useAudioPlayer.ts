@@ -10,43 +10,59 @@ export default function useAudioPlayer() {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Configure audio mode
+    // Configure audio mode with error handling
     Audio.setAudioModeAsync({
       allowsRecordingIOS: false,
       staysActiveInBackground: true,
       playsInSilentModeIOS: true,
       shouldDuckAndroid: true,
       playThroughEarpieceAndroid: false,
+    }).catch((error) => {
+      console.warn('Error setting audio mode:', error);
     });
+  }, []);
 
+  // Cleanup sound when component unmounts
+  useEffect(() => {
     return () => {
       if (sound) {
-        sound.unloadAsync();
+        sound.unloadAsync().catch((error) => {
+          console.warn('Error unloading sound:', error);
+        });
       }
     };
-  }, []);
+  }, [sound]);
 
   const loadAudio = async (audioUrl: string) => {
     try {
+      // Validate audio URL - Android can crash on empty strings
+      if (!audioUrl || audioUrl.trim() === '') {
+        console.warn('Cannot load audio: empty URL provided');
+        setIsLoading(false);
+        return;
+      }
       setIsLoading(true);
-
       // Unload previous sound if exists
       if (sound) {
-        await sound.unloadAsync();
+        try {
+          await sound.unloadAsync();
+        } catch (error) {
+          console.warn('Error unloading previous sound:', error);
+        }
       }
-
       // Load new sound
       const { sound: newSound } = await Audio.Sound.createAsync(
         { uri: audioUrl },
         { shouldPlay: false },
         onPlaybackStatusUpdate
       );
-
       setSound(newSound);
       setIsLoading(false);
     } catch (error) {
       console.error('Error loading audio:', error);
       setIsLoading(false);
+      // Reset sound state on error
+      setSound(null);
     }
   };
 

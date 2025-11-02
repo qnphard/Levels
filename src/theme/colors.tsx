@@ -18,9 +18,16 @@ export const palette = {
   stone800: '#2C2B28', // Stabilising stone = trustworthy body text
   stone600: '#6D6A62',
 
-  sage400: '#A9CABB', // Sage communicates regulated calm
-  sage600: '#6FA491', // Primary action color – courage without urgency
+  sage400: '#A9CABB', // Sage communicates regulated calm (kept for compatibility)
+  sage600: '#6FA491', // Old primary - kept for reference
   teal700: '#3E7C75', // Deeper teal for emphasis/focus rings
+  
+  // Purple/Violet palette for primary theme
+  violet300: '#C4B5FD', // Soft lavender for light theme subtle backgrounds
+  violet400: '#A78BFA', // Bright purple for dark theme primary
+  violet500: '#8B5CF6', // Medium violet for accents
+  violet600: '#7C3AED', // Deep purple for light theme primary
+  violet700: '#6D28D9', // Deep violet for dark theme subtle backgrounds
 
   mist400: '#B8D7E4', // Mist brings gentle clarity (Notice stage)
   mist700: '#2E5D6A',
@@ -42,10 +49,10 @@ export const palette = {
 
   teal500: '#5FB5A9',
 
-  // Bioluminescent glow colors
-  bioGlow: '#5FB5A9', // Primary bioluminescent teal
-  bioCore: '#8BE9FD', // Bright cyan core
-  bioPulse: 'rgba(95, 181, 169, 0.4)', // Pulsing outer glow
+  // Bioluminescent glow colors (updated to violet)
+  bioGlow: '#8B5CF6', // Primary bioluminescent violet
+  bioCore: '#C4B5FD', // Bright lavender core
+  bioPulse: 'rgba(139, 92, 246, 0.4)', // Pulsing outer glow
 
   // Per-level luminous glow tokens (light mode - low opacity ≤0.20)
   glowShame: 'rgba(244, 114, 182, 0.20)',
@@ -61,6 +68,13 @@ export const palette = {
   glowWilling: 'rgba(74, 222, 128, 0.20)',
   glowAccept: 'rgba(192, 132, 252, 0.20)',
   glowReason: 'rgba(96, 165, 250, 0.18)',
+
+  // Feelings Explained chapter glow colors
+  glowRose: '#F472B6', // Suppression - rose pink
+  glowViolet: '#A78BFA', // Repression - violet purple
+  glowAmber: '#FBBF24', // Expression - amber gold
+  glowTeal: '#5FB5A9', // Escape - teal cyan
+  glowSky: '#60A5FA', // Stress - sky blue
 };
 
 export const gradients = {
@@ -138,6 +152,13 @@ export interface ThemeColors {
     release: { accent: string };
     rest: { background: string; accent: string };
   };
+  feelingsChapters: {
+    rose: string;
+    violet: string;
+    amber: string;
+    teal: string;
+    sky: string;
+  };
   gradients: typeof gradients;
   states: {
     success: string;
@@ -157,7 +178,7 @@ const sharedCategoryChips = (mode: ThemeMode) => {
       border: palette.sand200,
     },
     'Find Peace': {
-      background: palette.sage400,
+      background: palette.violet300, // Updated to violet
       text: palette.stone800,
     },
     'Let Go': {
@@ -218,10 +239,11 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
   const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
   const textMuted = isDark ? '#89A1A5' : '#8F8B82';
-  const primary = isDark ? palette.teal500 : palette.sage600;
-  const primarySubtle = isDark ? '#1F4F5A' : palette.sage400;
+  // Updated to violet theme: bright for dark mode, deep for light mode
+  const primary = isDark ? palette.violet400 : palette.violet600;
+  const primarySubtle = isDark ? palette.violet700 : palette.violet300;
   const primaryContrast = isDark ? palette.night900 : '#FFFFFF';
-  const accentTeal = isDark ? palette.teal500 : palette.teal700;
+  const accentTeal = isDark ? palette.violet500 : palette.violet500; // Now violet accent
   const highlightMist = isDark ? '#2B4652' : palette.mist400;
   const shadowSoft = isDark
     ? 'rgba(0,0,0,0.65)'
@@ -234,11 +256,11 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const warningSubtle = isDark ? 'rgba(230,194,121,0.18)' : 'rgba(230,194,121,0.32)';
   const error = palette.danger500;
 
-  // Bioluminescent colors for ripple effects
+  // Bioluminescent colors for ripple effects (updated to violet)
   const bioluminescence = {
-    glow: isDark ? palette.bioGlow : palette.sage600,
-    core: isDark ? palette.bioCore : palette.sage400,
-    pulse: isDark ? 'rgba(95, 181, 169, 0.4)' : 'rgba(111, 164, 145, 0.3)',
+    glow: isDark ? palette.bioGlow : palette.violet600,
+    core: isDark ? palette.bioCore : palette.violet300,
+    pulse: isDark ? 'rgba(139, 92, 246, 0.4)' : 'rgba(124, 58, 237, 0.3)',
   };
 
   return {
@@ -276,10 +298,10 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
         background: primary,
         text: primaryContrast,
         focus: accentTeal,
-        hover: isDark ? '#72C0B3' : '#5D8E7C',
+        hover: isDark ? '#C4B5FD' : '#6D28D9', // Violet hover states
         shadow: isDark
-          ? 'rgba(95, 181, 169, 0.35)'
-          : 'rgba(111, 164, 145, 0.25)',
+          ? 'rgba(139, 92, 246, 0.35)'
+          : 'rgba(124, 58, 237, 0.25)', // Violet shadows
       },
       secondary: {
         background: surface,
@@ -290,10 +312,17 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
     },
     categoryChips: sharedCategoryChips(mode),
     experience: {
-      settle: { background, accent: palette.sage400 },
+      settle: { background, accent: palette.violet300 }, // Updated to violet
       notice: { accent: palette.mist400 },
       release: { accent: primary },
       rest: { background: palette.night900, accent: palette.night700 },
+    },
+    feelingsChapters: {
+      rose: palette.glowRose,
+      violet: palette.glowViolet,
+      amber: palette.glowAmber,
+      teal: palette.glowTeal,
+      sky: palette.glowSky,
     },
     gradients,
     states: {

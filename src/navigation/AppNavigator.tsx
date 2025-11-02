@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
+import SafeBlurView from '../components/SafeBlurView';
 
 import HomeScreen from '../screens/HomeScreen';
 import LibraryScreen from '../screens/LibraryScreen';
@@ -15,6 +15,8 @@ import JourneyMapScreen from '../screens/JourneyMapScreen';
 import LevelDetailScreen from '../screens/LevelDetailScreen';
 import LevelChapterScreen from '../screens/LevelChapterScreen';
 import JournalScreen from '../screens/JournalScreen';
+import LearnHubScreen from '../screens/LearnHubScreen';
+import ChapterScreen from '../screens/ChapterScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
@@ -24,7 +26,9 @@ export type RootStackParamList = {
   CheckIn: undefined;
   JourneyMap: undefined;
   LevelDetail: { levelId: string };
-  LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles' };
+  LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles'; sourceFeeling?: string };
+  LearnHub: undefined;
+  Chapter: { chapterId: string };
 };
 
 export type MainTabParamList = {
@@ -69,7 +73,7 @@ function MainTabs() {
           elevation: 0,
         },
         tabBarBackground: () => (
-          <BlurView
+          <SafeBlurView
             tint={theme.mode === 'dark' ? 'dark' : 'light'}
             intensity={45}
             style={StyleSheet.absoluteFill}
@@ -134,6 +138,16 @@ export default function AppNavigator() {
         <Stack.Screen
           name="LevelChapter"
           component={LevelChapterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LearnHub"
+          component={LearnHubScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="Chapter"
+          component={ChapterScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

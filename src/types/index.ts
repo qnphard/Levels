@@ -105,3 +105,24 @@ export interface UserLevelProgress {
   firstEngagedWithCourage?: Date; // When user first engaged with level 200
   // NO unlockedLevels - all levels accessible from start
 }
+
+// Feelings Explained - Learning chapters
+export type FeelingChapterCategory = 'Coping Patterns' | 'Triggers' | 'Body' | 'Mind';
+
+export interface FeelingChapter {
+  id: string;
+  title: string;
+  summary: string;
+  readTime: number; // reading time in minutes (3-6)
+  category: FeelingChapterCategory;
+  glowColor: 'rose' | 'violet' | 'amber' | 'teal' | 'sky';
+  relatedChapters: string[]; // IDs of related chapters
+  mdPath: string; // path to markdown file in assets
+}
+
+export interface ChapterProgress {
+  chapterId: string;
+  lastSection?: string; // H2/H3 anchor name
+  readProgress: number; // 0-1, percentage read
+  lastReadAt: Date;
+}
