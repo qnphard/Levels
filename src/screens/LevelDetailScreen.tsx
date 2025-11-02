@@ -18,6 +18,7 @@ import {
   spacing,
   borderRadius,
   ThemeColors,
+  useGlowEnabled,
 } from '../theme/colors';
 import { useUserProgress } from '../context/UserProgressContext';
 import PrimaryButton from '../components/PrimaryButton';
@@ -30,24 +31,16 @@ export default function LevelDetailScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<LevelDetailRouteProp>();
   const theme = useThemeColors();
+  const glowEnabled = useGlowEnabled();
   const { levelId } = route.params;
   const level = getLevelById(levelId);
-  const luminousAccent = useMemo(() => {
-    if (!level) {
-      return theme.primary;
-    }
-    if (theme.mode === 'dark') {
-      return (
-        level.glowDark ||
-        level.gradientDark?.[0] ||
-        adjustColor(level.color, 8)
-      );
-    }
-    return level.gradient?.[0] ?? adjustColor(level.color, -8);
-  }, [level, theme]);
+  
+  // Use violet theme colors instead of level-specific colors
+  const luminousAccent = theme.primary;
+  
   const styles = useMemo(
-    () => getStyles(theme, luminousAccent),
-    [theme, luminousAccent]
+    () => getStyles(theme, luminousAccent, glowEnabled),
+    [theme, luminousAccent, glowEnabled]
   );
   const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
     useUserProgress();
@@ -75,20 +68,23 @@ export default function LevelDetailScreen() {
 
   const isCurrentLevel = progress?.currentLevel === level.id;
 
-  const basePair =
-    level.gradient ??
-    ([
-      adjustColor(level.color, 12),
-      adjustColor(level.color, -16),
-    ] as const);
-  const darkPair = level.gradientDark ?? basePair;
-  const activePair = theme.mode === 'dark' ? darkPair : basePair;
-  const backgroundGradient = [
-    activePair[0],
-    activePair[1],
-    adjustColor(activePair[1], theme.mode === 'dark' ? -8 : -18),
-  ] as const;
-  const accentColor = activePair[0];
+  // Use violet theme gradients
+  const violetGradients = theme.mode === 'dark'
+    ? {
+        healing: ['#8B5CF6', '#A78BFA', '#C4B5FD'] as const,
+        empowerment: ['#7C3AED', '#8B5CF6', '#A78BFA'] as const,
+        spiritual: ['#A78BFA', '#C4B5FD', '#DDD6FE'] as const,
+        enlightenment: ['#C4B5FD', '#DDD6FE', '#EDE9FE'] as const,
+      }
+    : {
+        healing: ['#C4B5FD', '#E9D5FF', '#F3E8FF'] as const,
+        empowerment: ['#DDD6FE', '#F3E8FF', '#FAF5FF'] as const,
+        spiritual: ['#EDE9FE', '#F5F3FF', '#FAF5FF'] as const,
+        enlightenment: ['#F5F3FF', '#FAF5FF', '#FDF4FF'] as const,
+      };
+  
+  const backgroundGradient = violetGradients[level.category] || violetGradients.healing;
+  const accentColor = theme.primary;
 
   const handleSetAsCurrent = async () => {
     await setCurrentLevel(level.id);
@@ -111,7 +107,9 @@ export default function LevelDetailScreen() {
     >
       {/* Header with gradient */}
       <LinearGradient
-        colors={[level.color, adjustColor(level.color, -45)] as const}
+        colors={theme.mode === 'dark' 
+          ? ['#8B5CF6', '#7C3AED'] as const
+          : ['#C4B5FD', '#DDD6FE'] as const}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -125,9 +123,9 @@ export default function LevelDetailScreen() {
 
         <View style={styles.headerContent}>
           <View style={styles.titleRow}>
-            <Text style={styles.levelTitle}>
+          <Text style={styles.levelTitle}>
               {level.level < 200 ? `Transcending ${String(level.name || '')}` : String(level.name || '')}
-            </Text>
+          </Text>
             <TouchableOpacity
               onPress={() => setShowWhyFeelingSheet(true)}
               style={styles.infoButton}
@@ -184,7 +182,7 @@ export default function LevelDetailScreen() {
               <Ionicons
                 name="body-outline"
                 size={16}
-                color={accentColor}
+                color={theme.primary}
               />
               <Text style={styles.listText}>{sign}</Text>
             </View>
@@ -194,22 +192,37 @@ export default function LevelDetailScreen() {
         {/* The Trap */}
         <View style={[styles.section, styles.trapSection]}>
           <View style={styles.trapHeader}>
-            <Ionicons name="alert-circle" size={20} color={theme.warning} />
+            <Ionicons name="alert-circle" size={20} color={theme.primary} />
             <Text style={styles.sectionTitle}>The Trap</Text>
           </View>
           <Text style={styles.trapText}>{String(level.trapDescription || '')}</Text>
         </View>
 
         {/* The Way Through */}
-        <View style={[styles.section, {
-          backgroundColor: `${accentColor}20`,
-          padding: spacing.lg,
-          borderRadius: borderRadius.lg,
-          borderWidth: 1,
-          borderColor: accentColor,
-        }]}>
+        <View style={[
+          styles.section,
+          styles.wayThroughSection,
+          glowEnabled && theme.mode === 'dark' && {
+            borderWidth: 2,
+            borderColor: toRgba(accentColor, 0.6),
+            shadowColor: accentColor,
+            shadowOpacity: 0.3,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 0,
+          },
+          glowEnabled && theme.mode === 'light' && {
+            borderWidth: 2,
+            borderColor: toRgba(accentColor, 0.4),
+            shadowColor: accentColor,
+            shadowOpacity: 0.25,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 0,
+          },
+        ]}>
           <View style={styles.wayThroughHeader}>
-            <Ionicons name="compass" size={20} color={accentColor} />
+            <Ionicons name="compass" size={20} color={theme.primary} />
             <Text style={styles.sectionTitle}>The Way Through</Text>
           </View>
           <Text style={styles.wayThroughText}>{level.wayThrough}</Text>
@@ -303,7 +316,7 @@ const toRgba = (color: string, alpha = 1): string => {
   return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
 };
 
-const getStyles = (theme: ThemeColors, accent: string) =>
+const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -345,8 +358,8 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       textAlign: 'center',
       textShadowColor:
         theme.mode === 'dark'
-          ? toRgba(accent, 0.45)
-          : 'rgba(255,255,255,0.45)',
+          ? toRgba(accent, 0.5)
+          : 'rgba(167, 139, 250, 0.4)',
       textShadowOffset: { width: 0, height: 3 },
       textShadowRadius: 14,
     },
@@ -359,7 +372,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       fontSize: typography.h3,
       color:
         theme.mode === 'dark'
-          ? toRgba(accent, 0.85)
+          ? toRgba(accent, 0.9)
           : theme.white,
       fontWeight: typography.medium,
     },
@@ -370,7 +383,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       backgroundColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.22)
-          : 'rgba(212, 175, 55, 0.3)',
+          : 'rgba(167, 139, 250, 0.15)',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: borderRadius.md,
@@ -379,14 +392,32 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.45)
-          : 'rgba(212, 175, 55, 0.45)',
+          : theme.primary,
+      ...(glowEnabled && theme.mode === 'dark' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.5),
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.35),
+        shadowColor: accent,
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     thresholdText: {
       fontSize: typography.small,
       color:
         theme.mode === 'dark'
           ? toRgba(accent, 0.95)
-          : theme.gold,
+          : theme.primary,
       fontWeight: typography.semibold,
     },
     scrollView: {
@@ -424,8 +455,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor:
-        theme.mode === 'dark' ? toRgba(accent, 0.8) : theme.primary,
+      backgroundColor: theme.primary,
       marginTop: 8,
     },
     listText: {
@@ -441,14 +471,14 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       backgroundColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.14)
-          : theme.warningSubtle,
+          : 'rgba(139, 92, 246, 0.08)',
       padding: spacing.lg,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.34)
-          : theme.warning,
+          : 'rgba(139, 92, 246, 0.2)',
     },
     trapHeader: {
       flexDirection: 'row',
@@ -469,14 +499,14 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       backgroundColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.18)
-          : 'rgba(147, 197, 253, 0.2)',
+          : 'rgba(167, 139, 250, 0.15)',
       padding: spacing.lg,
       borderRadius: borderRadius.lg,
       borderWidth: 1,
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.4)
-          : '#60A5FA',
+          : 'rgba(139, 92, 246, 0.3)',
     },
     wayThroughHeader: {
       flexDirection: 'row',
@@ -506,7 +536,25 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.28)
-          : theme.border,
+          : 'rgba(139, 92, 246, 0.15)',
+      ...(glowEnabled && theme.mode === 'dark' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.5),
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.3),
+        shadowColor: accent,
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     placeholderText: {
       fontSize: typography.body,
@@ -531,7 +579,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       backgroundColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.18)
-          : theme.cardBackground,
+          : 'rgba(167, 139, 250, 0.12)',
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
@@ -540,6 +588,24 @@ const getStyles = (theme: ThemeColors, accent: string) =>
         theme.mode === 'dark'
           ? toRgba(accent, 0.38)
           : theme.primary,
+      ...(glowEnabled && theme.mode === 'dark' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.5),
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.35),
+        shadowColor: accent,
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     secondaryButtonText: {
       fontSize: typography.body,
@@ -557,7 +623,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       backgroundColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.24)
-          : 'rgba(147, 197, 253, 0.2)',
+          : 'rgba(167, 139, 250, 0.15)',
       paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
       borderRadius: borderRadius.md,
@@ -565,14 +631,32 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.52)
-          : '#60A5FA',
+          : theme.primary,
+      ...(glowEnabled && theme.mode === 'dark' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.6),
+        shadowColor: accent,
+        shadowOpacity: 0.3,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        borderWidth: 2,
+        borderColor: toRgba(accent, 0.4),
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     currentFocusText: {
       fontSize: typography.body,
       color:
         theme.mode === 'dark'
           ? toRgba(accent, 0.92)
-          : '#60A5FA',
+          : theme.primary,
       fontWeight: typography.semibold,
     },
     errorText: {

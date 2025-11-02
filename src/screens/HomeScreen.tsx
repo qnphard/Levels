@@ -87,12 +87,6 @@ export default function HomeScreen() {
                 There's nothing wrong with this moment
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.checkInButton}
-              onPress={() => navigation.navigate('CheckIn')}
-            >
-              <Text style={styles.checkInButtonText}>Check In</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>
@@ -241,20 +235,6 @@ const createStyles = (theme: ThemeColors) =>
       fontWeight: typography.regular,
       opacity: 0.9,
       fontStyle: 'italic',
-    },
-    checkInButton: {
-      backgroundColor: theme.primarySubtle,
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-      borderRadius: borderRadius.lg,
-      borderWidth: 1,
-      borderColor: theme.primary,
-    },
-    checkInButtonText: {
-      color: theme.primary,
-      fontSize: typography.small,
-      fontWeight: typography.semibold,
-      letterSpacing: 0.5,
     },
     todaysPracticeCard: {
       backgroundColor: theme.cardBackground,

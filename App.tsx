@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as NavigationBar from 'expo-navigation-bar';
 import AppNavigator from './src/navigation/AppNavigator';
 import { UserProgressProvider } from './src/context/UserProgressContext';
 import ThemeToggleButton from './src/components/ThemeToggleButton';
@@ -14,6 +15,14 @@ import {
 function AppContent() {
   const theme = useThemeColors();
   const mode = useThemeMode();
+
+  // Hide Android navigation bar (immersive mode)
+  useEffect(() => {
+    if (Platform.OS === 'android') {
+      NavigationBar.setVisibilityAsync('hidden');
+      NavigationBar.setBehaviorAsync('overlay-swipe');
+    }
+  }, []);
 
   return (
     <View style={styles.container}>

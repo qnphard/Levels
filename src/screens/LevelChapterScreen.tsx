@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   Pressable,
+  useWindowDimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -14,6 +15,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import { getLevelById } from '../data/levels';
 import {
   useThemeColors,
+  useGlowEnabled,
   ThemeColors,
   spacing,
   typography,
@@ -41,6 +43,8 @@ export default function LevelChapterScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<LevelChapterRouteProp>();
   const theme = useThemeColors();
+  const glowEnabled = useGlowEnabled();
+  const { width: windowWidth } = useWindowDimensions();
   const { levelId, initialView, sourceFeeling } = route.params;
   const level = getLevelById(levelId);
   const luminousAccent = useMemo(() => {
@@ -56,9 +60,20 @@ export default function LevelChapterScreen() {
     }
     return level.gradient?.[0] ?? adjustColor(level.color, -6);
   }, [level, theme]);
+  
+  // Get level-specific button color (toned down by 20% in dark theme)
+  const buttonColor = useMemo(() => {
+    if (!level) return theme.primary;
+    const baseColor = theme.mode === 'dark'
+      ? (level.glowDark || level.gradientDark?.[0] || level.color)
+      : (level.gradient?.[0] || level.color);
+    // Tone down by 20% in dark theme (80% opacity)
+    return theme.mode === 'dark' ? toRgba(baseColor, 0.8) : baseColor;
+  }, [level, theme]);
+  
   const styles = useMemo(
-    () => getStyles(theme, luminousAccent),
-    [theme, luminousAccent]
+    () => getStyles(theme, luminousAccent, windowWidth, glowEnabled),
+    [theme, luminousAccent, windowWidth, glowEnabled]
   );
 
   if (!level) {
@@ -136,15 +151,32 @@ export default function LevelChapterScreen() {
       <View style={styles.splitRow}>
         <View style={styles.splitCard}>
           <Text style={styles.splitTitle}>The Trap</Text>
-          <Text style={styles.splitBody}>{item.trapDescription}</Text>
+          <Text 
+            style={styles.splitBody}
+            textBreakStrategy="highQuality"
+            allowFontScaling={true}
+          >
+            {item.trapDescription}
+          </Text>
         </View>
         <View style={[styles.splitCard, styles.splitCardAccent]}>
           <Text style={styles.splitTitle}>Way Through</Text>
-          <Text style={styles.splitBody}>{item.wayThrough}</Text>
+          <Text 
+            style={styles.splitBody}
+            textBreakStrategy="highQuality"
+            allowFontScaling={true}
+          >
+            {item.wayThrough}
+          </Text>
         </View>
       </View>
 
-      <PrimaryButton label="Deep dive insights" onPress={handleOpenDetail} />
+      <PrimaryButton 
+        label="Deep dive insights" 
+        onPress={handleOpenDetail}
+        backgroundColor={buttonColor}
+        textColor={theme.white}
+      />
     </View>
   );
 
@@ -213,7 +245,7 @@ export default function LevelChapterScreen() {
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
-          <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={22} color={theme.mode === 'dark' ? '#FFFFFF' : '#1E293B'} />
           <Text style={styles.backLabel}>Journey</Text>
         </Pressable>
 
@@ -225,7 +257,11 @@ export default function LevelChapterScreen() {
             {level.level < 200 ? `Transcending ${String(level.name || '')}` : String(level.name || '')}
           </Text>
           <View style={styles.levelPill}>
-            <Ionicons name="sparkles-outline" size={16} color={theme.white} />
+            <Ionicons 
+              name="sparkles-outline" 
+              size={16} 
+              color={theme.mode === 'dark' ? theme.white : '#041017'} 
+            />
             <Text style={styles.levelPillText}>
               Through {String(level.antithesis || '')}
             </Text>
@@ -254,7 +290,9 @@ export default function LevelChapterScreen() {
                 <Ionicons
                   name={tab.icon}
                   size={16}
-                  color={isActive ? theme.white : theme.textSecondary}
+                  color={isActive 
+                    ? (theme.mode === 'dark' ? theme.white : '#061016')
+                    : (theme.mode === 'dark' ? theme.textSecondary : '#475569')}
                 />
                 <Text
                   style={[
@@ -312,7 +350,7 @@ const toRgba = (color: string, alpha = 1): string => {
   return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
 };
 
-const getStyles = (theme: ThemeColors, accent: string) =>
+const getStyles = (theme: ThemeColors, accent: string, windowWidth: number, glowEnabled: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -346,7 +384,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
     },
     backLabel: {
       fontSize: typography.small,
-      color: '#FFFFFF',
+      color: theme.mode === 'dark' ? '#FFFFFF' : '#1E293B',
       fontWeight: typography.medium,
       letterSpacing: 0.6,
     },
@@ -359,7 +397,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       color:
         theme.mode === 'dark'
           ? toRgba(accent, 0.85)
-          : 'rgba(255,255,255,0.8)',
+          : '#FFFFFF',
       textTransform: 'uppercase',
       letterSpacing: 1,
     },
@@ -369,7 +407,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       color: theme.mode === 'dark' ? '#F8FAFC' : '#FFFFFF',
       letterSpacing: -0.5,
       textShadowColor:
-        theme.mode === 'dark' ? toRgba(accent, 0.4) : 'rgba(255,255,255,0.4)',
+        theme.mode === 'dark' ? toRgba(accent, 0.4) : 'rgba(0,0,0,0.2)',
       textShadowOffset: { width: 0, height: 2 },
       textShadowRadius: 12,
     },
@@ -387,7 +425,7 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       paddingHorizontal: spacing.md,
     },
     levelPillText: {
-      color: theme.mode === 'dark' ? '#041017' : '#FFFFFF',
+      color: theme.mode === 'dark' ? '#FFFFFF' : '#041017',
       fontSize: typography.small,
       fontWeight: typography.medium,
       letterSpacing: 0.5,
@@ -419,21 +457,37 @@ const getStyles = (theme: ThemeColors, accent: string) =>
     },
     tabButtonActive: {
       backgroundColor:
-        theme.mode === 'dark' ? toRgba(accent, 0.7) : theme.accentTeal,
+        theme.mode === 'dark' ? toRgba(accent, 0.56) : toRgba(accent, 0.3), // Toned down by 20% in dark (0.7 * 0.8 = 0.56)
       borderColor:
-        theme.mode === 'dark' ? toRgba(accent, 0.85) : theme.accentTeal,
+        theme.mode === 'dark' ? toRgba(accent, 0.68) : toRgba(accent, 0.5), // Toned down by 20% in dark (0.85 * 0.8 = 0.68)
+      ...(glowEnabled && theme.mode === 'dark' && {
+        borderWidth: 2,
+        shadowColor: accent,
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        borderWidth: 2,
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     tabLabel: {
       fontSize: typography.small,
       color:
         theme.mode === 'dark'
           ? toRgba('#E9F2F4', 0.72)
-          : theme.textSecondary,
+          : '#1E293B', // Dark text for light theme
       fontWeight: typography.medium,
       letterSpacing: 0.4,
     },
     tabLabelActive: {
-      color: theme.mode === 'dark' ? '#061016' : theme.white,
+      color: theme.mode === 'dark' ? theme.white : '#061016',
     },
     contentScroll: {
       flex: 1,
@@ -452,17 +506,27 @@ const getStyles = (theme: ThemeColors, accent: string) =>
           : theme.surface,
       borderRadius: borderRadius.xl,
       padding: spacing.lg,
-      borderWidth: 1,
+      borderWidth: glowEnabled ? 2 : 1,
       borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.24)
-          : theme.border,
+        glowEnabled
+          ? (theme.mode === 'dark'
+              ? toRgba(accent, 0.5)
+              : toRgba(accent, 0.3))
+          : (theme.mode === 'dark'
+              ? toRgba(accent, 0.24)
+              : theme.border),
       shadowColor:
-        theme.mode === 'dark' ? 'rgba(0,0,0,0.55)' : theme.shadowSoft,
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: theme.mode === 'dark' ? 0.32 : 0.1,
-      shadowRadius: theme.mode === 'dark' ? 24 : 12,
-      elevation: theme.mode === 'dark' ? 6 : 3,
+        glowEnabled
+          ? accent
+          : (theme.mode === 'dark' ? 'rgba(0,0,0,0.55)' : theme.shadowSoft),
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: glowEnabled
+        ? (theme.mode === 'dark' ? 0.3 : 0.25)
+        : (theme.mode === 'dark' ? 0.32 : 0.1),
+      shadowRadius: glowEnabled
+        ? (theme.mode === 'dark' ? 16 : 14)
+        : (theme.mode === 'dark' ? 24 : 12),
+      elevation: 0, // Remove elevation to prevent artifacts
     },
     sourceFeelingCard: {
       flexDirection: 'row',
@@ -506,39 +570,76 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       lineHeight: 22,
       color:
         theme.mode === 'dark'
-          ? toRgba('#E8F4F4', 0.78)
-          : theme.textSecondary,
+          ? toRgba('#E8F4F4', 0.85) // Slightly brighter for better contrast
+          : theme.textPrimary, // Changed from textSecondary to textPrimary for better contrast
     },
     splitRow: {
-      flexDirection: 'row',
+      flexDirection: windowWidth < 400 ? 'column' : 'row',
       gap: spacing.md,
-      flexWrap: 'wrap',
+      width: '100%',
     },
     splitCard: {
-      flex: 1,
-      minWidth: '45%',
+      flex: windowWidth < 400 ? 0 : 1,
+      width: windowWidth < 400 ? '100%' : undefined,
+      minWidth: 0, // Allow flexbox to properly shrink
+      maxWidth: windowWidth < 400 ? '100%' : undefined,
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(5, 16, 26, 0.85)'
           : theme.cardBackground,
       borderRadius: borderRadius.lg,
       padding: spacing.md,
-      borderWidth: 1,
+      borderWidth: glowEnabled ? 2 : 1,
       borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.22)
-          : theme.border,
+        glowEnabled
+          ? (theme.mode === 'dark'
+              ? toRgba(accent, 0.5)
+              : toRgba(accent, 0.3))
+          : (theme.mode === 'dark'
+              ? toRgba(accent, 0.22)
+              : theme.border),
       gap: spacing.xs,
+      overflow: 'hidden', // Prevent content overflow
+      ...(glowEnabled && theme.mode === 'dark' && {
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        shadowColor: accent,
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     splitCardAccent: {
       backgroundColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.2)
-          : theme.primarySubtle,
+          : toRgba(accent, 0.15),
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.42)
-          : theme.primary,
+          : toRgba(accent, 0.4),
+      ...(glowEnabled && theme.mode === 'dark' && {
+        borderWidth: 2,
+        shadowColor: accent,
+        shadowOpacity: 0.3,
+        shadowRadius: 16,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
+      ...(glowEnabled && theme.mode === 'light' && {
+        borderWidth: 2,
+        shadowColor: accent,
+        shadowOpacity: 0.25,
+        shadowRadius: 14,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 0,
+      }),
     },
     splitTitle: {
       fontSize: typography.small,
@@ -552,8 +653,10 @@ const getStyles = (theme: ThemeColors, accent: string) =>
       color:
         theme.mode === 'dark'
           ? toRgba('#E8F4F4', 0.78)
-          : theme.textSecondary,
-      lineHeight: 20,
+          : theme.textPrimary, // Changed from textSecondary to textPrimary for better contrast
+      lineHeight: 22,
+      flexShrink: 1,
+      flexWrap: 'wrap', // Allow text to wrap
     },
     meditationCard: {
       marginBottom: spacing.md,

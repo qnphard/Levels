@@ -35,13 +35,9 @@ export default function FeelingsExplainedCard({
   const glowEnabled = useGlowEnabled();
   const styles = getStyles(theme);
 
-  // Mint/sky glow color for the card
-  const glowColor = theme.mode === 'dark' 
-    ? theme.feelingsChapters.teal 
-    : theme.feelingsChapters.sky;
-  const glowTint = theme.mode === 'dark' 
-    ? glowColor 
-    : theme.feelingsChapters.sky;
+  // Violet/purple glow color for the card (matching theme)
+  const glowColor = theme.primary;
+  const glowTint = theme.primary;
 
   // Gradient background
   const baseGradient = theme.mode === 'dark'
@@ -163,7 +159,7 @@ export default function FeelingsExplainedCard({
                 <Ionicons
                   name="help-circle-outline"
                   size={20}
-                  color={theme.mode === 'dark' ? theme.feelingsChapters.sky : theme.textPrimary}
+                  color={theme.mode === 'dark' ? theme.primary : theme.textPrimary}
                 />
                 <Text style={styles.ctaSecondaryText}>
                   Why am I feeling like this?
@@ -214,7 +210,7 @@ const getStyles = (theme: ThemeColors) =>
     },
     subtitle: {
       fontSize: typography.body,
-      color: theme.mode === 'dark' ? theme.textSecondary : theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textPrimary : theme.textSecondary,
       lineHeight: 22,
       marginBottom: spacing.sm,
     },
@@ -233,8 +229,8 @@ const getStyles = (theme: ThemeColors) =>
     },
     ctaPrimary: {
       backgroundColor: theme.mode === 'dark' 
-        ? theme.feelingsChapters.teal 
-        : theme.feelingsChapters.sky,
+        ? toRgba(theme.primary, 0.65) // Further reduced opacity for dark theme
+        : theme.primary,
     },
     ctaSecondary: {
       backgroundColor: theme.mode === 'dark'
@@ -257,7 +253,7 @@ const getStyles = (theme: ThemeColors) =>
     ctaSecondaryText: {
       fontSize: typography.body,
       fontWeight: typography.medium,
-      color: theme.mode === 'dark' ? theme.feelingsChapters.sky : theme.textPrimary,
+      color: theme.mode === 'dark' ? theme.primary : theme.textPrimary,
     },
   });
 

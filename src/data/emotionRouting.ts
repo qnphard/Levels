@@ -81,6 +81,156 @@ function applyDisambiguationRules(selectedLevels: string[]): { primary: string; 
 }
 
 /**
+ * Get level ID directly from emotion label (handles synonyms)
+ * This ensures each emotion maps to the correct level regardless of cluster
+ */
+function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
+  const normalized = emotionLabel.toLowerCase().trim();
+  
+  // Direct mapping of emotion labels and synonyms to level IDs
+  const emotionToLevelMap: Record<string, string> = {
+    // Shame
+    'shame': 'shame',
+    'ashamed': 'shame',
+    'embarrassed': 'shame',
+    'humiliated': 'shame',
+    'mortified': 'shame',
+    'worthless': 'shame',
+    'not good enough': 'shame',
+    'inadequate': 'shame',
+    'unlovable': 'shame',
+    'disgusting': 'shame',
+    'exposed': 'shame',
+    'defective': 'shame',
+    'flawed': 'shame',
+    
+    // Guilt
+    'guilt': 'guilt',
+    'guilty': 'guilt',
+    'remorse': 'guilt',
+    'regret': 'guilt',
+    'ashamed of what i did': 'guilt',
+    'beat myself up': 'guilt',
+    "i shouldn't have…": 'guilt',
+    'my fault': 'guilt',
+    'over-apologizing': 'guilt',
+    'atone': 'guilt',
+    
+    // Fear
+    'fear': 'fear',
+    'anxious': 'fear',
+    'worried': 'fear',
+    'stressed': 'fear',
+    'overwhelmed': 'fear',
+    'dread': 'fear',
+    'panic': 'fear',
+    'nervous': 'fear',
+    'jittery': 'fear',
+    'on edge': 'fear',
+    'tense': 'fear',
+    'scared': 'fear',
+    'catastrophizing': 'fear',
+    "can't relax": 'fear',
+    'imposter syndrome': 'fear',
+    'fear of failure': 'fear',
+    'fear of rejection': 'fear',
+    'fear of uncertainty': 'fear',
+    
+    // Anger
+    'anger': 'anger',
+    'pissed': 'anger',
+    'mad': 'anger',
+    'annoyed': 'anger',
+    'irritated': 'anger',
+    'frustrated': 'anger',
+    'fed up': 'anger',
+    'offended': 'anger',
+    'disrespected': 'anger',
+    'resentful': 'anger',
+    'bitter': 'anger',
+    'outraged': 'anger',
+    'livid': 'anger',
+    'snappy': 'anger',
+    'triggered': 'anger',
+    'vengeful': 'anger',
+    'road-rage': 'anger',
+    
+    // Desire
+    'desire': 'desire',
+    'crave': 'desire',
+    'lust': 'desire',
+    'tempted': 'desire',
+    'urge': 'desire',
+    "can't stop thinking": 'desire',
+    'need it': 'desire',
+    'fomo': 'desire',
+    'obsessed': 'desire',
+    'fixated': 'desire',
+    'jealous': 'desire',
+    'envy': 'desire',
+    'possessive': 'desire',
+    'needy': 'desire',
+    'clingy': 'desire',
+    'attention-seeking': 'desire',
+    'binge': 'desire',
+    'impulse buying': 'desire',
+    'sugar hit': 'desire',
+    'caffeine fix': 'desire',
+    'nicotine hit': 'desire',
+    'thirsty': 'desire',
+    'impulsive': 'desire',
+    
+    // Grief
+    'grief': 'grief',
+    'heartbroken': 'grief',
+    'devastated': 'grief',
+    'heavy-hearted': 'grief',
+    'missing you': 'grief',
+    'lonely': 'grief',
+    'homesick': 'grief',
+    'bereft': 'grief',
+    'sorrow': 'grief',
+    'blue': 'grief',
+    'tearful': 'grief',
+    'disappointed': 'grief',
+    'let down': 'grief',
+    'sad': 'grief',
+    
+    // Apathy
+    'apathy': 'apathy',
+    'numb': 'apathy',
+    'blah': 'apathy',
+    'meh': 'apathy',
+    'checked out': 'apathy',
+    'drained': 'apathy',
+    'exhausted': 'apathy',
+    'burned out': 'apathy',
+    'burn out': 'apathy',
+    'over it': 'apathy',
+    'dead inside': 'apathy',
+    'flat': 'apathy',
+    'stuck': 'apathy',
+    'unmotivated': 'apathy',
+    'hopeless': 'apathy',
+    'why bother': 'apathy',
+    
+    // Pride
+    'pride': 'pride',
+    'defensive': 'pride',
+    'superior': 'pride',
+    'smug': 'pride',
+    'righteous': 'pride',
+    'stubborn': 'pride',
+    "i'm right": 'pride',
+    "can't admit fault": 'pride',
+    'holier-than-thou': 'pride',
+    'judgmental': 'pride',
+  };
+  
+  return emotionToLevelMap[normalized];
+}
+
+/**
  * Get primary route based on selected emotions
  */
 export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
@@ -92,27 +242,41 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
     };
   }
   
-  // Map emotion labels (including synonyms) to level IDs
+  // Map emotion labels (including synonyms) to level IDs directly
   const levelIds: string[] = [];
   const chapterIds: string[] = [];
   const clusters = new Map<string, typeof emotionClusters[0]>();
   
   selectedEmotions.forEach((emotionLabel) => {
-    const cluster = findClusterByEmotion(emotionLabel);
-    if (cluster) {
-      // Only add unique level IDs
-      if (!levelIds.includes(cluster.primaryLevelId)) {
-        levelIds.push(cluster.primaryLevelId);
+    // First try direct mapping
+    let levelId = getLevelIdFromEmotion(emotionLabel);
+    
+    // Fallback to cluster lookup if direct mapping doesn't work
+    if (!levelId) {
+      const cluster = findClusterByEmotion(emotionLabel);
+      if (cluster) {
+        levelId = cluster.primaryLevelId;
+        chapterIds.push(...cluster.relatedChapterIds);
+        clusters.set(cluster.primaryLevelId, cluster);
       }
-      chapterIds.push(...cluster.relatedChapterIds);
-      clusters.set(cluster.primaryLevelId, cluster);
+    } else {
+      // Find cluster for secondary/chapter info
+      const cluster = findClusterByEmotion(emotionLabel);
+      if (cluster) {
+        chapterIds.push(...cluster.relatedChapterIds);
+        clusters.set(levelId, cluster);
+      }
+    }
+    
+    if (levelId && !levelIds.includes(levelId)) {
+      levelIds.push(levelId);
     }
   });
   
   // Apply disambiguation rules
   const { primary, secondaries } = applyDisambiguationRules(levelIds);
   
-  // Collect secondary level IDs from clusters
+  // Collect secondary level IDs from clusters and default mappings
   const secondarySet = new Set<string>();
   secondaries.forEach((levelId) => {
     secondarySet.add(levelId);
@@ -122,19 +286,36 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
     }
   });
   
+  // Add default secondary mappings based on primary level
+  const defaultSecondaries: Record<string, string[]> = {
+    'shame': ['guilt'],
+    'guilt': ['shame'],
+    'fear': [],
+    'anger': ['desire'],
+    'desire': ['anger', 'fear'],
+    'grief': [],
+    'apathy': ['fear'],
+    'pride': [],
+  };
+  
+  const defaultSecondary = defaultSecondaries[primary] || [];
+  defaultSecondary.forEach(id => secondarySet.add(id));
+  
   // Collect related chapter IDs
   const relatedChapters = new Set<string>(chapterIds);
+  
+  // Add default chapters based on primary level
+  if (primary === 'fear') {
+    relatedChapters.add('stress');
+  }
+  if (primary === 'anger') {
+    relatedChapters.add('expression');
+  }
+  
+  // Also collect from clusters
   const primaryCluster = clusters.get(primary);
   if (primaryCluster) {
     primaryCluster.relatedChapterIds.forEach(id => relatedChapters.add(id));
-    // Add stress chapter if fear-related
-    if (primary === 'fear') {
-      relatedChapters.add('stress');
-    }
-    // Add expression chapter if anger-related
-    if (primary === 'anger') {
-      relatedChapters.add('expression');
-    }
   }
   
   // Remove duplicates and filter out the primary from secondaries

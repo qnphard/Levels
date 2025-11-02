@@ -9,6 +9,7 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import useAudioPlayer from '../hooks/useAudioPlayer';
 import {
   useThemeColors,
+  useGlowEnabled,
   spacing,
   typography,
   borderRadius,
@@ -18,12 +19,22 @@ import {
 type PlayerScreenRouteProp = RouteProp<RootStackParamList, 'Player'>;
 type PlayerScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Player'>;
 
+// Helper to convert hex to rgba
+const toRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+};
+
 export default function PlayerScreen() {
   const route = useRoute<PlayerScreenRouteProp>();
   const navigation = useNavigation<PlayerScreenNavigationProp>();
   const { meditation } = route.params;
   const theme = useThemeColors();
-  const styles = getStyles(theme);
+  const glowEnabled = useGlowEnabled();
+  const styles = getStyles(theme, glowEnabled);
   const {
     isPlaying,
     position,
@@ -66,17 +77,37 @@ export default function PlayerScreen() {
         <Ionicons
           name="chevron-down"
           size={32}
-          color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary}
+          color={theme.mode === 'dark' ? theme.textPrimary : theme.textPrimary}
         />
       </TouchableOpacity>
 
       {/* Meditation Info */}
       <View style={styles.infoContainer}>
-        <View style={styles.thumbnailPlaceholder}>
+        <View style={[
+          styles.thumbnailPlaceholder,
+          glowEnabled && theme.mode === 'dark' && {
+            borderWidth: 2,
+            borderColor: toRgba(theme.primary, 0.6),
+            shadowColor: theme.primary,
+            shadowOpacity: 0.35,
+            shadowRadius: 18,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 0, // Remove elevation to prevent hexagon shape
+          },
+          glowEnabled && theme.mode === 'light' && {
+            borderWidth: 2,
+            borderColor: toRgba(theme.primary, 0.5),
+            shadowColor: theme.primary,
+            shadowOpacity: 0.25,
+            shadowRadius: 16,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 0, // Remove elevation to prevent hexagon shape
+          },
+        ]}>
           <Ionicons
             name="musical-notes"
             size={80}
-            color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary}
+            color={theme.mode === 'dark' ? theme.textPrimary : theme.textPrimary}
           />
         </View>
 
@@ -84,7 +115,27 @@ export default function PlayerScreen() {
         <Text style={styles.instructor}>
           {meditation.instructor || 'Guided Meditation'}
         </Text>
-        <View style={styles.categoryBadge}>
+        <View style={[
+          styles.categoryBadge,
+          glowEnabled && theme.mode === 'dark' && {
+            borderWidth: 1,
+            borderColor: toRgba(theme.primary, 0.4),
+            shadowColor: theme.primary,
+            shadowOpacity: 0.2,
+            shadowRadius: 8,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 3,
+          },
+          glowEnabled && theme.mode === 'light' && {
+            borderWidth: 1,
+            borderColor: toRgba(theme.primary, 0.3),
+            shadowColor: theme.primary,
+            shadowOpacity: 0.15,
+            shadowRadius: 6,
+            shadowOffset: { width: 0, height: 2 },
+            elevation: 2,
+          },
+        ]}>
           <Text style={styles.categoryText}>{meditation.category}</Text>
         </View>
       </View>
@@ -97,9 +148,9 @@ export default function PlayerScreen() {
           onValueChange={(value) => seekTo(value * duration)}
           minimumValue={0}
           maximumValue={1}
-          minimumTrackTintColor={theme.accentGold}
+          minimumTrackTintColor={theme.primary}
           maximumTrackTintColor={theme.mode === 'dark' ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)"}
-          thumbTintColor={theme.buttons.primary.background}
+          thumbTintColor={theme.primary}
         />
         <View style={styles.timeContainer}>
           <Text style={styles.timeText}>{formatTime(position)}</Text>
@@ -113,22 +164,42 @@ export default function PlayerScreen() {
           onPress={() => skip(-15)}
           style={styles.controlButton}
         >
-          <Ionicons name="play-back" size={36} color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary} />
+          <Ionicons name="play-back" size={36} color={theme.mode === 'dark' ? theme.textPrimary : theme.textPrimary} />
           <Text style={styles.skipText}>15</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={playPause}
-          style={styles.playButton}
+          style={[
+            styles.playButton,
+            glowEnabled && theme.mode === 'dark' && {
+              shadowColor: theme.primary,
+              shadowOpacity: 0.5,
+              shadowRadius: 20,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: 10,
+              borderWidth: 2,
+              borderColor: toRgba(theme.primary, 0.6),
+            },
+            glowEnabled && theme.mode === 'light' && {
+              shadowColor: theme.primary,
+              shadowOpacity: 0.4,
+              shadowRadius: 18,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: 8,
+              borderWidth: 2,
+              borderColor: toRgba(theme.primary, 0.5),
+            },
+          ]}
           disabled={isLoading}
         >
           {isLoading ? (
-            <Ionicons name="hourglass" size={48} color={theme.accentTeal} />
+            <Ionicons name="hourglass" size={48} color={theme.mode === 'dark' ? theme.textPrimary : theme.white} />
           ) : (
             <Ionicons
               name={isPlaying ? 'pause' : 'play'}
               size={48}
-              color={theme.deepMist}
+              color={theme.mode === 'dark' ? theme.textPrimary : theme.white}
             />
           )}
         </TouchableOpacity>
@@ -137,7 +208,7 @@ export default function PlayerScreen() {
           onPress={() => skip(15)}
           style={styles.controlButton}
         >
-          <Ionicons name="play-forward" size={36} color={theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary} />
+          <Ionicons name="play-forward" size={36} color={theme.mode === 'dark' ? theme.textPrimary : theme.textPrimary} />
           <Text style={styles.skipText}>15</Text>
         </TouchableOpacity>
       </View>
@@ -150,7 +221,7 @@ export default function PlayerScreen() {
   );
 }
 
-const getStyles = (theme: ThemeColors) =>
+const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -169,31 +240,43 @@ const getStyles = (theme: ThemeColors) =>
       width: 200,
       height: 200,
       borderRadius: 100,
-      backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+      backgroundColor: theme.mode === 'dark' 
+        ? 'rgba(167, 139, 250, 0.15)' 
+        : 'rgba(167, 139, 250, 0.12)',
       justifyContent: 'center',
       alignItems: 'center',
       marginBottom: spacing.lg,
+      borderWidth: glowEnabled ? (theme.mode === 'dark' ? 2 : 2) : 1,
+      borderColor: glowEnabled 
+        ? (theme.mode === 'dark' ? toRgba(theme.primary, 0.6) : toRgba(theme.primary, 0.5))
+        : (theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'),
     },
     title: {
       fontSize: typography.h2,
       fontWeight: typography.bold,
-      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
+      color: theme.textPrimary,
       textAlign: 'center',
       marginBottom: spacing.xs,
     },
     instructor: {
       fontSize: typography.body,
-      color: theme.mode === 'dark' ? theme.textLight : theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textSecondary : theme.textSecondary,
       marginBottom: spacing.sm,
     },
     categoryBadge: {
-      backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)',
+      backgroundColor: theme.mode === 'dark' 
+        ? 'rgba(167, 139, 250, 0.18)' 
+        : 'rgba(167, 139, 250, 0.12)',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.xs,
       borderRadius: borderRadius.round,
+      borderWidth: glowEnabled ? 1 : 0,
+      borderColor: glowEnabled 
+        ? (theme.mode === 'dark' ? toRgba(theme.primary, 0.4) : toRgba(theme.primary, 0.3))
+        : 'transparent',
     },
     categoryText: {
-      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
+      color: theme.textPrimary,
       fontWeight: typography.semibold,
     },
     progressContainer: {
@@ -210,7 +293,7 @@ const getStyles = (theme: ThemeColors) =>
       paddingHorizontal: spacing.xs,
     },
     timeText: {
-      color: theme.mode === 'dark' ? theme.textLight : theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textSecondary : theme.textSecondary,
       fontSize: typography.small,
     },
     controls: {
@@ -228,20 +311,26 @@ const getStyles = (theme: ThemeColors) =>
       width: 86,
       height: 86,
       borderRadius: 43,
-      backgroundColor: theme.accentPeach,
+      backgroundColor: theme.mode === 'dark' 
+        ? theme.primary 
+        : theme.primary,
       justifyContent: 'center',
       alignItems: 'center',
       marginHorizontal: spacing.lg,
-      shadowColor: theme.buttons.primary.shadow,
+      shadowColor: theme.primary,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 5,
+      shadowOpacity: glowEnabled ? (theme.mode === 'dark' ? 0.5 : 0.4) : 0.3,
+      shadowRadius: glowEnabled ? 20 : 8,
+      elevation: glowEnabled ? 10 : 5,
+      borderWidth: glowEnabled ? (theme.mode === 'dark' ? 2 : 2) : 0,
+      borderColor: glowEnabled 
+        ? (theme.mode === 'dark' ? toRgba(theme.primary, 0.6) : toRgba(theme.primary, 0.5))
+        : 'transparent',
     },
     skipText: {
       position: 'absolute',
       fontSize: typography.tiny,
-      color: theme.mode === 'dark' ? theme.headingOnGradient : theme.textPrimary,
+      color: theme.textPrimary,
       fontWeight: typography.bold,
       bottom: spacing.sm,
       alignSelf: 'center',
@@ -252,7 +341,7 @@ const getStyles = (theme: ThemeColors) =>
     },
     description: {
       fontSize: typography.body,
-      color: theme.mode === 'dark' ? theme.textLight : theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textSecondary : theme.textSecondary,
       textAlign: 'center',
       lineHeight: 24,
     },

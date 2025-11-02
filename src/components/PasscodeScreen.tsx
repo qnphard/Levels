@@ -254,12 +254,16 @@ const getStyles = (theme: ThemeColors) =>
     key: {
       width: 80,
       height: 80,
-      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+      backgroundColor: theme.mode === 'dark' 
+        ? 'rgba(167, 139, 250, 0.15)' 
+        : 'rgba(255, 255, 255, 0.9)',
       borderRadius: 40,
       justifyContent: 'center',
       alignItems: 'center',
-      borderWidth: 2,
-      borderColor: 'rgba(139, 92, 246, 0.3)',
+      borderWidth: 1,
+      borderColor: theme.mode === 'dark' 
+        ? 'rgba(167, 139, 250, 0.3)' 
+        : 'rgba(139, 92, 246, 0.25)',
     },
     keyText: {
       fontSize: 32,

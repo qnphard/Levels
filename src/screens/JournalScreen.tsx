@@ -16,12 +16,22 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import {
   useThemeColors,
+  useGlowEnabled,
   typography,
   spacing,
   borderRadius,
   ThemeColors,
 } from '../theme/colors';
 import PasscodeScreen from '../components/PasscodeScreen';
+
+// Helper to convert hex to rgba
+const toRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+};
 
 interface JournalPrompt {
   text: string;
@@ -44,7 +54,8 @@ const STORAGE_KEYS = {
 
 export default function JournalScreen() {
   const theme = useThemeColors();
-  const styles = getStyles(theme);
+  const glowEnabled = useGlowEnabled();
+  const styles = getStyles(theme, glowEnabled);
   const [journalText, setJournalText] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [entries, setEntries] = useState<Array<{ text: string; date: Date }>>([]);
@@ -250,9 +261,29 @@ export default function JournalScreen() {
                 </View>
 
                 {/* Writing Area */}
-                <View style={styles.writingSection}>
+                <View style={[
+                  styles.writingSection,
+                  glowEnabled && theme.mode === 'dark' && {
+                    borderWidth: 2,
+                    borderColor: toRgba(theme.primary, 0.6),
+                    shadowColor: theme.primary,
+                    shadowOpacity: 0.3,
+                    shadowRadius: 16,
+                    shadowOffset: { width: 0, height: 2 },
+                    elevation: 0, // Remove elevation to prevent square shadow
+                  },
+                  glowEnabled && theme.mode === 'light' && {
+                    borderWidth: 2,
+                    borderColor: toRgba(theme.primary, 0.5),
+                    shadowColor: theme.primary,
+                    shadowOpacity: 0.25,
+                    shadowRadius: 14,
+                    shadowOffset: { width: 0, height: 2 },
+                    elevation: 0, // Remove elevation to prevent square shadow
+                  },
+                ]}>
                   <View style={styles.writingHeader}>
-                    <Ionicons name="create-outline" size={20} color={theme.textSecondary} />
+                    <Ionicons name="create-outline" size={20} color={theme.mode === 'dark' ? theme.textPrimary : theme.textSecondary} />
                     <Text style={styles.writingTitle}>Express yourself</Text>
                   </View>
 
@@ -260,7 +291,7 @@ export default function JournalScreen() {
                     style={styles.textInput}
                     multiline
                     placeholder="Whatever you're feeling... it's okay to feel it."
-                    placeholderTextColor={theme.textMuted}
+                    placeholderTextColor={theme.mode === 'dark' ? theme.textSecondary : theme.textMuted}
                     value={journalText}
                     onChangeText={setJournalText}
                     textAlignVertical="top"
@@ -360,7 +391,7 @@ export default function JournalScreen() {
   );
 }
 
-const getStyles = (theme: ThemeColors) =>
+const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -382,13 +413,13 @@ const getStyles = (theme: ThemeColors) =>
     headerTitle: {
       fontSize: typography.h1,
       fontWeight: typography.bold,
-      color: '#1E293B',
+      color: theme.mode === 'dark' ? theme.textPrimary : '#1E293B',
       marginBottom: spacing.xs,
       letterSpacing: -0.5,
     },
     headerSubtitle: {
       fontSize: typography.body,
-      color: '#64748B',
+      color: theme.mode === 'dark' ? theme.textSecondary : '#64748B',
       lineHeight: 22,
     },
     promptsSection: {
@@ -397,7 +428,7 @@ const getStyles = (theme: ThemeColors) =>
     promptsTitle: {
       fontSize: typography.small,
       fontWeight: typography.semibold,
-      color: theme.textSecondary,
+      color: theme.mode === 'dark' ? theme.textPrimary : theme.textSecondary,
       marginBottom: spacing.md,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
@@ -432,11 +463,17 @@ const getStyles = (theme: ThemeColors) =>
       fontWeight: typography.semibold,
     },
     writingSection: {
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundColor: theme.mode === 'dark' 
+        ? 'rgba(255, 255, 255, 0.05)'
+        : 'rgba(255, 255, 255, 0.7)',
       borderRadius: borderRadius.xl,
       padding: spacing.lg,
-      borderWidth: 1,
-      borderColor: 'rgba(203, 213, 225, 0.4)',
+      borderWidth: glowEnabled ? (theme.mode === 'dark' ? 2 : 2) : (theme.mode === 'dark' ? 1 : 1),
+      borderColor: glowEnabled 
+        ? (theme.mode === 'dark' ? toRgba(theme.primary, 0.8) : toRgba(theme.primary, 0.95))
+        : (theme.mode === 'dark'
+            ? 'rgba(255, 255, 255, 0.08)'
+            : 'rgba(203, 213, 225, 0.4)'),
       marginBottom: spacing.xl,
     },
     writingHeader: {

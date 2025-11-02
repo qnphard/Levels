@@ -25,6 +25,7 @@ import { emotionClusters, getUniversalEmotions } from '../data/emotions';
 import { getPrimaryRoute, fuzzyMatchEmotion } from '../data/emotionRouting';
 import { getLevelById } from '../data/levels';
 import { useEmotionHistory } from '../hooks/useEmotionHistory';
+import { levelExplanations, getCopingTrapText } from '../data/levelExplanations';
 import { RootStackParamList } from '../navigation/AppNavigator';
 
 interface WhyFeelingSheetProps {
@@ -545,34 +546,49 @@ export default function WhyFeelingSheet({
                 </View>
               )}
 
-              {step === 3 && routeResult && (
-                <View style={styles.stepContent}>
-                  <View style={styles.explanationContainer}>
-                    <Text style={styles.explanationTitle}>Why this happens:</Text>
-                    
-                    <View style={styles.bulletPoint}>
-                      <Text style={styles.bulletText}>
-                        <Text style={styles.bulletBold}>Reservoir + trigger:</Text> Events pull up stored emotion. The feelings you're experiencing aren't just from what's happening now—they're connected to past experiences that haven't been fully processed.
-                      </Text>
-                    </View>
+              {step === 3 && routeResult && (() => {
+                const explanation = levelExplanations[routeResult.primaryLevelId];
+                const copingTrapText = getCopingTrapText(
+                  routeResult.primaryLevelId,
+                  selectedSituations
+                );
+                
+                return (
+                  <View style={styles.stepContent}>
+                    <View style={styles.explanationContainer}>
+                      <Text style={styles.explanationTitle}>Why this happens:</Text>
+                      
+                      <View style={styles.bulletPoint}>
+                        <Text style={styles.bulletText}>
+                          <Text style={styles.bulletBold}>Reservoir + trigger:</Text>{' '}
+                          {explanation?.reservoir || 'Events pull up stored emotion. The feelings you\'re experiencing aren\'t just from what\'s happening now—they\'re connected to past experiences that haven\'t been fully processed.'}
+                        </Text>
+                      </View>
 
-                    <View style={styles.bulletPoint}>
-                      <Text style={styles.bulletText}>
-                        <Text style={styles.bulletBold}>Coping traps:</Text>{' '}
-                        {selectedSituations.includes('urge-to-vent')
-                          ? 'Venting rehearses the state. Expressing emotions outwardly might feel like release, but it actually strengthens the emotional pattern.'
-                          : selectedSituations.includes('urge-to-escape')
-                          ? 'Escape postpones the wave. Distracting yourself only delays the inevitable—the emotion will return with more force.'
-                          : 'Suppressing or avoiding emotions creates inner pressure. This constant mental effort exhausts you and the feelings tend to resurface when pressure is off.'}
-                      </Text>
-                    </View>
+                      <View style={styles.bulletPoint}>
+                        <Text style={styles.bulletText}>
+                          <Text style={styles.bulletBold}>Coping traps:</Text>{' '}
+                          {copingTrapText}
+                        </Text>
+                      </View>
 
-                    <View style={styles.bulletPoint}>
-                      <Text style={styles.bulletText}>
-                        <Text style={styles.bulletBold}>Stress angle:</Text> Stress is fear of the future. When fear dissolves, stress does too. Most of what we call "stress" is actually unexamined fear energy, temporarily stirred by circumstances.
-                      </Text>
+                      <View style={styles.bulletPoint}>
+                        <Text style={styles.bulletText}>
+                          <Text style={styles.bulletBold}>
+                            {routeResult.primaryLevelId === 'fear' ? 'Stress angle:' : 
+                             routeResult.primaryLevelId === 'shame' ? 'The distinction:' :
+                             routeResult.primaryLevelId === 'guilt' ? 'The purpose:' :
+                             routeResult.primaryLevelId === 'anger' ? 'What it shows you:' :
+                             routeResult.primaryLevelId === 'desire' ? 'What it points to:' :
+                             routeResult.primaryLevelId === 'grief' ? 'The meaning:' :
+                             routeResult.primaryLevelId === 'apathy' ? 'What it really is:' :
+                             routeResult.primaryLevelId === 'pride' ? 'What protects:' :
+                             'The angle:'}
+                          </Text>{' '}
+                          {explanation?.thirdAngle || 'Understanding the deeper pattern helps you move through this experience with more awareness.'}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
 
                   {/* Primary Route Button */}
                   {(() => {
@@ -677,7 +693,8 @@ export default function WhyFeelingSheet({
                     </Pressable>
                   </View>
                 </View>
-              )}
+                );
+              })()}
       </ScrollView>
     </View>
   </Modal>

@@ -19,6 +19,7 @@
     "expo-blur": "~15.0.7",
     "expo-dev-client": "~6.0.16",
     "expo-linear-gradient": "^15.0.7",
+    "expo-navigation-bar": "~5.0.9",
     "expo-status-bar": "~3.0.8",
     "react": "19.1.0",
     "react-dom": "19.1.0",
@@ -33,6 +34,7 @@
     "@types/react": "~19.1.0",
     "dotenv": "^17.2.3",
     "gbox-sdk": "^0.29.0",
+    "sharp": "^0.34.4",
     "tsx": "^4.20.6",
     "typescript": "~5.9.2"
   },

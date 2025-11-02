@@ -10,7 +10,6 @@ import HomeScreen from '../screens/HomeScreen';
 import LibraryScreen from '../screens/LibraryScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import PlayerScreen from '../screens/PlayerScreen';
-import CheckInScreen from '../screens/CheckInScreen';
 import JourneyMapScreen from '../screens/JourneyMapScreen';
 import LevelDetailScreen from '../screens/LevelDetailScreen';
 import LevelChapterScreen from '../screens/LevelChapterScreen';
@@ -23,7 +22,6 @@ import { useThemeColors } from '../theme/colors';
 export type RootStackParamList = {
   Main: undefined;
   Player: { meditation: Meditation };
-  CheckIn: undefined;
   JourneyMap: undefined;
   LevelDetail: { levelId: string };
   LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles'; sourceFeeling?: string };
@@ -62,8 +60,12 @@ function MainTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.textMuted,
+        tabBarActiveTintColor: theme.mode === 'dark' 
+          ? 'rgba(139, 92, 246, 0.75)' // Reduced opacity for dark theme
+          : theme.primary,
+        tabBarInactiveTintColor: theme.mode === 'dark' 
+          ? 'rgba(167, 139, 250, 0.5)' // Muted violet for dark mode
+          : 'rgba(139, 92, 246, 0.5)', // Muted violet for light mode
         tabBarStyle: {
           backgroundColor: 'transparent',
           borderTopColor: 'transparent',
@@ -76,6 +78,9 @@ function MainTabs() {
           <SafeBlurView
             tint={theme.mode === 'dark' ? 'dark' : 'light'}
             intensity={45}
+            backgroundColor={theme.mode === 'dark'
+              ? 'rgba(15, 28, 34, 0.85)' // Dark violet-tinted background
+              : 'rgba(247, 245, 250, 0.9)'} // Light violet-tinted background
             style={StyleSheet.absoluteFill}
           />
         ),
@@ -118,11 +123,6 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Player"
           component={PlayerScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
-        />
-        <Stack.Screen
-          name="CheckIn"
-          component={CheckInScreen}
           options={{ headerShown: false, presentation: 'modal' }}
         />
         <Stack.Screen

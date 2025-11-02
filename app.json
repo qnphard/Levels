@@ -4,7 +4,7 @@
     "slug": "meditation-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/levels-logo.png",
+    "icon": "./assets/images/levels-thumbnail.png",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -16,7 +16,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/levels-logo.png",
+        "foregroundImage": "./assets/images/levels-thumbnail.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.anonymous.meditationapp",
@@ -27,7 +27,7 @@
       "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/images/levels-logo.png"
+      "favicon": "./assets/images/levels-thumbnail.png"
     },
     "extra": {
       "eas": {

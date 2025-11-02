@@ -7,6 +7,7 @@ interface SafeBlurViewProps {
   intensity: number;
   style?: ViewStyle;
   children?: React.ReactNode;
+  backgroundColor?: string; // Custom background color override
 }
 
 /**
@@ -18,17 +19,19 @@ export default function SafeBlurView({
   intensity,
   style,
   children,
+  backgroundColor,
 }: SafeBlurViewProps) {
   // On Android, especially real devices, BlurView can cause crashes
   // due to "Software rendering doesn't support hardware bitmaps".
   // We provide a fallback View with a similar semi-transparent background.
   if (Platform.OS === 'android') {
-    const backgroundColor =
+    const defaultBackgroundColor =
       tint === 'dark'
         ? `rgba(0,0,0,${intensity / 100 * 0.7})`
         : `rgba(255,255,255,${intensity / 100 * 0.7})`;
+    const finalBackgroundColor = backgroundColor || defaultBackgroundColor;
     return (
-      <View style={[style, { backgroundColor }]}>
+      <View style={[style, { backgroundColor: finalBackgroundColor }]}>
         {children}
       </View>
     );
