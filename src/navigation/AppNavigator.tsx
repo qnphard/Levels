@@ -16,17 +16,31 @@ import LevelChapterScreen from '../screens/LevelChapterScreen';
 import JournalScreen from '../screens/JournalScreen';
 import LearnHubScreen from '../screens/LearnHubScreen';
 import ChapterScreen from '../screens/ChapterScreen';
+import LettingGoScreen from '../screens/LettingGoScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
+
+export type LevelTheme = {
+  gradient: readonly [string, string];
+  gradientDark: readonly [string, string];
+  color: string;
+  glowDark?: string;
+};
 
 export type RootStackParamList = {
   Main: undefined;
   Player: { meditation: Meditation };
   JourneyMap: undefined;
-  LevelDetail: { levelId: string };
-  LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles'; sourceFeeling?: string };
+  LevelDetail: { levelId: string; levelTheme?: LevelTheme };
+  LevelChapter: {
+    levelId: string;
+    initialView?: 'overview' | 'meditations' | 'articles';
+    sourceFeeling?: string;
+    levelTheme?: LevelTheme;
+  };
   LearnHub: undefined;
   Chapter: { chapterId: string };
+  LettingGo: undefined;
 };
 
 export type MainTabParamList = {
@@ -148,6 +162,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Chapter"
           component={ChapterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LettingGo"
+          component={LettingGoScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

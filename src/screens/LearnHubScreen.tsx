@@ -57,13 +57,18 @@ export default function LearnHubScreen() {
   const categories: (FeelingChapterCategory | 'All')[] = [
     'All',
     'Coping Patterns',
+    'Core Practices',
     'Triggers',
     'Body',
     'Mind',
   ];
 
   const handleChapterPress = (chapterId: string) => {
-    navigation.navigate('Chapter', { chapterId });
+    if (chapterId === 'letting-go') {
+      navigation.navigate('LettingGo');
+    } else {
+      navigation.navigate('Chapter', { chapterId });
+    }
   };
 
   // Calculate card width for grid (always 2 per row regardless of screen size)

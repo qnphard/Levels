@@ -32,15 +32,26 @@ export default function LevelDetailScreen() {
   const route = useRoute<LevelDetailRouteProp>();
   const theme = useThemeColors();
   const glowEnabled = useGlowEnabled();
-  const { levelId } = route.params;
+  const { levelId, levelTheme } = route.params;
   const level = getLevelById(levelId);
-  
-  // Use violet theme colors instead of level-specific colors
-  const luminousAccent = theme.primary;
-  
+
+  const accent = useMemo(() => {
+    if (levelTheme) {
+      if (theme.mode === 'dark') {
+        return (
+          levelTheme.glowDark ||
+          levelTheme.gradientDark[0] ||
+          adjustColor(levelTheme.color, 8)
+        );
+      }
+      return levelTheme.gradient[0] ?? adjustColor(levelTheme.color, -6);
+    }
+    return theme.primary;
+  }, [levelTheme, theme]);
+
   const styles = useMemo(
-    () => getStyles(theme, luminousAccent, glowEnabled),
-    [theme, luminousAccent, glowEnabled]
+    () => getStyles(theme, accent, glowEnabled),
+    [theme, accent, glowEnabled]
   );
   const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
     useUserProgress();
@@ -68,8 +79,18 @@ export default function LevelDetailScreen() {
 
   const isCurrentLevel = progress?.currentLevel === level.id;
 
-  // Use violet theme gradients
-  const violetGradients = theme.mode === 'dark'
+  const backgroundGradient = useMemo(() => {
+    if (levelTheme) {
+      const pair = theme.mode === 'dark' ? levelTheme.gradientDark : levelTheme.gradient;
+      const [start, end] = pair;
+      const tail = adjustColor(
+        end,
+        theme.mode === 'dark' ? -8 : -24
+      );
+      return [start, end, tail] as const;
+    }
+    // Fallback to violet theme gradients
+    const violetGradients = theme.mode === 'dark'
     ? {
         healing: ['#8B5CF6', '#A78BFA', '#C4B5FD'] as const,
         empowerment: ['#7C3AED', '#8B5CF6', '#A78BFA'] as const,
@@ -82,9 +103,18 @@ export default function LevelDetailScreen() {
         spiritual: ['#EDE9FE', '#F5F3FF', '#FAF5FF'] as const,
         enlightenment: ['#F5F3FF', '#FAF5FF', '#FDF4FF'] as const,
       };
-  
-  const backgroundGradient = violetGradients[level.category] || violetGradients.healing;
-  const accentColor = theme.primary;
+    return violetGradients[level.category] || violetGradients.healing;
+  }, [level, levelTheme, theme]);
+
+  const headerGradient = useMemo(() => {
+    if (levelTheme) {
+      const pair = theme.mode === 'dark' ? levelTheme.gradientDark : levelTheme.gradient;
+      return pair;
+    }
+    return theme.mode === 'dark'
+      ? ['#8B5CF6', '#7C3AED'] as const
+      : ['#C4B5FD', '#DDD6FE'] as const;
+  }, [levelTheme, theme]);
 
   const handleSetAsCurrent = async () => {
     await setCurrentLevel(level.id);
@@ -107,9 +137,7 @@ export default function LevelDetailScreen() {
     >
       {/* Header with gradient */}
       <LinearGradient
-        colors={theme.mode === 'dark' 
-          ? ['#8B5CF6', '#7C3AED'] as const
-          : ['#C4B5FD', '#DDD6FE'] as const}
+        colors={headerGradient}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -204,8 +232,8 @@ export default function LevelDetailScreen() {
           styles.wayThroughSection,
           glowEnabled && theme.mode === 'dark' && {
             borderWidth: 2,
-            borderColor: toRgba(accentColor, 0.6),
-            shadowColor: accentColor,
+            borderColor: toRgba(accent, 0.6),
+            shadowColor: accent,
             shadowOpacity: 0.3,
             shadowRadius: 16,
             shadowOffset: { width: 0, height: 2 },
@@ -213,8 +241,8 @@ export default function LevelDetailScreen() {
           },
           glowEnabled && theme.mode === 'light' && {
             borderWidth: 2,
-            borderColor: toRgba(accentColor, 0.4),
-            shadowColor: accentColor,
+            borderColor: toRgba(accent, 0.4),
+            shadowColor: accent,
             shadowOpacity: 0.25,
             shadowRadius: 14,
             shadowOffset: { width: 0, height: 2 },
@@ -262,11 +290,11 @@ export default function LevelDetailScreen() {
 
           {isCurrentLevel && (
             <View style={[styles.currentFocusBadge, {
-              backgroundColor: `${accentColor}20`,
-              borderColor: accentColor,
+              backgroundColor: `${accent}20`,
+              borderColor: accent,
             }]}>
-              <Ionicons name="bookmark" size={20} color={accentColor} />
-              <Text style={[styles.currentFocusText, { color: accentColor }]}>Your Current Focus</Text>
+              <Ionicons name="bookmark" size={20} color={accent} />
+              <Text style={[styles.currentFocusText, { color: accent }]}>Your Current Focus</Text>
             </View>
           )}
 
@@ -666,4 +694,3 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       marginTop: spacing.xxl,
     },
   });
-

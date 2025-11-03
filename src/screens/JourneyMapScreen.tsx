@@ -230,9 +230,20 @@ export default function JourneyMapScreen() {
   });
 
   const openChapter = (level: ConsciousnessLevel, view: ChapterView) => {
+    const baseGradient =
+      level.gradient ??
+      ([adjustColor(level.color, 18), adjustColor(level.color, -10)] as const);
+    const darkGradient = level.gradientDark ?? baseGradient;
+
     navigation.navigate('LevelChapter', {
       levelId: level.id,
       initialView: view,
+      levelTheme: {
+        gradient: baseGradient,
+        gradientDark: darkGradient,
+        color: level.color,
+        glowDark: level.glowDark,
+      },
     });
   };
 

@@ -51,6 +51,16 @@ export const feelingsChapters: FeelingChapter[] = [
     relatedChapters: ['suppression', 'repression', 'expression', 'escape'],
     mdPath: 'stress',
   },
+  {
+    id: 'letting-go',
+    title: 'Letting Go (Releasing Emotions)',
+    summary: 'Release emotions by allowing them fully—anytime, anywhere.',
+    readTime: 5,
+    category: 'Core Practices',
+    glowColor: 'violet',
+    relatedChapters: ['suppression', 'expression', 'escape', 'stress'],
+    mdPath: 'letting-go',
+  },
 ];
 
 export const getChapterById = (id: string): FeelingChapter | undefined => {

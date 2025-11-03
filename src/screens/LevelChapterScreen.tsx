@@ -45,32 +45,51 @@ export default function LevelChapterScreen() {
   const theme = useThemeColors();
   const glowEnabled = useGlowEnabled();
   const { width: windowWidth } = useWindowDimensions();
-  const { levelId, initialView, sourceFeeling } = route.params;
+  const { levelId, initialView, sourceFeeling, levelTheme: routeLevelTheme } = route.params;
   const level = getLevelById(levelId);
-  const luminousAccent = useMemo(() => {
-    if (!level) {
-      return theme.primary;
+
+  const levelTheme = useMemo(() => {
+    if (routeLevelTheme) {
+      return routeLevelTheme;
     }
+    if (level) {
+      const baseGradient =
+        level.gradient ??
+        ([adjustColor(level.color, 18), adjustColor(level.color, -10)] as const);
+      const darkGradient = level.gradientDark ?? baseGradient;
+      return {
+        gradient: baseGradient,
+        gradientDark: darkGradient,
+        color: level.color,
+        glowDark: level.glowDark,
+      };
+    }
+    return null;
+  }, [routeLevelTheme, level]);
+
+  const luminousAccent = useMemo(() => {
+    if (!levelTheme) return theme.primary;
     if (theme.mode === 'dark') {
       return (
-        level.glowDark ||
-        level.gradientDark?.[0] ||
-        adjustColor(level.color, 8)
+        levelTheme.glowDark ||
+        levelTheme.gradientDark[0] ||
+        adjustColor(levelTheme.color, 8)
       );
     }
-    return level.gradient?.[0] ?? adjustColor(level.color, -6);
-  }, [level, theme]);
-  
+    return levelTheme.gradient[0] ?? adjustColor(levelTheme.color, -6);
+  }, [levelTheme, theme]);
+
   // Get level-specific button color (toned down by 20% in dark theme)
   const buttonColor = useMemo(() => {
-    if (!level) return theme.primary;
-    const baseColor = theme.mode === 'dark'
-      ? (level.glowDark || level.gradientDark?.[0] || level.color)
-      : (level.gradient?.[0] || level.color);
+    if (!levelTheme) return theme.primary;
+    const baseColor =
+      theme.mode === 'dark'
+        ? levelTheme.glowDark || levelTheme.gradientDark[0] || levelTheme.color
+        : levelTheme.gradient[0] || levelTheme.color;
     // Tone down by 20% in dark theme (80% opacity)
     return theme.mode === 'dark' ? toRgba(baseColor, 0.8) : baseColor;
-  }, [level, theme]);
-  
+  }, [levelTheme, theme]);
+
   const styles = useMemo(
     () => getStyles(theme, luminousAccent, windowWidth, glowEnabled),
     [theme, luminousAccent, windowWidth, glowEnabled]
@@ -88,21 +107,12 @@ export default function LevelChapterScreen() {
   const [activeTab, setActiveTab] = useState<ChapterTab>(initialView ?? 'overview');
 
   const chapterGradient = useMemo(() => {
-    const base =
-      level.gradient ??
-      ([
-        adjustColor(level.color, 12),
-        adjustColor(level.color, -16),
-      ] as const);
-    const dark = level.gradientDark ?? base;
-    const pair = theme.mode === 'dark' ? dark : base;
+    if (!levelTheme) return [theme.primary, theme.primary, theme.primary];
+    const pair = theme.mode === 'dark' ? levelTheme.gradientDark : levelTheme.gradient;
     const [start, end] = pair;
-    const tail = adjustColor(
-      end,
-      theme.mode === 'dark' ? -8 : -24
-    );
+    const tail = adjustColor(end, theme.mode === 'dark' ? -8 : -24);
     return [start, end, tail] as const;
-  }, [level.gradient, level.gradientDark, level.color, theme.mode]);
+  }, [levelTheme, theme.mode]);
 
   const filteredMeditations = useMemo(
     () =>
@@ -127,7 +137,7 @@ export default function LevelChapterScreen() {
   );
 
   const handleOpenDetail = () => {
-    navigation.navigate('LevelDetail', { levelId: level.id });
+    navigation.navigate('LevelDetail', { levelId: level.id, levelTheme });
   };
 
   const renderOverview = (item: ConsciousnessLevel) => (

@@ -4,7 +4,8 @@ import { markdownContentMap } from '../assets/feelings/markdownContent';
 export interface ParsedSection {
   id: string; // anchor-friendly ID
   title: string; // section title
-  level: number; // 2 for H2, 3 for H3
+  level: number; // 1 for H1, 2 for H2, 3 for H3
+  rawContent: string;
 }
 
 export interface ParsedChapter {
@@ -20,65 +21,47 @@ function parseMarkdown(markdown: string): ParsedChapter {
   let title = '';
   let summary = '';
   const sections: ParsedSection[] = [];
-  let foundTitle = false;
-  let foundSummary = false;
+  let currentSection: ParsedSection | null = null;
 
-  // Extract title (first H1)
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (line.startsWith('# ')) {
-      title = line.replace(/^#\s+/, '').trim();
-      foundTitle = true;
-      continue;
-    }
-
-    // Extract summary (first paragraph after title, before first H2)
-    if (foundTitle && !foundSummary && line && !line.startsWith('#')) {
-      // Skip markdown formatting but keep text
-      const cleanLine = line
-        .replace(/\*\*/g, '') // Remove bold
-        .replace(/\*/g, '') // Remove italic
-        .replace(/^>\s+/, '') // Remove blockquote marker
-        .replace(/---/g, '') // Remove horizontal rules
-        .trim();
-      
-      if (cleanLine && cleanLine.length > 20) {
-        // Take first substantial paragraph as summary
-        summary = cleanLine.substring(0, 200); // Limit summary length
-        if (summary.length < cleanLine.length) {
-          summary += '...';
-        }
-        foundSummary = true;
+  for (const line of lines) {
+    const trimmedLine = line.trim();
+    if (trimmedLine.startsWith('# ')) {
+      if (currentSection) {
+        sections.push(currentSection);
       }
-    }
-
-    // Extract sections (H2 and H3)
-    if (line.startsWith('## ')) {
-      const sectionTitle = line.replace(/^##+\s+/, '').trim();
+      const sectionTitle = trimmedLine.substring(2);
       const id = sectionTitle
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/^-|-$/g, '');
-      sections.push({
+      currentSection = {
         id,
         title: sectionTitle,
-        level: line.startsWith('###') ? 3 : 2,
-      });
-    } else if (line.startsWith('### ')) {
-      const sectionTitle = line.replace(/^###+\s+/, '').trim();
-      const id = sectionTitle
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-      sections.push({
-        id,
-        title: sectionTitle,
-        level: 3,
-      });
+        level: 1,
+        rawContent: '',
+      };
+      if (!title) {
+        title = sectionTitle;
+      }
+    } else if (currentSection) {
+      currentSection.rawContent += line + '\n';
     }
   }
 
-  // Fallback summary if not found
+  if (currentSection) {
+    sections.push(currentSection);
+  }
+  
+  if (sections.length > 0) {
+    const firstSectionContent = sections[0].rawContent.trim();
+    if (firstSectionContent) {
+        summary = firstSectionContent.substring(0, 200);
+        if (summary.length < firstSectionContent.length) {
+            summary += '...';
+        }
+    }
+  }
+
   if (!summary) {
     summary = 'Learn about how emotions work and why they return.';
   }
