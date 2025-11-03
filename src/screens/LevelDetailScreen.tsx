@@ -35,8 +35,30 @@ export default function LevelDetailScreen() {
   const { levelId } = route.params;
   const level = getLevelById(levelId);
   
-  // Use violet theme colors instead of level-specific colors
-  const luminousAccent = theme.primary;
+  // Use level-specific colors like LevelChapterScreen
+  const luminousAccent = useMemo(() => {
+    if (!level) {
+      return theme.primary;
+    }
+    if (theme.mode === 'dark') {
+      return (
+        level.glowDark ||
+        level.gradientDark?.[0] ||
+        adjustColor(level.color, 8)
+      );
+    }
+    return level.gradient?.[0] ?? adjustColor(level.color, -6);
+  }, [level, theme]);
+  
+  // Get level-specific button color (toned down by 20% in dark theme)
+  const buttonColor = useMemo(() => {
+    if (!level) return theme.primary;
+    const baseColor = theme.mode === 'dark'
+      ? (level.glowDark || level.gradientDark?.[0] || level.color)
+      : (level.gradient?.[0] || level.color);
+    // Tone down by 20% in dark theme (80% opacity)
+    return theme.mode === 'dark' ? toRgba(baseColor, 0.8) : baseColor;
+  }, [level, theme]);
   
   const styles = useMemo(
     () => getStyles(theme, luminousAccent, glowEnabled),
@@ -68,23 +90,26 @@ export default function LevelDetailScreen() {
 
   const isCurrentLevel = progress?.currentLevel === level.id;
 
-  // Use violet theme gradients
-  const violetGradients = theme.mode === 'dark'
-    ? {
-        healing: ['#8B5CF6', '#A78BFA', '#C4B5FD'] as const,
-        empowerment: ['#7C3AED', '#8B5CF6', '#A78BFA'] as const,
-        spiritual: ['#A78BFA', '#C4B5FD', '#DDD6FE'] as const,
-        enlightenment: ['#C4B5FD', '#DDD6FE', '#EDE9FE'] as const,
-      }
-    : {
-        healing: ['#C4B5FD', '#E9D5FF', '#F3E8FF'] as const,
-        empowerment: ['#DDD6FE', '#F3E8FF', '#FAF5FF'] as const,
-        spiritual: ['#EDE9FE', '#F5F3FF', '#FAF5FF'] as const,
-        enlightenment: ['#F5F3FF', '#FAF5FF', '#FDF4FF'] as const,
-      };
+  // Use level-specific gradients like LevelChapterScreen
+  const backgroundGradient = useMemo(() => {
+    const base =
+      level.gradient ??
+      ([
+        adjustColor(level.color, 12),
+        adjustColor(level.color, -16),
+      ] as const);
+    const dark = level.gradientDark ?? base;
+    const pair = theme.mode === 'dark' ? dark : base;
+    const [start, end] = pair;
+    const tail = adjustColor(
+      end,
+      theme.mode === 'dark' ? -8 : -24
+    );
+    return [start, end, tail] as const;
+  }, [level.gradient, level.gradientDark, level.color, theme.mode]);
   
-  const backgroundGradient = violetGradients[level.category] || violetGradients.healing;
-  const accentColor = theme.primary;
+  // Use level-specific accent color
+  const accentColor = luminousAccent;
 
   const handleSetAsCurrent = async () => {
     await setCurrentLevel(level.id);
@@ -107,9 +132,15 @@ export default function LevelDetailScreen() {
     >
       {/* Header with gradient */}
       <LinearGradient
-        colors={theme.mode === 'dark' 
-          ? ['#8B5CF6', '#7C3AED'] as const
-          : ['#C4B5FD', '#DDD6FE'] as const}
+        colors={theme.mode === 'dark'
+          ? (level.gradientDark ?? [
+              adjustColor(level.color, 8),
+              adjustColor(level.color, -12),
+            ] as const)
+          : (level.gradient ?? [
+              adjustColor(level.color, 12),
+              adjustColor(level.color, -16),
+            ] as const)}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -182,7 +213,7 @@ export default function LevelDetailScreen() {
               <Ionicons
                 name="body-outline"
                 size={16}
-                color={theme.primary}
+                color={accentColor}
               />
               <Text style={styles.listText}>{sign}</Text>
             </View>
@@ -192,7 +223,7 @@ export default function LevelDetailScreen() {
         {/* The Trap */}
         <View style={[styles.section, styles.trapSection]}>
           <View style={styles.trapHeader}>
-            <Ionicons name="alert-circle" size={20} color={theme.primary} />
+            <Ionicons name="alert-circle" size={20} color={accentColor} />
             <Text style={styles.sectionTitle}>The Trap</Text>
           </View>
           <Text style={styles.trapText}>{String(level.trapDescription || '')}</Text>
@@ -222,7 +253,7 @@ export default function LevelDetailScreen() {
           },
         ]}>
           <View style={styles.wayThroughHeader}>
-            <Ionicons name="compass" size={20} color={theme.primary} />
+            <Ionicons name="compass" size={20} color={accentColor} />
             <Text style={styles.sectionTitle}>The Way Through</Text>
           </View>
           <Text style={styles.wayThroughText}>{level.wayThrough}</Text>
@@ -252,7 +283,7 @@ export default function LevelDetailScreen() {
               <Ionicons
                 name="bookmark-outline"
                 size={20}
-                color={theme.primary}
+                color={accentColor}
               />
               <Text style={styles.secondaryButtonText}>
                 Set as My Current Focus
@@ -273,6 +304,8 @@ export default function LevelDetailScreen() {
           <PrimaryButton
             label="Begin Practice (Coming Soon)"
             onPress={handleBeginPractice}
+            backgroundColor={buttonColor}
+            textColor={theme.white}
           />
         </View>
       </ScrollView>
@@ -392,7 +425,7 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.45)
-          : theme.primary,
+          : toRgba(accent, 0.6),
       ...(glowEnabled && theme.mode === 'dark' && {
         borderWidth: 2,
         borderColor: toRgba(accent, 0.5),
@@ -417,7 +450,7 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       color:
         theme.mode === 'dark'
           ? toRgba(accent, 0.95)
-          : theme.primary,
+          : accent,
       fontWeight: typography.semibold,
     },
     scrollView: {
@@ -455,7 +488,7 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: theme.primary,
+      backgroundColor: accent,
       marginTop: 8,
     },
     listText: {
@@ -587,7 +620,7 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.38)
-          : theme.primary,
+          : toRgba(accent, 0.5),
       ...(glowEnabled && theme.mode === 'dark' && {
         borderWidth: 2,
         borderColor: toRgba(accent, 0.5),
@@ -631,7 +664,7 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       borderColor:
         theme.mode === 'dark'
           ? toRgba(accent, 0.52)
-          : theme.primary,
+          : toRgba(accent, 0.6),
       ...(glowEnabled && theme.mode === 'dark' && {
         borderWidth: 2,
         borderColor: toRgba(accent, 0.6),

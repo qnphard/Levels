@@ -413,20 +413,24 @@ export default function JourneyMapScreen() {
             <View style={styles.textOverlay}>
               <View style={styles.levelContent}>
                 <View style={styles.levelHeader}>
-                  <Text
-                    style={[
-                      styles.levelTitle,
-                      theme.mode === 'dark' && {
-                        textShadowColor: toRgba(glowTint, 0.5),
-                        textShadowOffset: { width: 0, height: 1 },
-                        textShadowRadius: 8,
-                      },
-                    ]}
-                  >
-                    {level.level < 200
-                      ? `Transcending ${String(level.name || '')}`
-                      : String(level.name || '')}
-                  </Text>
+                  <View style={styles.levelTitleContainer}>
+                    <Text
+                      style={[
+                        styles.levelTitle,
+                        theme.mode === 'dark' && {
+                          textShadowColor: toRgba(glowTint, 0.5),
+                          textShadowOffset: { width: 0, height: 1 },
+                          textShadowRadius: 8,
+                        },
+                      ]}
+                      numberOfLines={2}
+                      ellipsizeMode="tail"
+                    >
+                      {level.level < 200
+                        ? `Transcending ${String(level.name || '')}`
+                        : String(level.name || '')}
+                    </Text>
+                  </View>
                   {isCurrent && (
                     <View
                       style={[
@@ -1198,16 +1202,18 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
     },
     levelHeader: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       gap: spacing.sm,
-      flexWrap: 'wrap',
+      marginBottom: spacing.xs,
+    },
+    levelTitleContainer: {
+      flex: 1,
+      minWidth: 0, // Allows text to wrap properly
     },
     levelTitle: {
       fontSize: Platform.OS === 'android' ? typography.h4 : typography.h3, // Smaller on Android for 2-card layout
       fontWeight: typography.semibold, // semibold for better readability
       color: theme.mode === 'dark' ? theme.textPrimary : '#0F172A', // slate-900 for light mode
-      flex: 1,
-      flexShrink: 1,
       letterSpacing: Platform.OS === 'android' ? -0.2 : -0.5,
       lineHeight: Platform.OS === 'android' ? 22 : 26,
       textShadowColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : undefined,
@@ -1219,6 +1225,8 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       paddingHorizontal: spacing.sm,
       paddingVertical: 2,
       borderRadius: borderRadius.sm,
+      flexShrink: 0, // Prevent badge from shrinking
+      marginTop: 2, // Slight alignment adjustment
     },
     currentBadgeText: {
       fontSize: typography.tiny,

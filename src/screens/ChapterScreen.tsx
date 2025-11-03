@@ -34,6 +34,13 @@ export default function ChapterScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ChapterRouteProp>();
   const { chapterId } = route.params;
+  
+  // Route to specialized screen for "Letting Go" chapter
+  if (chapterId === 'letting-go') {
+    const LettingGoChapterScreen = require('./LettingGoChapterScreen').default;
+    return <LettingGoChapterScreen />;
+  }
+  
   const theme = useThemeColors();
   const styles = getStyles(theme);
   

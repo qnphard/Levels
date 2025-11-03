@@ -6,6 +6,7 @@ import * as NavigationBar from 'expo-navigation-bar';
 import AppNavigator from './src/navigation/AppNavigator';
 import { UserProgressProvider } from './src/context/UserProgressContext';
 import ThemeToggleButton from './src/components/ThemeToggleButton';
+import TutorialPopup, { useTutorialPopup } from './src/components/TutorialPopup';
 import {
   ThemeProvider,
   useThemeColors,
@@ -15,6 +16,7 @@ import {
 function AppContent() {
   const theme = useThemeColors();
   const mode = useThemeMode();
+  const { showTutorial, dismissTutorial } = useTutorialPopup();
 
   // Hide Android navigation bar (immersive mode)
   useEffect(() => {
@@ -43,6 +45,7 @@ function AppContent() {
       />
       <AppNavigator />
       <ThemeToggleButton />
+      <TutorialPopup visible={showTutorial} onDismiss={dismissTutorial} />
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
     </View>
   );

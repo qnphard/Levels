@@ -26,7 +26,7 @@ export type RootStackParamList = {
   LevelDetail: { levelId: string };
   LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles'; sourceFeeling?: string };
   LearnHub: undefined;
-  Chapter: { chapterId: string };
+  Chapter: { chapterId: string; tab?: string };
 };
 
 export type MainTabParamList = {
