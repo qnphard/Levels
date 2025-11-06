@@ -16,6 +16,8 @@ import LevelChapterScreen from '../screens/LevelChapterScreen';
 import JournalScreen from '../screens/JournalScreen';
 import LearnHubScreen from '../screens/LearnHubScreen';
 import ChapterScreen from '../screens/ChapterScreen';
+import EssentialsScreen from '../screens/EssentialsScreen';
+import WhatYouReallyAreScreen from '../screens/WhatYouReallyAreScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
@@ -27,6 +29,8 @@ export type RootStackParamList = {
   LevelChapter: { levelId: string; initialView?: 'overview' | 'meditations' | 'articles'; sourceFeeling?: string };
   LearnHub: undefined;
   Chapter: { chapterId: string; tab?: string };
+  Essentials: undefined;
+  WhatYouReallyAre: undefined;
 };
 
 export type MainTabParamList = {
@@ -148,6 +152,16 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Chapter"
           component={ChapterScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Essentials"
+          component={EssentialsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="WhatYouReallyAre"
+          component={WhatYouReallyAreScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

@@ -30,17 +30,26 @@ type ChapterRouteProp = RouteProp<RootStackParamList, 'Chapter'>;
 
 const { width } = Dimensions.get('window');
 
+// Main component - checks chapterId BEFORE calling any hooks
 export default function ChapterScreen() {
-  const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ChapterRouteProp>();
   const { chapterId } = route.params;
   
   // Route to specialized screen for "Letting Go" chapter
+  // MUST check this BEFORE calling any hooks that depend on chapterId
+  // to avoid "Rendered more hooks than during the previous render" error
   if (chapterId === 'letting-go') {
     const LettingGoChapterScreen = require('./LettingGoChapterScreen').default;
     return <LettingGoChapterScreen />;
   }
   
+  // Render the regular chapter screen
+  return <ChapterScreenContent chapterId={chapterId} />;
+}
+
+// Content component - calls all hooks unconditionally
+function ChapterScreenContent({ chapterId }: { chapterId: string }) {
+  const navigation = useNavigation<NavigationProp>();
   const theme = useThemeColors();
   const styles = getStyles(theme);
   
@@ -292,7 +301,12 @@ export default function ChapterScreen() {
               {relatedChapters.map((relatedChapter) => (
                 <Pressable
                   key={relatedChapter.id}
-                  onPress={() => navigation.replace('Chapter', { chapterId: relatedChapter.id })}
+                  onPress={() => {
+                    // Use requestAnimationFrame to ensure navigation happens after current render cycle
+                    requestAnimationFrame(() => {
+                      navigation.replace('Chapter', { chapterId: relatedChapter.id });
+                    });
+                  }}
                   style={[
                     styles.relatedChip,
                     {

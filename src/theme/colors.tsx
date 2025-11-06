@@ -9,7 +9,7 @@ import React, {
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Hawkins-inspired palette tuned for the Settle -> Notice -> Release -> Rest arc.
+// Palette tuned for the Settle -> Notice -> Release -> Rest arc.
 // Each hue carries a psychological intent (sage = safety, sand = groundedness, gold/peach = gentle humanity).
 export const palette = {
   sand50: '#FAF7F2', // Warm sand = calm foundation without stark white

@@ -48,7 +48,7 @@ type ChapterView = 'overview' | 'meditations' | 'articles';
 
 const { width } = Dimensions.get('window');
 const canBlur = Platform.OS !== 'web';
-const CARD_HEIGHT = 280;
+const CARD_HEIGHT = Platform.OS === 'android' ? 320 : 300; // Increased height to accommodate more text
 
 const categoryIcons: Record<
   CategoryKey,
@@ -423,29 +423,12 @@ export default function JourneyMapScreen() {
                           textShadowRadius: 8,
                         },
                       ]}
-                      numberOfLines={2}
-                      ellipsizeMode="tail"
                     >
                       {level.level < 200
                         ? `Transcending ${String(level.name || '')}`
                         : String(level.name || '')}
                     </Text>
                   </View>
-                  {isCurrent && (
-                    <View
-                      style={[
-                        styles.currentBadge,
-                        theme.mode === 'dark' && {
-                          backgroundColor: toRgba(glowTint, 0.3),
-                        },
-                        theme.mode === 'light' && {
-                          backgroundColor: toRgba(glowTint, 0.2),
-                        },
-                      ]}
-                    >
-                      <Text style={styles.currentBadgeText}>Current</Text>
-                    </View>
-                  )}
                 </View>
 
                 <View style={styles.antithesisContainer}>
@@ -457,6 +440,7 @@ export default function JourneyMapScreen() {
                         ? toRgba(glowTint, 0.68) // Further reduced opacity (0.85 * 0.8 = 0.68)
                         : theme.primary
                     }
+                    style={styles.antithesisIcon}
                   />
                   <Text
                     style={[
@@ -467,6 +451,7 @@ export default function JourneyMapScreen() {
                           : theme.primary,
                       },
                     ]}
+                    numberOfLines={2}
                   >
                     {level.level < 200
                       ? `Through ${String(level.antithesis || '')}`
@@ -481,7 +466,7 @@ export default function JourneyMapScreen() {
                       color: toRgba('#E9F1F6', 0.82),
                     },
                   ]}
-                  numberOfLines={Platform.OS === 'android' ? 4 : 2}
+                  numberOfLines={Platform.OS === 'android' ? 6 : 4}
                 >
                   {String(level.description || '')}
                 </Text>
@@ -1194,11 +1179,10 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
     },
     levelContent: {
       flex: 1,
-      gap: Platform.OS === 'android' ? 2 : spacing.xs, // Tighter spacing on Android
-      justifyContent: 'space-between',
-      height: '100%',
+      gap: Platform.OS === 'android' ? spacing.xs : spacing.sm, // Consistent spacing
+      justifyContent: 'flex-start', // Changed to allow content to flow naturally
       minWidth: 0, // Allow flexbox to properly shrink children
-      overflow: 'hidden', // Prevent content from overflowing
+      paddingBottom: spacing.xs, // Add bottom padding for breathing room
     },
     levelHeader: {
       flexDirection: 'row',
@@ -1219,6 +1203,8 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       textShadowColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : undefined,
       textShadowOffset: theme.mode === 'dark' ? { width: 0, height: 1 } : undefined,
       textShadowRadius: theme.mode === 'dark' ? 2 : undefined,
+      flexShrink: 1,
+      flexWrap: 'wrap',
     },
     currentBadge: {
       backgroundColor: theme.accentTeal,
@@ -1236,8 +1222,15 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
     },
     antithesisContainer: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       gap: spacing.xs,
+      marginTop: spacing.xs,
+      marginBottom: spacing.xs,
+      flexWrap: 'wrap',
+    },
+    antithesisIcon: {
+      marginTop: 2, // Align icon with first line of text
+      flexShrink: 0,
     },
     antithesisText: {
       fontSize: Platform.OS === 'android' ? typography.small : typography.body, // Smaller on Android
@@ -1245,6 +1238,9 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       fontWeight: typography.medium,
       fontStyle: 'italic',
       lineHeight: Platform.OS === 'android' ? 18 : 20,
+      flex: 1,
+      flexShrink: 1,
+      minWidth: 0, // Allow text to wrap
     },
     levelDescription: {
       fontSize: Platform.OS === 'android' ? typography.small : typography.body, // Smaller on Android
@@ -1252,12 +1248,17 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       lineHeight: Platform.OS === 'android' ? 18 : 20,
       letterSpacing: 0.1,
       flexShrink: 1,
+      marginTop: spacing.xs,
+      marginBottom: spacing.sm, // Increased bottom margin for better spacing
+      flex: 1, // Allow description to take available space
+      minHeight: Platform.OS === 'android' ? 90 : 60, // Ensure minimum height for text
     },
     levelActions: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: Platform.OS === 'android' ? spacing.xs : spacing.sm, // Tighter gap on Android
-      marginTop: Platform.OS === 'android' ? spacing.xs : spacing.sm,
+      marginTop: 'auto', // Push actions to bottom
+      paddingTop: spacing.xs, // Add padding above actions
     },
     primaryAction: {
       flexDirection: 'row',

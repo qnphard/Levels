@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Pressable,
-  Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import * as Clipboard from 'expo-clipboard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
@@ -20,21 +19,21 @@ import {
   borderRadius,
   ThemeColors,
 } from '../theme/colors';
-import { getChapterById, feelingsChapters } from '../data/feelingsChapters';
+import { getChapterById } from '../data/feelingsChapters';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import PracticeTimerModal from '../components/PracticeTimerModal';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Chapter'>;
 type ChapterRouteProp = RouteProp<RootStackParamList, 'Chapter'>;
 
-type TabKey = 'key-takeaways' | 'how-it-works' | 'when-to-use' | 'practice' | 'benefits' | 'common-blocks' | 'related';
+type TabKey = 'what-this-really-is' | 'when-to-use-it' | 'how-to-practice' | 'what-starts-to-change' | 'when-you-feel-stuck' | 'related';
 
 const tabs: { key: TabKey; label: string }[] = [
-  { key: 'key-takeaways', label: 'Key Takeaways' },
-  { key: 'how-it-works', label: 'How It Works' },
-  { key: 'when-to-use', label: 'When to Use' },
-  { key: 'practice', label: 'Practice' },
-  { key: 'benefits', label: 'Benefits' },
-  { key: 'common-blocks', label: 'Common Blocks' },
+  { key: 'what-this-really-is', label: 'What This Really Is' },
+  { key: 'when-to-use-it', label: 'When To Use It' },
+  { key: 'how-to-practice', label: 'How To Practice' },
+  { key: 'what-starts-to-change', label: 'What Starts To Change' },
+  { key: 'when-you-feel-stuck', label: 'When You Feel Stuck' },
   { key: 'related', label: 'Related' },
 ];
 
@@ -48,18 +47,74 @@ export default function LettingGoChapterScreen() {
   
   const chapter = getChapterById('letting-go');
   const glowColor = theme.feelingsChapters.violet;
+  const [showTimer, setShowTimer] = useState(false);
+  const TAB_STORAGE_KEY = '@letting_go:last_tab';
   
-  // Get initial tab from deep link or URL hash
-  const [activeTab, setActiveTab] = useState<TabKey>(() => {
-    // Check if route params include a tab
-    const params = route.params as any;
-    if (params?.tab) {
-      const tabParam = params.tab as string;
-      const tabKey = tabs.find(t => t.key === tabParam)?.key;
-      if (tabKey) return tabKey;
+  // Get initial tab from deep link, stored preference, or default
+  const [activeTab, setActiveTab] = useState<TabKey>('what-this-really-is');
+  const [isTabLoaded, setIsTabLoaded] = useState(false);
+
+  // Load last active tab from storage or route params
+  useEffect(() => {
+    let isMounted = true;
+    
+    const loadTab = async () => {
+      // Check if route params include a tab (deep link takes priority)
+      const params = route.params;
+      if (params?.tab) {
+        const tabParam = params.tab as string;
+        // Map old tab names to new ones for backward compatibility
+        const tabMap: { [key: string]: TabKey } = {
+          'key-takeaways': 'what-this-really-is',
+          'when-to-use': 'when-to-use-it',
+          'practice': 'how-to-practice',
+          'benefits': 'what-starts-to-change',
+          'common-blocks': 'when-you-feel-stuck',
+          'how-to-practice': 'how-to-practice',
+          'what-this-really-is': 'what-this-really-is',
+          'when-to-use-it': 'when-to-use-it',
+          'what-starts-to-change': 'what-starts-to-change',
+          'when-you-feel-stuck': 'when-you-feel-stuck',
+          'related': 'related',
+        };
+        const mappedKey = tabMap[tabParam] || tabParam as TabKey;
+        if (isMounted && tabs.find(t => t.key === mappedKey)) {
+          setActiveTab(mappedKey);
+          setIsTabLoaded(true);
+          return;
+        }
+      }
+      
+      // Otherwise, load from storage
+      try {
+        const storedTab = await AsyncStorage.getItem(TAB_STORAGE_KEY);
+        if (isMounted && storedTab && tabs.find(t => t.key === storedTab)) {
+          setActiveTab(storedTab as TabKey);
+        }
+      } catch (error) {
+        console.error('Failed to load last tab:', error);
+      } finally {
+        if (isMounted) {
+          setIsTabLoaded(true);
+        }
+      }
+    };
+    
+    loadTab();
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [route.params?.tab]);
+
+  // Save active tab when it changes
+  useEffect(() => {
+    if (isTabLoaded) {
+      AsyncStorage.setItem(TAB_STORAGE_KEY, activeTab).catch((error) => {
+        console.error('Failed to save last tab:', error);
+      });
     }
-    return 'key-takeaways';
-  });
+  }, [activeTab, isTabLoaded]);
 
   // Get related chapters
   const relatedChapters = chapter
@@ -68,25 +123,7 @@ export default function LettingGoChapterScreen() {
         .filter((c) => c !== undefined)
     : [];
 
-  // Practice steps for copy-to-clipboard
-  const practiceSteps = `1. Name it: "There's tightness / fear / anger here."
-2. Allow it: Let the sensation be exactly as it is. Do nothing to change it.
-3. Drop all fixing: Release judgment, story, and any urge to analyze or act.
-4. Surrender resistance: If you notice resisting, let go of the resistance first.
-5. Wait & feel: Stay with the raw energy until it softens or passes. If it returns, repeat—there's just more energy to release.
-
-Tip: If you feel "stuck," let go of the feeling of being stuck, even in bits and pieces.`;
-
-  const handleCopyPractice = async () => {
-    try {
-      await Clipboard.setStringAsync(practiceSteps);
-      Alert.alert('Copied!', 'Practice steps copied to clipboard');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to copy to clipboard');
-    }
-  };
-
-  const handleTabPress = (tab: TabKey) => {
+  const handleTabPress = useCallback((tab: TabKey) => {
     setActiveTab(tab);
     // Scroll to section
     if (sectionRefs.current[tab] !== undefined && scrollViewRef.current) {
@@ -95,215 +132,270 @@ Tip: If you feel "stuck," let go of the feeling of being stuck, even in bits and
         animated: true,
       });
     }
-  };
+  }, []);
 
-  const handleRelatedChapterPress = (chapterId: string) => {
-    navigation.navigate('Chapter', { chapterId });
-  };
+  const handleRelatedChapterPress = useCallback((chapterId: string) => {
+    // Use requestAnimationFrame to ensure navigation happens after current render cycle
+    requestAnimationFrame(() => {
+      navigation.navigate('Chapter', { chapterId });
+    });
+  }, [navigation]);
+
+  const handleCouragePress = useCallback(() => {
+    navigation.navigate('LevelDetail', { levelId: 'courage' });
+  }, [navigation]);
 
   const renderSection = (tab: TabKey) => {
     switch (tab) {
-      case 'key-takeaways':
+      case 'what-this-really-is':
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>What it is</Text>
-            <Text style={styles.sectionBody}>
-              A simple mechanism to release an emotion by allowing it fully without resistance until its energy runs out. No analyzing, no fixing, no venting—just letting the feeling be and dissolve.
-            </Text>
-
-            <Text style={styles.sectionTitle}>Core move</Text>
-            <Text style={styles.sectionBody}>
-              Notice → Allow → Surrender resistance → Let the energy pass.
-            </Text>
-
-            <Text style={styles.sectionTitle}>Why it works</Text>
-            <Text style={styles.sectionBody}>
-              Resistance sustains emotions; dropping resistance lets the feeling resolve on its own. Thoughts are just after-the-fact explanations—ignore them during release.
-            </Text>
-
-            <Text style={styles.sectionTitle}>Result</Text>
-            <Text style={styles.sectionBody}>
-              Relief, lightness, more freedom and ease—often immediately.
-            </Text>
-          </View>
-        );
-
-      case 'how-it-works':
-        return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Definition</Text>
-            <Text style={styles.sectionBody}>
-              Letting go means being aware of a feeling, letting it come up, staying with it without trying to change it, and letting the energy behind it discharge.
-            </Text>
-
-            <Text style={styles.sectionTitle}>Mechanism</Text>
-            <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>
-                • Allow the feeling completely—no resisting, fixing, moralizing, or acting it out. See it as just a feeling.
-              </Text>
-              <Text style={styles.bulletItem}>
-                • Drop judgment & effort to modify it; resistance is what keeps it going.
-              </Text>
-              <Text style={styles.bulletItem}>
-                • Ignore thoughts about it while releasing; thoughts are rationalizations that recycle the feeling.
-              </Text>
-              <Text style={styles.bulletItem}>
-                • As resistance drops, the feeling shifts and lightens; if it returns, there's simply more to release.
-              </Text>
-              <Text style={styles.bulletItem}>
-                • With practice you recognize you are the witness, not the feelings.
-              </Text>
+            {/* Key Takeaways Card */}
+            <View style={styles.keyTakeawaysCard}>
+              <Ionicons name="bulb-outline" size={24} color={glowColor} />
+              <View style={styles.keyTakeawaysContent}>
+                <Text style={styles.keyTakeawaysTitle}>Key idea</Text>
+                <Text style={styles.keyTakeawaysText}>
+                  If you're tired of trying to "think positive," trying to control every thought, trying coping skill after coping skill… and your feelings still come back?
+                </Text>
+                <Text style={styles.keyTakeawaysText}>
+                  Letting go is a different move.
+                </Text>
+              </View>
             </View>
 
-            <View style={styles.citation}>
-              <Pressable
-                onPress={() => Alert.alert(
-                  'Source',
-                  'David R. Hawkins, Letting Go. See Chapter 2; Chapters 14–16.'
-                )}
-                style={styles.citationButton}
-              >
-                <Ionicons name="information-circle-outline" size={16} color={glowColor} />
-              </Pressable>
-              <Text style={styles.citationText}>Based on Hawkins' research</Text>
-            </View>
-          </View>
-        );
-
-      case 'when-to-use':
-        return (
-          <View style={styles.section}>
             <Text style={styles.sectionBody}>
-              Use letting go anytime, anywhere—during triggers, decisions, or subtle unease:
+              It's not "pretend it's fine," and it's not "explode and call it healing."
+            </Text>
+
+            <Text style={styles.sectionTitle}>Letting go means:</Text>
+            <Text style={styles.sectionBody}>
+              You let a feeling be here, without:
             </Text>
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>
-                • In the middle of an argument or spike of anger/anxiety.
-              </Text>
-              <Text style={styles.bulletItem}>
-                • On the spot when other tools aren't practical (e.g., public speaking).
-              </Text>
-              <Text style={styles.bulletItem}>
-                • When stress flares from internal reactivity, not "external causes."
-              </Text>
-              <Text style={styles.bulletItem}>
-                • During good states too—ride the momentum and clear deeper layers.
-              </Text>
+              <Text style={styles.bulletItem}>• pushing it down,</Text>
+              <Text style={styles.bulletItem}>• judging yourself,</Text>
+              <Text style={styles.bulletItem}>• spinning in stories,</Text>
+              <Text style={styles.bulletItem}>• or acting it out.</Text>
             </View>
+
+            <Text style={styles.sectionBody}>
+              You give the emotion permission to rise, move, and pass.
+            </Text>
+
+            <Text style={styles.sectionBody}>
+              Most people never learned this. We were taught to hide feelings, fix them, or fear them. No one said, "Hey, you can let this move through you."
+            </Text>
+
+            <Text style={styles.sectionBody}>
+              This is that missing instruction.
+            </Text>
           </View>
         );
 
-      case 'practice':
+      case 'when-to-use-it':
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>2-minute quick release</Text>
+            <Text style={styles.sectionBody}>
+              Use this when you notice even a tiny bit of:
+            </Text>
+            <View style={styles.bulletList}>
+              <Text style={styles.bulletItem}>• "Something's wrong with me."</Text>
+              <Text style={styles.bulletItem}>• Hopelessness, heaviness, numbness.</Text>
+              <Text style={styles.bulletItem}>• Anxiety in your chest, stomach knots.</Text>
+              <Text style={styles.bulletItem}>• Shame after you "overreact."</Text>
+              <Text style={styles.bulletItem}>• That same old trigger coming back again.</Text>
+              <Text style={styles.bulletItem}>• Overthinking that just makes it worse.</Text>
+            </View>
+
+            <Text style={styles.sectionBody}>
+              You don't have to wait for a meltdown.
+            </Text>
+
+            <Text style={styles.sectionBody}>
+              If there's a lump in your throat, a tight jaw, a drop in your stomach, or a wave of sadness—that's already enough.
+            </Text>
+
+            <Text style={styles.sectionTitle}>Letting go is something you can do:</Text>
+            <View style={styles.bulletList}>
+              <Text style={styles.bulletItem}>• in bed at 3am,</Text>
+              <Text style={styles.bulletItem}>• in the bathroom at work,</Text>
+              <Text style={styles.bulletItem}>• on a bus,</Text>
+              <Text style={styles.bulletItem}>• while messaging someone,</Text>
+              <Text style={styles.bulletItem}>• right after you scroll something that hurt.</Text>
+            </View>
+
+            <Text style={styles.sectionBody}>
+              No ritual. No perfect posture. Just you and what you're feeling.
+            </Text>
+          </View>
+        );
+
+      case 'how-to-practice':
+        return (
+          <View style={styles.section}>
+            <Text style={styles.sectionBody}>
+              This is for you if you're tired, foggy, or scared you'll do it "wrong."
+            </Text>
+            <Text style={styles.sectionBody}>
+              You can't fail this.
+            </Text>
             
             <View style={styles.practiceCard}>
               <View style={styles.practiceCardHeader}>
                 <Text style={styles.practiceCardTitle}>Quick Practice</Text>
                 <Pressable
-                  onPress={handleCopyPractice}
-                  style={styles.copyButton}
-                  accessibilityLabel="Copy practice steps"
+                  onPress={() => setShowTimer(true)}
+                  style={styles.timerButton}
+                  accessibilityLabel="Start 2 minute practice timer"
                 >
-                  <Ionicons name="copy-outline" size={20} color={glowColor} />
+                  <Ionicons name="time-outline" size={20} color={glowColor} />
+                  <Text style={styles.timerButtonText}>Use this for 2 minutes</Text>
                 </Pressable>
               </View>
               
-              <Text style={styles.practiceStep}>1. Name it</Text>
+              <Text style={styles.practiceStep}>Step 1 – Notice it</Text>
               <Text style={styles.practiceStepBody}>
-                "There's tightness / fear / anger here."
+                Quietly say: "Okay. There's sadness here." or "There's panic here." or just: "There's a lot here."
+              </Text>
+              <Text style={styles.practiceStepBody}>
+                You're not blaming, not analyzing—just noticing.
               </Text>
 
-              <Text style={styles.practiceStep}>2. Allow it</Text>
+              <Text style={styles.practiceStep}>Step 2 – Let it be here</Text>
               <Text style={styles.practiceStepBody}>
-                Let the sensation be exactly as it is. Do nothing to change it.
+                For a few breaths, let the feeling sit in your body.
+              </Text>
+              <Text style={styles.practiceStepBody}>
+                Where is it? Chest, throat, stomach, face?
+              </Text>
+              <Text style={styles.practiceStepBody}>
+                Let it be as big, heavy, annoying, or sharp as it is.
+              </Text>
+              <Text style={styles.practiceStepBody}>
+                You're not trying to "calm down." You're saying: "You're allowed to be here for a moment."
               </Text>
 
-              <Text style={styles.practiceStep}>3. Drop all fixing</Text>
+              <Text style={styles.practiceStep}>Step 3 – Drop the fight</Text>
               <Text style={styles.practiceStepBody}>
-                Release judgment, story, and any urge to analyze or act.
+                For a few seconds, see if you can stop doing anything to it.
+              </Text>
+              <View style={styles.bulletList}>
+                <Text style={styles.bulletItem}>• No fixing.</Text>
+                <Text style={styles.bulletItem}>• No telling yourself a story.</Text>
+                <Text style={styles.bulletItem}>• No arguing with it.</Text>
+                <Text style={styles.bulletItem}>• No acting on it.</Text>
+              </View>
+              <Text style={styles.practiceStepBody}>
+                If you notice yourself fighting it—nice catch. Just gently let go of the fight.
               </Text>
 
-              <Text style={styles.practiceStep}>4. Surrender resistance</Text>
+              <Text style={styles.practiceStep}>Step 4 – Stay until it shifts (a little)</Text>
               <Text style={styles.practiceStepBody}>
-                If you notice resisting, let go of the resistance first.
+                Stay with the raw feeling for a short while.
+              </Text>
+              <Text style={styles.practiceStepBody}>
+                You might notice:
+              </Text>
+              <View style={styles.bulletList}>
+                <Text style={styles.bulletItem}>• a softening,</Text>
+                <Text style={styles.bulletItem}>• a sigh,</Text>
+                <Text style={styles.bulletItem}>• a tiny bit more space,</Text>
+                <Text style={styles.bulletItem}>• or tears,</Text>
+                <Text style={styles.bulletItem}>• or nothing… and then later, it feels a bit lighter.</Text>
+              </View>
+              <Text style={styles.practiceStepBody}>
+                That shift—even 2%—means something released.
               </Text>
 
-              <Text style={styles.practiceStep}>5. Wait & feel</Text>
+              <Text style={styles.practiceStep}>Step 5 – Repeat, without drama</Text>
               <Text style={styles.practiceStepBody}>
-                Stay with the raw energy until it softens or passes. If it returns, repeat—there's just more energy to release.
+                If it comes back, it doesn't mean you failed. It usually just means there is more of that feeling in the system.
+              </Text>
+              <Text style={styles.practiceStepBody}>
+                Each round is like letting a little air out of a too-full balloon.
               </Text>
 
               <View style={styles.practiceTip}>
                 <Ionicons name="bulb-outline" size={16} color={glowColor} />
                 <Text style={styles.practiceTipText}>
-                  Tip: If you feel "stuck," let go of the feeling of being stuck, even in bits and pieces.
+                  Tiny win: If all you can do today is pause and say "I'm not going to attack myself for feeling this," that is letting go.
                 </Text>
               </View>
             </View>
           </View>
         );
 
-      case 'benefits':
+      case 'what-starts-to-change':
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Stress & body</Text>
             <Text style={styles.sectionBody}>
-              Less reactivity; improvements in pulse, BP, muscle tension, vision, and overall physiology; immediate increase in muscle power after release.
+              Not magic. Not overnight. But as you keep letting feelings move instead of trapping them:
             </Text>
-
-            <Text style={styles.sectionTitle}>Mindset</Text>
-            <Text style={styles.sectionBody}>
-              Limiting beliefs ("I can't") dissolve as their emotional fuel is released; action becomes effortless.
-            </Text>
-
-            <Text style={styles.sectionTitle}>Performance & relationships</Text>
-            <Text style={styles.sectionBody}>
-              More creativity, clarity, problem-solving (let go of the feeling behind the question → solutions surface).
-            </Text>
-
-            <Text style={styles.sectionTitle}>Spiritual growth</Text>
-            <Text style={styles.sectionBody}>
-              Less attachment; more stability in the witness state.
-            </Text>
-
-            <View style={styles.citation}>
-              <Pressable
-                onPress={() => Alert.alert(
-                  'Source',
-                  'David R. Hawkins, Letting Go. See Chapter 2; Chapters 14–16.'
-                )}
-                style={styles.citationButton}
-              >
-                <Ionicons name="information-circle-outline" size={16} color={glowColor} />
-              </Pressable>
-              <Text style={styles.citationText}>Based on Hawkins' research</Text>
+            <View style={styles.bulletList}>
+              <Text style={styles.bulletItem}>• The same triggers feel a bit less sharp.</Text>
+              <Text style={styles.bulletItem}>• Some worries don't bite as hard.</Text>
+              <Text style={styles.bulletItem}>• You have more energy because you're not wrestling your inner world all day.</Text>
+              <Text style={styles.bulletItem}>• You react less, regret less.</Text>
+              <Text style={styles.bulletItem}>• You feel small pockets of peace in places you never had any.</Text>
+              <Text style={styles.bulletItem}>• You start to sense: "Maybe I'm not broken. Maybe this feeling is just energy passing through."</Text>
             </View>
+
+            <Text style={styles.sectionBody}>
+              For some people this sits alongside therapy, meds, or other support. Letting go doesn't fight those; it supports them.
+            </Text>
           </View>
         );
 
-      case 'common-blocks':
+      case 'when-you-feel-stuck':
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionBody}>
-              <Text style={styles.boldText}>Fear/guilt about feelings:</Text> Release those first, then the target emotion.
-            </Text>
+            <Text style={styles.sectionTitle}>Common things that block letting go (and what to do):</Text>
 
-            <Text style={styles.sectionBody}>
-              <Text style={styles.boldText}>Beliefs that delay release:</Text> "It must be hard," "suffering is required," "if I let go of desire I won't get it." Question and let these go.
-            </Text>
+            <View style={styles.stuckCard}>
+              <Text style={styles.stuckQuestion}>"I don't feel anything."</Text>
+              <Text style={styles.stuckAnswer}>
+                Numb is a feeling. Start there. "Okay, numbness is here." Sit with that. No pressure.
+              </Text>
+            </View>
 
-            <Text style={styles.sectionBody}>
-              <Text style={styles.boldText}>Stopping when you feel better:</Text> Keep going; leverage the high state to clear deeper material.
-            </Text>
+            <View style={styles.stuckCard}>
+              <Text style={styles.stuckQuestion}>"If I let this in, it'll destroy me."</Text>
+              <Text style={styles.stuckAnswer}>
+                Right now it's already hurting you from underground. Try 10 seconds. You're not diving into trauma alone; you're just letting a wave crest and fall. If it's too intense, pause and get support.
+              </Text>
+            </View>
+
+            <View style={styles.stuckCard}>
+              <Text style={styles.stuckQuestion}>"I've tried everything. Nothing works."</Text>
+              <Text style={styles.stuckAnswer}>
+                Totally fair. Letting go is not another performance test. Think of it as dropping effort for a moment, not adding more.
+              </Text>
+            </View>
+
+            <View style={styles.stuckCard}>
+              <Text style={styles.stuckQuestion}>"I need professional help."</Text>
+              <Text style={styles.stuckAnswer}>
+                If your mind is going to self-harm, "I don't want to be here," or you can't function:
+              </Text>
+              <Text style={styles.stuckAnswer}>
+                Letting go is not meant to replace real-world help. Reach out to a therapist, doctor, trusted person, or crisis service in your country. You deserve support with this.
+              </Text>
+            </View>
+
+            <View style={styles.safetyCard}>
+              <Ionicons name="heart-outline" size={20} color={glowColor} />
+              <Text style={styles.safetyText}>
+                If you're thinking about hurting yourself or can't cope, please reach out to a professional or crisis service. This is emotional support, not medical care. You can use it alongside therapy or medication.
+              </Text>
+            </View>
           </View>
         );
 
       case 'related':
         return (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Related Chapters</Text>
+            <Text style={styles.sectionTitle}>Related</Text>
             <View style={styles.relatedChips}>
               {relatedChapters.map((relatedChapter) => (
                 <Pressable
@@ -328,6 +420,26 @@ Tip: If you feel "stuck," let go of the feeling of being stuck, even in bits and
                   </Text>
                 </Pressable>
               ))}
+              {/* Courage Level Link */}
+              <Pressable
+                onPress={handleCouragePress}
+                style={[
+                  styles.relatedChip,
+                  {
+                    backgroundColor: theme.feelingsChapters.violet + '20',
+                    borderColor: theme.feelingsChapters.violet,
+                  },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.relatedChipText,
+                    { color: theme.feelingsChapters.violet },
+                  ]}
+                >
+                  Courage
+                </Text>
+              </Pressable>
             </View>
           </View>
         );
@@ -354,9 +466,16 @@ Tip: If you feel "stuck," let go of the feeling of being stuck, even in bits and
           <Ionicons name="chevron-back" size={24} color={theme.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>
-          Letting Go (Releasing Emotions)
+          Letting Go
         </Text>
         <View style={styles.backButton} />
+      </View>
+
+      {/* Subtitle */}
+      <View style={styles.subtitleContainer}>
+        <Text style={styles.subtitle}>
+          A kinder way to be with your feelings, instead of fighting them.
+        </Text>
       </View>
 
       {/* Tabs */}
@@ -413,6 +532,13 @@ Tip: If you feel "stuck," let go of the feeling of being stuck, even in bits and
           </Text>
         </View>
       </ScrollView>
+
+      {/* Timer Modal */}
+      <PracticeTimerModal
+        visible={showTimer}
+        onClose={() => setShowTimer(false)}
+        durationMinutes={2}
+      />
     </LinearGradient>
   );
 }
@@ -428,7 +554,7 @@ const getStyles = (theme: ThemeColors) =>
       justifyContent: 'space-between',
       paddingTop: 60,
       paddingHorizontal: spacing.lg,
-      paddingBottom: spacing.md,
+      paddingBottom: spacing.sm,
     },
     backButton: {
       width: 40,
@@ -442,6 +568,17 @@ const getStyles = (theme: ThemeColors) =>
       fontWeight: typography.bold,
       color: theme.textPrimary,
       textAlign: 'center',
+    },
+    subtitleContainer: {
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
+    },
+    subtitle: {
+      fontSize: typography.body,
+      color: theme.textSecondary,
+      textAlign: 'center',
+      fontStyle: 'italic',
+      lineHeight: 22,
     },
     tabsContainer: {
       borderBottomWidth: 1,
@@ -477,6 +614,31 @@ const getStyles = (theme: ThemeColors) =>
     section: {
       marginBottom: spacing.xl,
     },
+    keyTakeawaysCard: {
+      flexDirection: 'row',
+      backgroundColor: theme.cardBackground,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.lg,
+      borderLeftWidth: 4,
+      borderLeftColor: theme.feelingsChapters.violet,
+      gap: spacing.md,
+    },
+    keyTakeawaysContent: {
+      flex: 1,
+    },
+    keyTakeawaysTitle: {
+      fontSize: typography.h4,
+      fontWeight: typography.bold,
+      color: theme.textPrimary,
+      marginBottom: spacing.xs,
+    },
+    keyTakeawaysText: {
+      fontSize: typography.body,
+      color: theme.textSecondary,
+      lineHeight: 24,
+      marginBottom: spacing.xs,
+    },
     sectionTitle: {
       fontSize: typography.h4,
       fontWeight: typography.bold,
@@ -490,12 +652,9 @@ const getStyles = (theme: ThemeColors) =>
       lineHeight: 24,
       marginBottom: spacing.md,
     },
-    boldText: {
-      fontWeight: typography.bold,
-      color: theme.textPrimary,
-    },
     bulletList: {
       marginBottom: spacing.md,
+      marginLeft: spacing.xs,
     },
     bulletItem: {
       fontSize: typography.body,
@@ -523,17 +682,29 @@ const getStyles = (theme: ThemeColors) =>
       justifyContent: 'space-between',
       alignItems: 'center',
       marginBottom: spacing.md,
+      flexWrap: 'wrap',
+      gap: spacing.sm,
     },
     practiceCardTitle: {
       fontSize: typography.h4,
       fontWeight: typography.bold,
       color: theme.textPrimary,
     },
-    copyButton: {
-      width: 44,
-      height: 44,
+    timerButton: {
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      gap: spacing.xs,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.md,
+      borderRadius: borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.feelingsChapters.violet,
+      backgroundColor: theme.feelingsChapters.violet + '10',
+    },
+    timerButtonText: {
+      fontSize: typography.small,
+      fontWeight: typography.semibold,
+      color: theme.feelingsChapters.violet,
     },
     practiceStep: {
       fontSize: typography.h4,
@@ -566,22 +737,44 @@ const getStyles = (theme: ThemeColors) =>
       fontStyle: 'italic',
       lineHeight: 20,
     },
-    citation: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: spacing.md,
-      gap: spacing.xs,
+    stuckCard: {
+      backgroundColor: theme.cardBackground,
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginBottom: spacing.md,
+      borderWidth: 1,
+      borderColor: theme.border,
     },
-    citationButton: {
-      width: 24,
-      height: 24,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    citationText: {
-      fontSize: typography.small,
-      color: theme.textMuted,
+    stuckQuestion: {
+      fontSize: typography.body,
+      fontWeight: typography.semibold,
+      color: theme.textPrimary,
+      marginBottom: spacing.xs,
       fontStyle: 'italic',
+    },
+    stuckAnswer: {
+      fontSize: typography.body,
+      color: theme.textSecondary,
+      lineHeight: 24,
+      marginBottom: spacing.xs,
+    },
+    safetyCard: {
+      flexDirection: 'row',
+      backgroundColor: theme.mode === 'dark'
+        ? 'rgba(139, 92, 246, 0.15)'
+        : 'rgba(139, 92, 246, 0.08)',
+      borderRadius: borderRadius.md,
+      padding: spacing.md,
+      marginTop: spacing.lg,
+      gap: spacing.sm,
+      borderWidth: 1,
+      borderColor: theme.feelingsChapters.violet + '30',
+    },
+    safetyText: {
+      flex: 1,
+      fontSize: typography.small,
+      color: theme.textSecondary,
+      lineHeight: 20,
     },
     relatedChips: {
       flexDirection: 'row',
@@ -613,4 +806,3 @@ const getStyles = (theme: ThemeColors) =>
       fontStyle: 'italic',
     },
   });
-

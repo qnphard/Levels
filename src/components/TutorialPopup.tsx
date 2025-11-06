@@ -57,9 +57,9 @@ export default function TutorialPopup({ visible, onDismiss }: TutorialPopupProps
                 <Ionicons name="sparkles" size={20} color={theme.primary} />
               </View>
               <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>Glow Effect</Text>
+                <Text style={styles.featureTitle}>Glow On/Off Button</Text>
                 <Text style={styles.featureDescription}>
-                  Toggle the sparkle button to add or remove glowing borders on cards for a more immersive experience.
+                  Tap the sparkle button in the top-right corner to toggle glowing borders on cards. Turn it on for a more immersive experience, or off for a cleaner look.
                 </Text>
               </View>
             </View>
@@ -69,9 +69,9 @@ export default function TutorialPopup({ visible, onDismiss }: TutorialPopupProps
                 <Ionicons name="moon" size={20} color={theme.primary} />
               </View>
               <View style={styles.featureText}>
-                <Text style={styles.featureTitle}>Theme</Text>
+                <Text style={styles.featureTitle}>Dark/Light Theme Button</Text>
                 <Text style={styles.featureDescription}>
-                  Switch between light and dark mode using the moon/sun button to match your preference.
+                  Tap the moon/sun button next to the glow button to switch between dark and light themes. Choose what feels most comfortable for your eyes.
                 </Text>
               </View>
             </View>

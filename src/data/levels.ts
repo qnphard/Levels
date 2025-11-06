@@ -1,7 +1,7 @@
 import { ConsciousnessLevel } from '../types';
 
 /**
- * The 16 Consciousness Levels based on David Hawkins' Map of Consciousness
+ * The 16 Consciousness Levels
  *
  * IMPORTANT PRINCIPLES:
  * - All levels are accessible from the start (no gatekeeping)

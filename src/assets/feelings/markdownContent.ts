@@ -155,21 +155,12 @@ export const stressMd = `# Stress — What It Really Is, Why It Happens, and How
 
 ---
 
-## Key Idea (Intro for App UI)
-
-- **Stress = Inner Pressure + Fear of the Future.**  
-  The trigger is external, but the pressure is what we've been holding inside — fear, guilt, anger, or grief.  
-- **Events don't cause stress.** They *activate* our stored emotional charge and future-oriented fear.  
-- When the inner pressure is released, situations lose their power to disturb us.
-
----
-
 ## What Stress Really Is
 
 Stress is the **tension between now and what the mind fears might happen next**.  
 It's a **conflict between presence and projection** — between what *is* and what the ego imagines could go wrong.
 
-Hawkins describes stress as the *accumulated inner pressure* of unprocessed feelings that are triggered by life's events.  
+Stress is the *accumulated inner pressure* of unprocessed feelings that are triggered by life's events.  
 A situation doesn't "make us stressed"; it simply *activates* the emotions already within us — especially fear.
 
 > "Stress is fear of the future. It's the mind's refusal to be here now." — *Letting Go*
@@ -202,7 +193,7 @@ Most of what we call "stress" is actually this **unexamined fear energy**, tempo
 - **Emotional:** irritability, anxiety, frustration, hopelessness  
 - **Cognitive:** overthinking, forgetfulness, catastrophizing, compulsive control  
 
-Stress instantly weakens the body's energy system — Hawkins demonstrated this through muscle testing.  
+Stress instantly weakens the body's energy system — research has demonstrated this through muscle testing.  
 Negative emotions (fear, anger, guilt) **reduce muscle strength and clarity**, while loving, calm states **strengthen** them.
 
 > "The body goes weak to the energy of fear; it goes strong to the energy of peace." — *Letting Go*
@@ -255,6 +246,53 @@ You'll find that the moment you accept fear *as it is now*, its projection into 
 Most stress-management focuses on symptoms — breath, time, workload — while leaving the **inner fear** untouched.  
 Breathing deeply is helpful, but **letting go of fear** is transformational.  
 When the cause dissolves, you don't have to manage stress anymore — there's simply nothing left to react to.
+
+---
+
+## Preventing Stress at the Source
+
+Most "stress tips" soothe the after-effects: tight muscles, racing mind, burnout. Helpful for a moment, but the pressure comes back.
+
+Real change means working with the inner buildup that keeps getting triggered. When that pressure softens, stress doesn't flare as easily in the first place.
+
+**Core idea:** Stress comes from stored, resisted feelings; outside events only trigger what's already there. As you surrender those feelings, you become less prone to stress at all.
+
+### Why the Usual Ways Don't Really Work
+
+- **Quick relax hacks** (breathing apps, spa days)  
+  Ease tension briefly, but don't touch the emotional load underneath, so the body tightens again.
+
+- **Venting** (rants, outbursts)  
+  Can feel good short-term, but often keeps the story and emotion alive instead of resolving it.
+
+- **Numbing & escape** (scrolling, alcohol, overwork)  
+  Pause the feeling now, grow the problem later; leaves you more tired and reactive.
+
+- **"I'm fine" mode**  
+  Pushing stress down makes it leak out as irritability, health issues, or sudden blowups.
+
+It's like lowering a fever without treating the infection. The symptom eases, but the cause remains.
+
+### The Preventative Path
+
+Shift the focus from chasing symptoms to releasing the internal charge that feeds them.
+
+**Practice:**
+
+1. **Notice:** "There's tension / fear / anger here."
+2. **Allow** it for a few breaths without fixing or explaining it.
+3. **Drop the fight** with it, even a little.
+4. **Stay** until there's a small softening (a sigh, a bit more space).
+5. **Repeat** during the day so less pressure builds up.
+
+This reduces reactivity over time; physiology drifts back toward normal — breath, pulse, tension, even muscle strength improve when the charge releases.
+
+**Why this prevents stress:**
+
+- Stress = internal reactivity; fewer stored charges → fewer spikes.
+- Treating aftermath keeps you chasing symptoms; releasing the cause makes stress less likely to arise.
+
+The more often you work at the source, the less your system has to scream through stress. This can sit alongside therapy, medication, or any other support you're using.
 
 ---
 

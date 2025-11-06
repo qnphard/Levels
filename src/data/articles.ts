@@ -5,7 +5,7 @@ export const featuredArticles: Article[] = [
     id: 'article-1',
     title: 'Observe Without Fixing',
     summary:
-      'Hawkins reminds us that awareness dissolves resistance. This short primer guides you through the Observe step of the Letting-Go mechanism.',
+      'Awareness dissolves resistance. This short primer guides you through the Observe step of the Letting-Go mechanism.',
     source: 'Letting Go · Chapter 2',
     readingTime: 4,
     stage: 'Notice',

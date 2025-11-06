@@ -30,7 +30,7 @@ export interface Article {
   url?: string;
   tags?: string[];
   stage: PracticeStage;
-  calibration?: number; // optional Hawkins calibration reference
+  calibration?: number; // optional calibration reference
 }
 
 // User-friendly category names (no jargon)
@@ -70,10 +70,10 @@ export interface UserProfile {
   favorites: string[]; // meditation IDs
 }
 
-// Consciousness Level - Hawkins Map of Consciousness levels
+// Consciousness Level - Map of Consciousness levels
 export interface ConsciousnessLevel {
   id: string;
-  level: number; // Hawkins calibration (20, 30, 50, etc.)
+  level: number; // calibration (20, 30, 50, etc.)
   name: string; // "Shame", "Guilt", "Fear", etc.
   antithesis: string; // Healing counterpart: "Self-Compassion", "Forgiveness", etc.
   category: 'healing' | 'empowerment' | 'spiritual' | 'enlightenment';

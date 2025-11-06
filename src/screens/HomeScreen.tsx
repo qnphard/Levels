@@ -175,7 +175,7 @@ export default function HomeScreen() {
             <View>
               <Text style={styles.sectionTitle}>Articles</Text>
               <Text style={styles.sectionSubtitle}>
-                Field notes from Hawkins teachings
+                Field notes and insights
               </Text>
             </View>
           </View>
