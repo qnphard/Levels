@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# COMFYUI (large dependency, should be installed separately)
+/ComfyUI/
+comfyui_workflows/
+comfyui_object_info.json
+
+# Generated animation assets (should be added manually after generation)
+/assets/animations/*.mp4

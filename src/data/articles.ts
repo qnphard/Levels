@@ -34,4 +34,28 @@ export const featuredArticles: Article[] = [
     calibration: 520,
     tags: ['Rest', 'Stillness'],
   },
+  {
+    id: 'preventing-stress',
+    title: 'Preventing Stress at the Source',
+    summary:
+      'Why fixing symptoms isn\'t enough—and how to reduce stress reactivity from within. Fear is limited in quantity and spills out into life experiences.',
+    source: 'Essentials · Stress/Fear/Anxiety',
+    readingTime: 7,
+    stage: 'Release',
+    calibration: 100, // Fear level
+    tags: ['Stress', 'Fear', 'Anxiety'],
+    url: 'chapter://stress', // Special URL format for chapter navigation
+  },
+  {
+    id: 'loss-and-abandonment',
+    title: 'Loss and Abandonment',
+    summary:
+      'Grief focuses on the past, fear on the future. All suffering is due to resistance. Grief is limited in quantity—letting go reduces spillout.',
+    source: 'Essentials · Grief/Loss',
+    readingTime: 6,
+    stage: 'Release',
+    calibration: 75, // Grief level
+    tags: ['Grief', 'Loss', 'Abandonment'],
+    url: 'screen://LossAndAbandonment', // Special URL format for screen navigation
+  },
 ];

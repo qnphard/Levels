@@ -10,6 +10,7 @@ import {
   borderRadius,
   ThemeColors,
 } from '../theme/colors';
+import EditableText from './EditableText';
 
 interface FeelingsExplainedCardProps {
   onOpenChapters: () => void;
@@ -122,10 +123,22 @@ export default function FeelingsExplainedCard({
           end={{ x: 1, y: 1 }}
         >
           <View style={styles.content}>
-            <Text style={styles.title}>Feelings Explained</Text>
-            <Text style={styles.subtitle}>
-              Understand how emotions work and why they return.
-            </Text>
+            <EditableText
+              screen="library"
+              section="feelings-explained"
+              id="title"
+              originalContent="Feelings Explained"
+              textStyle={styles.title}
+              type="title"
+            />
+            <EditableText
+              screen="library"
+              section="feelings-explained"
+              id="subtitle"
+              originalContent="Understand how emotions work and why they return."
+              textStyle={styles.subtitle}
+              type="description"
+            />
 
             <View style={styles.ctaContainer}>
               <Pressable
@@ -143,7 +156,14 @@ export default function FeelingsExplainedCard({
                   size={20}
                   color={theme.mode === 'dark' ? theme.textPrimary : theme.white}
                 />
-                <Text style={styles.ctaPrimaryText}>Open Chapters</Text>
+                <EditableText
+                  screen="library"
+                  section="feelings-explained"
+                  id="button-open-chapters"
+                  originalContent="Open Chapters"
+                  textStyle={styles.ctaPrimaryText}
+                  type="subtitle"
+                />
               </Pressable>
 
               <Pressable
@@ -161,9 +181,14 @@ export default function FeelingsExplainedCard({
                   size={20}
                   color={theme.mode === 'dark' ? theme.primary : theme.textPrimary}
                 />
-                <Text style={styles.ctaSecondaryText}>
-                  Why am I feeling like this?
-                </Text>
+                <EditableText
+                  screen="library"
+                  section="feelings-explained"
+                  id="button-why-feeling"
+                  originalContent="Why am I feeling like this?"
+                  textStyle={styles.ctaSecondaryText}
+                  type="subtitle"
+                />
               </Pressable>
             </View>
           </View>

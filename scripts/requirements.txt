@@ -1,0 +1,21 @@
+# Requirements for COMFYUI animation generation script
+# Note: COMFYUI itself should be installed separately
+
+# Python standard library modules used:
+# - json
+# - urllib.request
+# - urllib.parse
+# - time
+# - os
+# - sys
+# - subprocess (for ffmpeg)
+
+# External dependencies (if needed):
+# - None required for basic script
+# - ffmpeg needed for video conversion (install separately)
+
+# To install ffmpeg:
+# - macOS: brew install ffmpeg
+# - Ubuntu/Debian: sudo apt-get install ffmpeg
+# - Windows: Download from https://ffmpeg.org/download.html
+

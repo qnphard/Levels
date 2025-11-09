@@ -1,5 +1,5 @@
 // LibraryScreen - Browse all meditations with lavender gradient
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
   Text,
@@ -19,6 +19,10 @@ import { RootStackParamList } from '../navigation/AppNavigator';
 import MeditationCard from '../components/MeditationCard';
 import FeelingsExplainedCard from '../components/FeelingsExplainedCard';
 import WhyFeelingSheet from '../components/WhyFeelingSheet';
+import EditableLibraryCard from '../components/EditableLibraryCard';
+import CardBuilder from '../components/CardBuilder';
+import EditModeIndicator from '../components/EditModeIndicator';
+import { useContentEdit, CardData } from '../context/ContentEditContext';
 import {
   useThemeColors,
   useGlowEnabled,
@@ -39,13 +43,83 @@ const toRgba = (hex: string, alpha: number): string => {
   return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
 };
 
+// Default library cards
+const defaultLibraryCards: CardData[] = [
+  {
+    id: 'essentials',
+    type: 'library',
+    title: 'Essentials',
+    description: 'The core things to know about you, your mind, and your feelings.',
+    order: 0,
+    isOriginal: true,
+    icon: 'sparkles',
+    navigationTarget: 'Essentials',
+  },
+  {
+    id: 'letting-go',
+    type: 'library',
+    title: 'Letting Go (Releasing Emotions)',
+    description: 'A kinder way to be with your feelings, instead of fighting them.',
+    order: 1,
+    isOriginal: true,
+    icon: 'leaf-outline',
+    navigationTarget: 'Chapter',
+  },
+  {
+    id: 'common-traps',
+    type: 'library',
+    title: 'Common Traps',
+    description: 'Common mistakes and misconceptions on the spiritual path.',
+    order: 2,
+    isOriginal: true,
+    icon: 'warning-outline',
+    navigationTarget: 'CommonTraps',
+  },
+];
+
 export default function LibraryScreen() {
   const navigation = useNavigation<NavigationProp>();
   const [searchQuery, setSearchQuery] = useState('');
   const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
   const theme = useThemeColors();
   const glowEnabled = useGlowEnabled();
+  const { getCards, saveCards } = useContentEdit();
+  const [libraryCards, setLibraryCards] = useState<CardData[]>(defaultLibraryCards);
+  const [cardsLoaded, setCardsLoaded] = useState(false);
   const styles = getStyles(theme);
+
+  // Load cards from storage
+  useEffect(() => {
+    const loadCards = async () => {
+      const storedCards = await getCards('library', 'cards');
+      if (storedCards && storedCards.length > 0) {
+        setLibraryCards(storedCards);
+      } else {
+        // Initialize with defaults
+        await saveCards('library', 'cards', defaultLibraryCards);
+        setLibraryCards(defaultLibraryCards);
+      }
+      setCardsLoaded(true);
+    };
+    loadCards();
+  }, []);
+
+  const handleCardPress = (card: CardData) => {
+    if (card.navigationTarget === 'Essentials') {
+      navigation.navigate('Essentials');
+    } else if (card.navigationTarget === 'Chapter' && card.id === 'letting-go') {
+      navigation.navigate('Chapter', { chapterId: 'letting-go' });
+    } else if (card.navigationTarget === 'CommonTraps') {
+      navigation.navigate('CommonTraps' as never);
+    }
+  };
+
+  const handleStructureChange = async () => {
+    const storedCards = await getCards('library', 'cards');
+    if (storedCards) {
+      setLibraryCards(storedCards);
+    }
+  };
 
   const filteredMeditations = sampleMeditations.filter(
     (meditation) =>
@@ -62,6 +136,7 @@ export default function LibraryScreen() {
       end={{ x: 1, y: 1 }}
       locations={[0, 0.45, 1]}
     >
+      <EditModeIndicator />
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <Ionicons
@@ -87,192 +162,36 @@ export default function LibraryScreen() {
       {/* Results */}
       <ScrollView style={styles.scrollView}>
         <View style={styles.content}>
-          {!searchQuery && (
+          {!searchQuery && cardsLoaded && (
             <>
-              {/* Essentials Card */}
-              <View style={styles.essentialsCardContainer}>
-                {theme.mode === 'light' && (
-                  <View
-                    pointerEvents="none"
-                    style={styles.lightLiftShadow}
+              {/* Editable Library Cards */}
+              {libraryCards
+                .sort((a, b) => a.order - b.order)
+                .map((card, index) => (
+                  <EditableLibraryCard
+                    key={card.id}
+                    card={card}
+                    index={index}
+                    totalCards={libraryCards.length}
+                    onPress={() => handleCardPress(card)}
+                    onStructureChange={handleStructureChange}
                   />
-                )}
-                <Pressable
-                  onPress={() => navigation.navigate('Essentials')}
-                  accessibilityRole="button"
-                  accessibilityLabel="Essentials - Core things to know"
-                  style={({ pressed }) => [
-                    styles.essentialsCard,
-                    theme.mode === 'dark'
-                      ? (glowEnabled
-                          ? {
-                              borderWidth: 2,
-                              borderColor: toRgba(theme.primary, 0.8),
-                              shadowColor: theme.primary,
-                              shadowOpacity: 0.34,
-                              backgroundColor: 'rgba(9, 19, 28, 0.75)',
-                              boxShadow: [
-                                `0 0 30px ${toRgba(theme.primary, 0.53)}`,
-                                `0 0 60px ${toRgba(theme.primary, 0.27)}`,
-                                `inset 0 0 20px ${toRgba(theme.primary, 0.13)}`,
-                              ].join(', '),
-                            }
-                          : {
-                              borderWidth: 1,
-                              borderColor: 'rgba(255,255,255,0.08)',
-                              shadowColor: '#000',
-                              shadowOpacity: 0.2,
-                              backgroundColor: 'rgba(9, 19, 28, 0.7)',
-                            })
-                      : (glowEnabled
-                          ? {
-                              borderWidth: 2,
-                              borderColor: toRgba(theme.primary, 0.95),
-                              shadowColor: theme.primary,
-                              shadowOpacity: 0.4,
-                              shadowRadius: 24,
-                              shadowOffset: { width: 0, height: 10 },
-                              elevation: 6,
-                              backgroundColor: theme.cardBackground,
-                              boxShadow: [
-                                `0 18px 50px rgba(2, 6, 23, 0.22)`,
-                                `0 2px 8px rgba(2, 6, 23, 0.10)`,
-                                `0 0 3px ${toRgba(theme.primary, 0.8)}`,
-                                `0 0 30px ${toRgba(theme.primary, 0.5)}`,
-                                `0 0 60px ${toRgba(theme.primary, 0.25)}`,
-                              ].join(', '),
-                              transform: pressed ? [{ translateY: -3 }] : [],
-                            }
-                          : {
-                              borderWidth: 1,
-                              borderColor: 'rgba(2,6,23,0.08)',
-                              shadowColor: 'rgba(2,6,23,0.32)',
-                              shadowOpacity: 1,
-                              shadowRadius: 22,
-                              shadowOffset: { width: 0, height: 12 },
-                              elevation: 6,
-                              backgroundColor: theme.cardBackground,
-                              boxShadow: [
-                                `0 12px 24px rgba(15, 23, 42, 0.10)`,
-                                `0 8px 20px rgba(15, 23, 42, 0.08)`,
-                                `0 1px 2px rgba(2, 6, 23, 0.06)`,
-                              ].join(', '),
-                              transform: pressed ? [{ translateY: -3 }] : [],
-                            }),
-                  ]}
-                >
-                  <View style={styles.essentialsCardContent}>
-                    <View style={styles.essentialsCardHeader}>
-                      <View style={styles.essentialsCardTitleRow}>
-                        <Ionicons name="sparkles" size={24} color={theme.primary} />
-                        <Text style={styles.essentialsCardTitle}>
-                          Essentials
-                        </Text>
-                      </View>
-                      <Ionicons name="chevron-forward" size={20} color={theme.primary} />
-                    </View>
-                    <View style={styles.essentialsCardSubtitleContainer}>
-                      <Text style={styles.essentialsCardSubtitle}>
-                        The core things to know about you, your mind, and your feelings.
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              </View>
+                ))}
+              
+              {/* Card Builder - Add new cards */}
+              <CardBuilder
+                screen="library"
+                section="cards"
+                cardType="library"
+                onStructureChange={handleStructureChange}
+              />
 
+              {/* Feelings Explained Card (special component with buttons) */}
               <FeelingsExplainedCard
                 onOpenChapters={() => navigation.navigate('LearnHub')}
                 onOpenQuickHelp={() => setShowWhyFeelingSheet(true)}
                 style={styles.feelingsCard}
               />
-
-              {/* Letting Go Chapter Card */}
-              <View style={styles.lettingGoCardContainer}>
-                {theme.mode === 'light' && (
-                  <View
-                    pointerEvents="none"
-                    style={styles.lightLiftShadow}
-                  />
-                )}
-                <Pressable
-                  onPress={() => navigation.navigate('Chapter', { chapterId: 'letting-go' })}
-                  accessibilityRole="button"
-                  accessibilityLabel="Letting Go - Releasing Emotions"
-                  style={({ pressed }) => [
-                    styles.lettingGoCard,
-                    theme.mode === 'dark'
-                      ? (glowEnabled
-                          ? {
-                              borderWidth: 2,
-                              borderColor: toRgba(theme.primary, 0.8),
-                              shadowColor: theme.primary,
-                              shadowOpacity: 0.34,
-                              backgroundColor: 'rgba(9, 19, 28, 0.75)',
-                              boxShadow: [
-                                `0 0 30px ${toRgba(theme.primary, 0.53)}`,
-                                `0 0 60px ${toRgba(theme.primary, 0.27)}`,
-                                `inset 0 0 20px ${toRgba(theme.primary, 0.13)}`,
-                              ].join(', '),
-                            }
-                          : {
-                              borderWidth: 1,
-                              borderColor: 'rgba(255,255,255,0.08)',
-                              shadowColor: '#000',
-                              shadowOpacity: 0.2,
-                              backgroundColor: 'rgba(9, 19, 28, 0.7)',
-                            })
-                      : (glowEnabled
-                          ? {
-                              borderWidth: 2,
-                              borderColor: toRgba(theme.primary, 0.95),
-                              shadowColor: theme.primary,
-                              shadowOpacity: 0.4,
-                              shadowRadius: 24,
-                              shadowOffset: { width: 0, height: 10 },
-                              elevation: 6,
-                              backgroundColor: theme.cardBackground,
-                              boxShadow: [
-                                `0 18px 50px rgba(2, 6, 23, 0.22)`,
-                                `0 2px 8px rgba(2, 6, 23, 0.10)`,
-                                `0 0 3px ${toRgba(theme.primary, 0.8)}`,
-                                `0 0 30px ${toRgba(theme.primary, 0.5)}`,
-                                `0 0 60px ${toRgba(theme.primary, 0.25)}`,
-                              ].join(', '),
-                              transform: pressed ? [{ translateY: -3 }] : [],
-                            }
-                          : {
-                              borderWidth: 1,
-                              borderColor: 'rgba(2,6,23,0.08)',
-                              shadowColor: 'rgba(2,6,23,0.32)',
-                              shadowOpacity: 1,
-                              shadowRadius: 22,
-                              shadowOffset: { width: 0, height: 12 },
-                              elevation: 6,
-                              backgroundColor: theme.cardBackground,
-                              boxShadow: [
-                                `0 12px 24px rgba(15, 23, 42, 0.10)`,
-                                `0 8px 20px rgba(15, 23, 42, 0.08)`,
-                                `0 1px 2px rgba(2, 6, 23, 0.06)`,
-                              ].join(', '),
-                              transform: pressed ? [{ translateY: -3 }] : [],
-                            }),
-                  ]}
-                >
-                  <View style={styles.lettingGoCardContent}>
-                    <View style={styles.lettingGoCardHeader}>
-                      <Text style={styles.lettingGoCardTitle}>
-                        Letting Go (Releasing Emotions)
-                      </Text>
-                      <Ionicons name="chevron-forward" size={20} color={theme.primary} />
-                    </View>
-                    <View style={styles.lettingGoCardSubtitleContainer}>
-                      <Text style={styles.lettingGoCardSubtitle}>
-                        A kinder way to be with your feelings, instead of fighting them.
-                      </Text>
-                    </View>
-                  </View>
-                </Pressable>
-              </View>
             </>
           )}
           

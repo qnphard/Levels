@@ -23,6 +23,9 @@ import {
   ThemeColors,
 } from '../theme/colors';
 import PasscodeScreen from '../components/PasscodeScreen';
+import { useContentEdit } from '../context/ContentEditContext';
+import PromptEditModal from '../components/PromptEditModal';
+import EditModeIndicator from '../components/EditModeIndicator';
 
 // Helper to convert hex to rgba
 const toRgba = (hex: string, alpha: number): string => {
@@ -34,17 +37,19 @@ const toRgba = (hex: string, alpha: number): string => {
 };
 
 interface JournalPrompt {
+  id: string;
   text: string;
   icon: keyof typeof Ionicons.glyphMap;
+  order: number;
 }
 
-const journalPrompts: JournalPrompt[] = [
-  { text: 'What am I feeling right now?', icon: 'heart-outline' },
-  { text: 'What do I need to let go of?', icon: 'leaf-outline' },
-  { text: 'What am I grateful for today?', icon: 'sunny-outline' },
-  { text: 'What\'s weighing on my heart?', icon: 'cloud-outline' },
-  { text: 'What brings me peace?', icon: 'water-outline' },
-  { text: 'Free writing...', icon: 'create-outline' },
+const DEFAULT_PROMPTS: JournalPrompt[] = [
+  { id: 'prompt-1', text: 'What am I feeling right now?', icon: 'heart-outline', order: 0 },
+  { id: 'prompt-2', text: 'What do I need to let go of?', icon: 'leaf-outline', order: 1 },
+  { id: 'prompt-3', text: 'What am I grateful for today?', icon: 'sunny-outline', order: 2 },
+  { id: 'prompt-4', text: 'What\'s weighing on my heart?', icon: 'cloud-outline', order: 3 },
+  { id: 'prompt-5', text: 'What brings me peace?', icon: 'water-outline', order: 4 },
+  { id: 'prompt-6', text: 'Free writing...', icon: 'create-outline', order: 5 },
 ];
 
 const STORAGE_KEYS = {
@@ -52,20 +57,45 @@ const STORAGE_KEYS = {
   JOURNAL_AUTH_SESSION: '@journal_auth_session',
 };
 
+const STORAGE_KEY_PROMPTS = '@journal_prompts';
+
 export default function JournalScreen() {
   const theme = useThemeColors();
   const glowEnabled = useGlowEnabled();
+  const { editModeEnabled } = useContentEdit();
   const styles = getStyles(theme, glowEnabled);
   const [journalText, setJournalText] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [entries, setEntries] = useState<Array<{ text: string; date: Date }>>([]);
   const [showingPastEntries, setShowingPastEntries] = useState(false);
+  const [prompts, setPrompts] = useState<JournalPrompt[]>(DEFAULT_PROMPTS);
+  const [editingPrompt, setEditingPrompt] = useState<JournalPrompt | undefined>(undefined);
+  const [showPromptModal, setShowPromptModal] = useState(false);
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   // Passcode protection
   const [storedPasscode, setStoredPasscode] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Load prompts from storage
+  useEffect(() => {
+    const loadPrompts = async () => {
+      try {
+        const stored = await AsyncStorage.getItem(STORAGE_KEY_PROMPTS);
+        if (stored) {
+          const parsedPrompts = JSON.parse(stored);
+          if (parsedPrompts && parsedPrompts.length > 0) {
+            setPrompts(parsedPrompts);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading prompts:', error);
+      }
+    };
+
+    loadPrompts();
+  }, []);
 
   // Load passcode on mount
   useEffect(() => {
@@ -118,10 +148,62 @@ export default function JournalScreen() {
   };
 
   const handlePromptSelect = (prompt: string) => {
+    if (editModeEnabled) return; // Don't select prompt in edit mode
     setSelectedPrompt(prompt);
     // Optionally pre-fill the prompt as a starting point
     if (!journalText) {
       setJournalText(prompt + '\n\n');
+    }
+  };
+
+  const handleEditPrompt = (prompt: JournalPrompt) => {
+    setEditingPrompt(prompt);
+    setShowPromptModal(true);
+  };
+
+  const handleAddPrompt = () => {
+    setEditingPrompt(undefined);
+    setShowPromptModal(true);
+  };
+
+  const handleSavePrompt = async (promptData: { text: string; icon: keyof typeof Ionicons.glyphMap }) => {
+    try {
+      let updatedPrompts: JournalPrompt[];
+      if (editingPrompt) {
+        // Update existing prompt
+        updatedPrompts = prompts.map(p => 
+          p.id === editingPrompt.id 
+            ? { ...p, text: promptData.text, icon: promptData.icon }
+            : p
+        );
+      } else {
+        // Add new prompt
+        const newPrompt: JournalPrompt = {
+          id: `prompt-${Date.now()}`,
+          text: promptData.text,
+          icon: promptData.icon,
+          order: prompts.length,
+        };
+        updatedPrompts = [...prompts, newPrompt];
+      }
+      setPrompts(updatedPrompts);
+      await AsyncStorage.setItem(STORAGE_KEY_PROMPTS, JSON.stringify(updatedPrompts));
+      setShowPromptModal(false);
+      setEditingPrompt(undefined);
+    } catch (error) {
+      console.error('Error saving prompt:', error);
+    }
+  };
+
+  const handleDeletePrompt = async (promptId: string) => {
+    try {
+      const updatedPrompts = prompts.filter(p => p.id !== promptId);
+      setPrompts(updatedPrompts);
+      await AsyncStorage.setItem(STORAGE_KEY_PROMPTS, JSON.stringify(updatedPrompts));
+      setShowPromptModal(false);
+      setEditingPrompt(undefined);
+    } catch (error) {
+      console.error('Error deleting prompt:', error);
     }
   };
 
@@ -210,6 +292,7 @@ export default function JournalScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <Animated.View style={{ opacity: fadeAnim }}>
+            <EditModeIndicator />
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.headerTitle}>Your Safe Space</Text>
@@ -223,39 +306,58 @@ export default function JournalScreen() {
               <>
                 {/* Gentle Prompts */}
                 <View style={styles.promptsSection}>
-                  <Text style={styles.promptsTitle}>Gentle prompts</Text>
+                  <View style={styles.promptsHeader}>
+                    <Text style={styles.promptsTitle}>Gentle prompts</Text>
+                    {editModeEnabled && (
+                      <TouchableOpacity
+                        style={styles.addPromptButton}
+                        onPress={handleAddPrompt}
+                      >
+                        <Ionicons name="add-circle" size={24} color={theme.primary} />
+                      </TouchableOpacity>
+                    )}
+                  </View>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.promptsContainer}
                   >
-                    {journalPrompts.map((prompt, index) => (
-                      <TouchableOpacity
-                        key={index}
-                        style={[
-                          styles.promptCard,
-                          selectedPrompt === prompt.text && styles.promptCardSelected,
-                        ]}
-                        onPress={() => handlePromptSelect(prompt.text)}
-                      >
-                        <Ionicons
-                          name={prompt.icon}
-                          size={20}
-                          color={
-                            selectedPrompt === prompt.text
-                              ? theme.primary
-                              : theme.textSecondary
-                          }
-                        />
-                        <Text
+                    {prompts.map((prompt) => (
+                      <View key={prompt.id} style={styles.promptCardWrapper}>
+                        <TouchableOpacity
                           style={[
-                            styles.promptText,
-                            selectedPrompt === prompt.text && styles.promptTextSelected,
+                            styles.promptCard,
+                            selectedPrompt === prompt.text && styles.promptCardSelected,
                           ]}
+                          onPress={() => handlePromptSelect(prompt.text)}
                         >
-                          {prompt.text}
-                        </Text>
-                      </TouchableOpacity>
+                          <Ionicons
+                            name={prompt.icon}
+                            size={20}
+                            color={
+                              selectedPrompt === prompt.text
+                                ? theme.primary
+                                : theme.textSecondary
+                            }
+                          />
+                          <Text
+                            style={[
+                              styles.promptText,
+                              selectedPrompt === prompt.text && styles.promptTextSelected,
+                            ]}
+                          >
+                            {prompt.text}
+                          </Text>
+                        </TouchableOpacity>
+                        {editModeEnabled && (
+                          <TouchableOpacity
+                            style={styles.editPromptButton}
+                            onPress={() => handleEditPrompt(prompt)}
+                          >
+                            <Ionicons name="create-outline" size={16} color={theme.white} />
+                          </TouchableOpacity>
+                        )}
+                      </View>
                     ))}
                   </ScrollView>
                 </View>
@@ -387,6 +489,16 @@ export default function JournalScreen() {
           </Animated.View>
         </ScrollView>
       </LinearGradient>
+      <PromptEditModal
+        visible={showPromptModal}
+        onClose={() => {
+          setShowPromptModal(false);
+          setEditingPrompt(undefined);
+        }}
+        prompt={editingPrompt}
+        onSave={handleSavePrompt}
+        onDelete={editingPrompt ? () => handleDeletePrompt(editingPrompt.id) : undefined}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -425,17 +537,29 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     promptsSection: {
       marginBottom: spacing.xl,
     },
+    promptsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.md,
+    },
     promptsTitle: {
       fontSize: typography.small,
       fontWeight: typography.semibold,
       color: theme.mode === 'dark' ? theme.textPrimary : theme.textSecondary,
-      marginBottom: spacing.md,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
+    },
+    addPromptButton: {
+      padding: spacing.xs,
     },
     promptsContainer: {
       paddingRight: spacing.lg,
       gap: spacing.sm,
+    },
+    promptCardWrapper: {
+      position: 'relative',
+      marginRight: spacing.sm,
     },
     promptCard: {
       backgroundColor: 'rgba(255, 255, 255, 0.6)',
@@ -461,6 +585,34 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     promptTextSelected: {
       color: theme.primary,
       fontWeight: typography.semibold,
+    },
+    editPromptButton: {
+      position: 'absolute',
+      top: -8,
+      right: -8,
+      backgroundColor: theme.primary,
+      borderRadius: borderRadius.full,
+      width: 24,
+      height: 24,
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      borderWidth: 2,
+      borderColor: theme.white,
+      ...(theme.mode === 'dark' && {
+        shadowColor: theme.primary,
+        shadowOpacity: 0.8,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 6,
+      }),
+      ...(theme.mode === 'light' && {
+        shadowColor: theme.primary,
+        shadowOpacity: 0.6,
+        shadowRadius: 6,
+        shadowOffset: { width: 0, height: 2 },
+        elevation: 4,
+      }),
     },
     writingSection: {
       backgroundColor: theme.mode === 'dark' 

@@ -30,7 +30,7 @@ Every thought about “what if” fuels adrenaline and muscular tension. Every l
 
 ## How Fear Creates Stress
 
-Fear is a **projection of danger into the future**.  
+Fear is a **projection of danger into the future**, while grief focuses on the past.  
 When the mind predicts loss, embarrassment, rejection, or uncertainty, the body prepares to fight or flee — even when the danger is imaginary.
 
 - Fear of failure → performance stress  
@@ -39,10 +39,20 @@ When the mind predicts loss, embarrassment, rejection, or uncertainty, the body 
 - Fear of lack → financial stress  
 - Fear of uncertainty → generalized anxiety  
 
-Most of what we call “stress” is actually this **unexamined fear energy**, temporarily stirred by circumstances.
+Most of what we call "stress" is actually this **unexamined fear energy**, temporarily stirred by circumstances.
 
-> “The body responds to thoughts as though they were real events.  
-> Fearful imagination has the same physiological effect as an actual threat.” — *Letting Go*
+### Fear is Limited in Quantity
+
+You could say that fear is **"limited in quantity"** — the energy of fear has been accumulated for a lifetime, and it spills out into life experiences. The more you let go of fear, the less it will spill out. Focusing on only one fear may have limited practical clinical value, but **letting go of the energy of fear itself will make the whole stack of fear collapse**.
+
+> "One man's meat is another man's poison" — this proves that the source of stress and fear is internal. The same situation that stresses one person may not affect another, because the stress comes from within, not from the situation itself.
+
+### All Fears Come from Fear of Death
+
+Ultimately, all fears come from the fear of death. Whether it's fear of failure, rejection, loss, or uncertainty, at the root is the fear of non-existence, of annihilation. When we understand this, we can address the root rather than each individual fear.
+
+> "The body responds to thoughts as though they were real events.  
+> Fearful imagination has the same physiological effect as an actual threat." — *Letting Go*
 
 ---
 
@@ -119,22 +129,4 @@ When fear of the future subsides:
 Stress ends not by controlling life, but by **trusting life**.  
 You stop living in “what if” and start living in “what is.”
 
-> “Peace is already here when fear of the future is surrendered.” — *Letting Go*
-
----
-
-## UI Notes (App Integration)
-
-**Title Card:**  
-> “Stress isn’t pressure from life — it’s fear of the future.”
-
-**Section Titles:**  
-- What stress really is  
-- Fear and the future  
-- How it feels in the body  
-- Failed coping patterns  
-- Letting go of fear  
-- Returning to the present  
-
-
-- **Cross-links:** From this chapter, link to Suppression, Repression, Expression, and Escape for deeper dives.
+> "Peace is already here when fear of the future is surrendered." — *Letting Go*

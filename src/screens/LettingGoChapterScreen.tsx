@@ -22,6 +22,10 @@ import {
 import { getChapterById } from '../data/feelingsChapters';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import PracticeTimerModal from '../components/PracticeTimerModal';
+import EditableText from '../components/EditableText';
+import EditModeIndicator from '../components/EditModeIndicator';
+import ContentBuilder from '../components/ContentBuilder';
+import { useContentStructure } from '../hooks/useContentStructure';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Chapter'>;
 type ChapterRouteProp = RouteProp<RootStackParamList, 'Chapter'>;
@@ -53,6 +57,15 @@ export default function LettingGoChapterScreen() {
   // Get initial tab from deep link, stored preference, or default
   const [activeTab, setActiveTab] = useState<TabKey>('what-this-really-is');
   const [isTabLoaded, setIsTabLoaded] = useState(false);
+  const [structureRefreshKey, setStructureRefreshKey] = useState(0);
+  
+  // Load content structure for current tab
+  const { structure, refreshStructure } = useContentStructure('letting-go', activeTab);
+  
+  const handleStructureChange = () => {
+    refreshStructure();
+    setStructureRefreshKey(prev => prev + 1);
+  };
 
   // Load last active tab from storage or route params
   useEffect(() => {
@@ -149,101 +162,311 @@ export default function LettingGoChapterScreen() {
     switch (tab) {
       case 'what-this-really-is':
         return (
-          <View style={styles.section}>
+          <View style={styles.section} key={structureRefreshKey}>
             {/* Key Takeaways Card */}
             <View style={styles.keyTakeawaysCard}>
               <Ionicons name="bulb-outline" size={24} color={glowColor} />
               <View style={styles.keyTakeawaysContent}>
-                <Text style={styles.keyTakeawaysTitle}>Key idea</Text>
-                <Text style={styles.keyTakeawaysText}>
-                  If you're tired of trying to "think positive," trying to control every thought, trying coping skill after coping skill… and your feelings still come back?
-                </Text>
-                <Text style={styles.keyTakeawaysText}>
-                  Letting go is a different move.
-                </Text>
+                <EditableText
+                  screen="letting-go"
+                  section="what-this-really-is"
+                  id="key-idea-title"
+                  originalContent="Key idea"
+                  textStyle={styles.keyTakeawaysTitle}
+                  type="title"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="what-this-really-is"
+                  id="key-idea-text-1"
+                  originalContent={'If you\'re tired of trying to "think positive," trying to control every thought, trying coping skill after coping skill… and your feelings still come back?'}
+                  textStyle={styles.keyTakeawaysText}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="what-this-really-is"
+                  id="key-idea-text-2"
+                  originalContent="Letting go is a different move."
+                  textStyle={styles.keyTakeawaysText}
+                  type="paragraph"
+                />
               </View>
             </View>
 
-            <Text style={styles.sectionBody}>
-              It's not "pretend it's fine," and it's not "explode and call it healing."
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="what-this-really-is"
+              id="para-1"
+              originalContent={'It\'s not "pretend it\'s fine," and it\'s not "explode and call it healing."'}
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
 
-            <Text style={styles.sectionTitle}>Letting go means:</Text>
-            <Text style={styles.sectionBody}>
-              You let a feeling be here, without:
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="what-this-really-is"
+              id="title-1"
+              originalContent="Letting go means:"
+              textStyle={styles.sectionTitle}
+              type="title"
+            />
+            <EditableText
+              screen="letting-go"
+              section="what-this-really-is"
+              id="para-2"
+              originalContent="You let a feeling be here, without:"
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>• pushing it down,</Text>
-              <Text style={styles.bulletItem}>• judging yourself,</Text>
-              <Text style={styles.bulletItem}>• spinning in stories,</Text>
-              <Text style={styles.bulletItem}>• or acting it out.</Text>
+              <EditableText
+                screen="letting-go"
+                section="what-this-really-is"
+                id="bullet-1"
+                originalContent="• pushing it down,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-this-really-is"
+                id="bullet-2"
+                originalContent="• judging yourself,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-this-really-is"
+                id="bullet-3"
+                originalContent="• spinning in stories,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-this-really-is"
+                id="bullet-4"
+                originalContent="• or acting it out."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
             </View>
 
-            <Text style={styles.sectionBody}>
-              You give the emotion permission to rise, move, and pass.
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="what-this-really-is"
+              id="para-3"
+              originalContent="You give the emotion permission to rise, move, and pass."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
 
-            <Text style={styles.sectionBody}>
-              Most people never learned this. We were taught to hide feelings, fix them, or fear them. No one said, "Hey, you can let this move through you."
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="what-this-really-is"
+              id="para-4"
+              originalContent={'Most people never learned this. We were taught to hide feelings, fix them, or fear them. No one said, "Hey, you can let this move through you."'}
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
 
-            <Text style={styles.sectionBody}>
-              This is that missing instruction.
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="what-this-really-is"
+              id="para-5"
+              originalContent="This is that missing instruction."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
+            
+            <ContentBuilder
+              screen="letting-go"
+              section="what-this-really-is"
+              onStructureChange={handleStructureChange}
+            />
           </View>
         );
 
       case 'when-to-use-it':
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionBody}>
-              Use this when you notice even a tiny bit of:
-            </Text>
+          <View style={styles.section} key={structureRefreshKey}>
+            <EditableText
+              screen="letting-go"
+              section="when-to-use-it"
+              id="para-1"
+              originalContent="Use this when you notice even a tiny bit of:"
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>• "Something's wrong with me."</Text>
-              <Text style={styles.bulletItem}>• Hopelessness, heaviness, numbness.</Text>
-              <Text style={styles.bulletItem}>• Anxiety in your chest, stomach knots.</Text>
-              <Text style={styles.bulletItem}>• Shame after you "overreact."</Text>
-              <Text style={styles.bulletItem}>• That same old trigger coming back again.</Text>
-              <Text style={styles.bulletItem}>• Overthinking that just makes it worse.</Text>
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-1"
+                originalContent={'• "Something\'s wrong with me."'}
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-2"
+                originalContent="• Hopelessness, heaviness, numbness."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-3"
+                originalContent="• Anxiety in your chest, stomach knots."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-4"
+                originalContent={'• Shame after you "overreact."'}
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-5"
+                originalContent="• That same old trigger coming back again."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-6"
+                originalContent="• Overthinking that just makes it worse."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
             </View>
 
-            <Text style={styles.sectionBody}>
-              You don't have to wait for a meltdown.
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="when-to-use-it"
+              id="para-2"
+              originalContent="You don't have to wait for a meltdown."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
 
-            <Text style={styles.sectionBody}>
-              If there's a lump in your throat, a tight jaw, a drop in your stomach, or a wave of sadness—that's already enough.
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="when-to-use-it"
+              id="para-3"
+              originalContent="If there's a lump in your throat, a tight jaw, a drop in your stomach, or a wave of sadness—that's already enough."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
 
-            <Text style={styles.sectionTitle}>Letting go is something you can do:</Text>
+            <EditableText
+              screen="letting-go"
+              section="when-to-use-it"
+              id="title-1"
+              originalContent="Letting go is something you can do:"
+              textStyle={styles.sectionTitle}
+              type="title"
+            />
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>• in bed at 3am,</Text>
-              <Text style={styles.bulletItem}>• in the bathroom at work,</Text>
-              <Text style={styles.bulletItem}>• on a bus,</Text>
-              <Text style={styles.bulletItem}>• while messaging someone,</Text>
-              <Text style={styles.bulletItem}>• right after you scroll something that hurt.</Text>
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-7"
+                originalContent="• in bed at 3am,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-8"
+                originalContent="• in the bathroom at work,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-9"
+                originalContent="• on a bus,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-10"
+                originalContent="• while messaging someone,"
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-to-use-it"
+                id="bullet-11"
+                originalContent="• right after you scroll something that hurt."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
             </View>
 
-            <Text style={styles.sectionBody}>
-              No ritual. No perfect posture. Just you and what you're feeling.
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="when-to-use-it"
+              id="para-4"
+              originalContent="No ritual. No perfect posture. Just you and what you're feeling."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
+            
+            <ContentBuilder
+              screen="letting-go"
+              section="when-to-use-it"
+              onStructureChange={handleStructureChange}
+            />
           </View>
         );
 
       case 'how-to-practice':
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionBody}>
-              This is for you if you're tired, foggy, or scared you'll do it "wrong."
-            </Text>
-            <Text style={styles.sectionBody}>
-              You can't fail this.
-            </Text>
+          <View style={styles.section} key={structureRefreshKey}>
+            <EditableText
+              screen="letting-go"
+              section="how-to-practice"
+              id="intro-1"
+              originalContent={'This is for you if you\'re tired, foggy, or scared you\'ll do it "wrong."'}
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="letting-go"
+              section="how-to-practice"
+              id="intro-2"
+              originalContent="You can't fail this."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
             
             <View style={styles.practiceCard}>
               <View style={styles.practiceCardHeader}>
-                <Text style={styles.practiceCardTitle}>Quick Practice</Text>
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="practice-title"
+                  originalContent="Quick Practice"
+                  textStyle={styles.practiceCardTitle}
+                  type="title"
+                />
                 <Pressable
                   onPress={() => setShowTimer(true)}
                   style={styles.timerButton}
@@ -254,148 +477,458 @@ export default function LettingGoChapterScreen() {
                 </Pressable>
               </View>
               
-              <Text style={styles.practiceStep}>Step 1 – Notice it</Text>
-              <Text style={styles.practiceStepBody}>
-                Quietly say: "Okay. There's sadness here." or "There's panic here." or just: "There's a lot here."
-              </Text>
-              <Text style={styles.practiceStepBody}>
-                You're not blaming, not analyzing—just noticing.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-1-title"
+                originalContent="Step 1 – Notice it"
+                textStyle={styles.practiceStep}
+                type="title"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-1-body-1"
+                originalContent={'Quietly say: "Okay. There\'s sadness here." or "There\'s panic here." or just: "There\'s a lot here."'}
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-1-body-2"
+                originalContent="You're not blaming, not analyzing—just noticing."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
 
-              <Text style={styles.practiceStep}>Step 2 – Let it be here</Text>
-              <Text style={styles.practiceStepBody}>
-                For a few breaths, let the feeling sit in your body.
-              </Text>
-              <Text style={styles.practiceStepBody}>
-                Where is it? Chest, throat, stomach, face?
-              </Text>
-              <Text style={styles.practiceStepBody}>
-                Let it be as big, heavy, annoying, or sharp as it is.
-              </Text>
-              <Text style={styles.practiceStepBody}>
-                You're not trying to "calm down." You're saying: "You're allowed to be here for a moment."
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-2-title"
+                originalContent="Step 2 – Let it be here"
+                textStyle={styles.practiceStep}
+                type="title"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-2-body-1"
+                originalContent="For a few breaths, let the feeling sit in your body."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-2-body-2"
+                originalContent="Where is it? Chest, throat, stomach, face?"
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-2-body-3"
+                originalContent="Let it be as big, heavy, annoying, or sharp as it is."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-2-body-4"
+                originalContent={'You\'re not trying to "calm down." You\'re saying: "You\'re allowed to be here for a moment."'}
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
 
-              <Text style={styles.practiceStep}>Step 3 – Drop the fight</Text>
-              <Text style={styles.practiceStepBody}>
-                For a few seconds, see if you can stop doing anything to it.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-3-title"
+                originalContent="Step 3 – Drop the fight"
+                textStyle={styles.practiceStep}
+                type="title"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-3-body-1"
+                originalContent="For a few seconds, see if you can stop doing anything to it."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
               <View style={styles.bulletList}>
-                <Text style={styles.bulletItem}>• No fixing.</Text>
-                <Text style={styles.bulletItem}>• No telling yourself a story.</Text>
-                <Text style={styles.bulletItem}>• No arguing with it.</Text>
-                <Text style={styles.bulletItem}>• No acting on it.</Text>
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-3-bullet-1"
+                  originalContent="• No fixing."
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-3-bullet-2"
+                  originalContent="• No telling yourself a story."
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-3-bullet-3"
+                  originalContent="• No arguing with it."
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-3-bullet-4"
+                  originalContent="• No acting on it."
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
               </View>
-              <Text style={styles.practiceStepBody}>
-                If you notice yourself fighting it—nice catch. Just gently let go of the fight.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-3-body-2"
+                originalContent="If you notice yourself fighting it—nice catch. Just gently let go of the fight."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
 
-              <Text style={styles.practiceStep}>Step 4 – Stay until it shifts (a little)</Text>
-              <Text style={styles.practiceStepBody}>
-                Stay with the raw feeling for a short while.
-              </Text>
-              <Text style={styles.practiceStepBody}>
-                You might notice:
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-4-title"
+                originalContent="Step 4 – Stay until it shifts (a little)"
+                textStyle={styles.practiceStep}
+                type="title"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-4-body-1"
+                originalContent="Stay with the raw feeling for a short while."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-4-body-2"
+                originalContent="You might notice:"
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
               <View style={styles.bulletList}>
-                <Text style={styles.bulletItem}>• a softening,</Text>
-                <Text style={styles.bulletItem}>• a sigh,</Text>
-                <Text style={styles.bulletItem}>• a tiny bit more space,</Text>
-                <Text style={styles.bulletItem}>• or tears,</Text>
-                <Text style={styles.bulletItem}>• or nothing… and then later, it feels a bit lighter.</Text>
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-4-bullet-1"
+                  originalContent="• a softening,"
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-4-bullet-2"
+                  originalContent="• a sigh,"
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-4-bullet-3"
+                  originalContent="• a tiny bit more space,"
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-4-bullet-4"
+                  originalContent="• or tears,"
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="step-4-bullet-5"
+                  originalContent="• or nothing… and then later, it feels a bit lighter."
+                  textStyle={styles.bulletItem}
+                  type="paragraph"
+                />
               </View>
-              <Text style={styles.practiceStepBody}>
-                That shift—even 2%—means something released.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-4-body-3"
+                originalContent="That shift—even 2%—means something released."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
 
-              <Text style={styles.practiceStep}>Step 5 – Repeat, without drama</Text>
-              <Text style={styles.practiceStepBody}>
-                If it comes back, it doesn't mean you failed. It usually just means there is more of that feeling in the system.
-              </Text>
-              <Text style={styles.practiceStepBody}>
-                Each round is like letting a little air out of a too-full balloon.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-5-title"
+                originalContent="Step 5 – Repeat, without drama"
+                textStyle={styles.practiceStep}
+                type="title"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-5-body-1"
+                originalContent="If it comes back, it doesn't mean you failed. It usually just means there is more of that feeling in the system."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="how-to-practice"
+                id="step-5-body-2"
+                originalContent="Each round is like letting a little air out of a too-full balloon."
+                textStyle={styles.practiceStepBody}
+                type="paragraph"
+              />
 
               <View style={styles.practiceTip}>
                 <Ionicons name="bulb-outline" size={16} color={glowColor} />
-                <Text style={styles.practiceTipText}>
-                  Tiny win: If all you can do today is pause and say "I'm not going to attack myself for feeling this," that is letting go.
-                </Text>
+                <EditableText
+                  screen="letting-go"
+                  section="how-to-practice"
+                  id="tip-1"
+                  originalContent={'Tiny win: If all you can do today is pause and say "I\'m not going to attack myself for feeling this," that is letting go.'}
+                  textStyle={styles.practiceTipText}
+                  type="paragraph"
+                />
               </View>
             </View>
+            
+            <ContentBuilder
+              screen="letting-go"
+              section="how-to-practice"
+              onStructureChange={handleStructureChange}
+            />
           </View>
         );
 
       case 'what-starts-to-change':
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionBody}>
-              Not magic. Not overnight. But as you keep letting feelings move instead of trapping them:
-            </Text>
+          <View style={styles.section} key={structureRefreshKey}>
+            <EditableText
+              screen="letting-go"
+              section="what-starts-to-change"
+              id="intro-1"
+              originalContent="Not magic. Not overnight. But as you keep letting feelings move instead of trapping them:"
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
             <View style={styles.bulletList}>
-              <Text style={styles.bulletItem}>• The same triggers feel a bit less sharp.</Text>
-              <Text style={styles.bulletItem}>• Some worries don't bite as hard.</Text>
-              <Text style={styles.bulletItem}>• You have more energy because you're not wrestling your inner world all day.</Text>
-              <Text style={styles.bulletItem}>• You react less, regret less.</Text>
-              <Text style={styles.bulletItem}>• You feel small pockets of peace in places you never had any.</Text>
-              <Text style={styles.bulletItem}>• You start to sense: "Maybe I'm not broken. Maybe this feeling is just energy passing through."</Text>
+              <EditableText
+                screen="letting-go"
+                section="what-starts-to-change"
+                id="bullet-1"
+                originalContent="• The same triggers feel a bit less sharp."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-starts-to-change"
+                id="bullet-2"
+                originalContent="• Some worries don't bite as hard."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-starts-to-change"
+                id="bullet-3"
+                originalContent="• You have more energy because you're not wrestling your inner world all day."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-starts-to-change"
+                id="bullet-4"
+                originalContent="• You react less, regret less."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-starts-to-change"
+                id="bullet-5"
+                originalContent="• You feel small pockets of peace in places you never had any."
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="what-starts-to-change"
+                id="bullet-6"
+                originalContent={'• You start to sense: "Maybe I\'m not broken. Maybe this feeling is just energy passing through."'}
+                textStyle={styles.bulletItem}
+                type="paragraph"
+              />
             </View>
 
-            <Text style={styles.sectionBody}>
-              For some people this sits alongside therapy, meds, or other support. Letting go doesn't fight those; it supports them.
-            </Text>
+            <EditableText
+              screen="letting-go"
+              section="what-starts-to-change"
+              id="para-1"
+              originalContent="For some people this sits alongside therapy, meds, or other support. Letting go doesn't fight those; it supports them."
+              textStyle={styles.sectionBody}
+              type="paragraph"
+            />
+            
+            <ContentBuilder
+              screen="letting-go"
+              section="what-starts-to-change"
+              onStructureChange={handleStructureChange}
+            />
           </View>
         );
 
       case 'when-you-feel-stuck':
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Common things that block letting go (and what to do):</Text>
+          <View style={styles.section} key={structureRefreshKey}>
+            <EditableText
+              screen="letting-go"
+              section="when-you-feel-stuck"
+              id="title-1"
+              originalContent="Common things that block letting go (and what to do):"
+              textStyle={styles.sectionTitle}
+              type="title"
+            />
 
             <View style={styles.stuckCard}>
-              <Text style={styles.stuckQuestion}>"I don't feel anything."</Text>
-              <Text style={styles.stuckAnswer}>
-                Numb is a feeling. Start there. "Okay, numbness is here." Sit with that. No pressure.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-1-question"
+                originalContent={'"I don\'t feel anything."'}
+                textStyle={styles.stuckQuestion}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-1-answer"
+                originalContent={'Numb is a feeling. Start there. "Okay, numbness is here." Sit with that. No pressure.'}
+                textStyle={styles.stuckAnswer}
+                type="paragraph"
+              />
             </View>
 
             <View style={styles.stuckCard}>
-              <Text style={styles.stuckQuestion}>"If I let this in, it'll destroy me."</Text>
-              <Text style={styles.stuckAnswer}>
-                Right now it's already hurting you from underground. Try 10 seconds. You're not diving into trauma alone; you're just letting a wave crest and fall. If it's too intense, pause and get support.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-2-question"
+                originalContent={'"If I let this in, it\'ll destroy me."'}
+                textStyle={styles.stuckQuestion}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-2-answer"
+                originalContent={"Right now it's already hurting you from underground. Try 10 seconds. You're not diving into trauma alone; you're just letting a wave crest and fall. If it's too intense, pause and get support."}
+                textStyle={styles.stuckAnswer}
+                type="paragraph"
+              />
             </View>
 
             <View style={styles.stuckCard}>
-              <Text style={styles.stuckQuestion}>"I've tried everything. Nothing works."</Text>
-              <Text style={styles.stuckAnswer}>
-                Totally fair. Letting go is not another performance test. Think of it as dropping effort for a moment, not adding more.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-3-question"
+                originalContent={'"I\'ve tried everything. Nothing works."'}
+                textStyle={styles.stuckQuestion}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-3-answer"
+                originalContent="Totally fair. Letting go is not another performance test. Think of it as dropping effort for a moment, not adding more."
+                textStyle={styles.stuckAnswer}
+                type="paragraph"
+              />
             </View>
 
             <View style={styles.stuckCard}>
-              <Text style={styles.stuckQuestion}>"I need professional help."</Text>
-              <Text style={styles.stuckAnswer}>
-                If your mind is going to self-harm, "I don't want to be here," or you can't function:
-              </Text>
-              <Text style={styles.stuckAnswer}>
-                Letting go is not meant to replace real-world help. Reach out to a therapist, doctor, trusted person, or crisis service in your country. You deserve support with this.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-4-question"
+                originalContent={'"I need professional help."'}
+                textStyle={styles.stuckQuestion}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-4-answer-1"
+                originalContent={'If your mind is going to self-harm, "I don\'t want to be here," or you can\'t function:'}
+                textStyle={styles.stuckAnswer}
+                type="paragraph"
+              />
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="stuck-4-answer-2"
+                originalContent="Letting go is not meant to replace real-world help. Reach out to a therapist, doctor, trusted person, or crisis service in your country. You deserve support with this."
+                textStyle={styles.stuckAnswer}
+                type="paragraph"
+              />
             </View>
 
             <View style={styles.safetyCard}>
               <Ionicons name="heart-outline" size={20} color={glowColor} />
-              <Text style={styles.safetyText}>
-                If you're thinking about hurting yourself or can't cope, please reach out to a professional or crisis service. This is emotional support, not medical care. You can use it alongside therapy or medication.
-              </Text>
+              <EditableText
+                screen="letting-go"
+                section="when-you-feel-stuck"
+                id="safety-text"
+                originalContent={"If you're thinking about hurting yourself or can't cope, please reach out to a professional or crisis service. This is emotional support, not medical care. You can use it alongside therapy or medication."}
+                textStyle={styles.safetyText}
+                type="paragraph"
+              />
             </View>
+            
+            <ContentBuilder
+              screen="letting-go"
+              section="when-you-feel-stuck"
+              onStructureChange={handleStructureChange}
+            />
           </View>
         );
 
       case 'related':
         return (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Related</Text>
+          <View style={styles.section} key={structureRefreshKey}>
+            <EditableText
+              screen="letting-go"
+              section="related"
+              id="title"
+              originalContent="Related"
+              textStyle={styles.sectionTitle}
+              type="title"
+            />
             <View style={styles.relatedChips}>
               {relatedChapters.map((relatedChapter) => (
                 <Pressable
@@ -441,6 +974,12 @@ export default function LettingGoChapterScreen() {
                 </Text>
               </Pressable>
             </View>
+            
+            <ContentBuilder
+              screen="letting-go"
+              section="related"
+              onStructureChange={handleStructureChange}
+            />
           </View>
         );
 
@@ -457,6 +996,7 @@ export default function LettingGoChapterScreen() {
       end={{ x: 1, y: 1 }}
       locations={[0, 0.45, 1]}
     >
+      <EditModeIndicator />
       {/* Header */}
       <View style={styles.header} accessibilityRole="header">
         <TouchableOpacity

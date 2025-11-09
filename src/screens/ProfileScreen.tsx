@@ -78,13 +78,21 @@ export default function ProfileScreen() {
 
       <View style={styles.menuContainer}>
         {[
-          { icon: 'notifications-outline', label: 'Notifications' },
-          { icon: 'download-outline', label: 'Downloads' },
-          { icon: 'settings-outline', label: 'Settings' },
-          { icon: 'help-circle-outline', label: 'Help & Support' },
-          { icon: 'information-circle-outline', label: 'About' },
+          { icon: 'notifications-outline', label: 'Notifications', onPress: undefined },
+          { icon: 'download-outline', label: 'Downloads', onPress: undefined },
+          { 
+            icon: 'settings-outline', 
+            label: 'Settings', 
+            onPress: () => navigation.navigate('Settings' as never)
+          },
+          { icon: 'help-circle-outline', label: 'Help & Support', onPress: undefined },
+          { icon: 'information-circle-outline', label: 'About', onPress: undefined },
         ].map((item) => (
-          <TouchableOpacity style={styles.menuItem} key={item.label}>
+          <TouchableOpacity 
+            style={styles.menuItem} 
+            key={item.label}
+            onPress={item.onPress}
+          >
             <View style={styles.menuItemLeft}>
               <Ionicons name={item.icon as any} size={24} color={theme.textSecondary} />
               <Text style={styles.menuItemText}>{item.label}</Text>

@@ -34,6 +34,8 @@ import {
   useGlowEnabled,
 } from '../theme/colors';
 import { useUserProgress } from '../context/UserProgressContext';
+import EditableText from '../components/EditableText';
+import EditModeIndicator from '../components/EditModeIndicator';
 
 if (
   Platform.OS === 'android' &&
@@ -62,7 +64,7 @@ const categoryIcons: Record<
 
 const categoryDescriptions: Record<CategoryKey, string> = {
   healing: 'Transmute dense emotions into courage and steadiness.',
-  empowerment: 'Step into truthful power and aligned action.',
+  empowerment: 'Step into truthful power and aligned action. The Transitional Pathway To Love',
   spiritual: 'Live from compassion, devotion, and openhearted presence.',
   enlightenment: 'Rest in non-dual awareness and effortless being.',
 };
@@ -138,6 +140,8 @@ export default function JourneyMapScreen() {
     spiritual: true,
     enlightenment: true,
   });
+  
+  const [transcendingExpanded, setTranscendingExpanded] = useState(false);
 
   const categoryOrder: CategoryKey[] = [
     'healing',
@@ -195,7 +199,7 @@ export default function JourneyMapScreen() {
           : ['#C4B5FD', '#E9D5FF'] as const, // Light lavender to very light lavender
       },
       empowerment: {
-        title: 'Empowerment - Power, Not Force',
+        title: 'Transcending The Lower Power-Based Levels',
         gradient: theme.mode === 'dark'
           ? ['#7C3AED', '#8B5CF6'] as const // Deep purple to violet
           : ['#DDD6FE', '#F3E8FF'] as const, // Light purple to very light purple
@@ -218,6 +222,15 @@ export default function JourneyMapScreen() {
     >;
   }, [theme]);
 
+  // Visuals for Transcending Levels section
+  const transcendingVisuals = useMemo(() => ({
+    title: 'Transcending The Force-Based Levels',
+    description: '→ Overcome the negative emotional and spiritual blocks which hold you back from being your natural best self',
+    gradient: theme.mode === 'dark'
+      ? ['#6B21A8', '#7C3AED'] as const // Deep purple to violet
+      : ['#E9D5FF', '#F3E8FF'] as const, // Light purple to very light purple
+  }), [theme]);
+
   const levelsByCategory: Record<CategoryKey, ConsciousnessLevel[]> = {
     healing: [],
     empowerment: [],
@@ -225,8 +238,17 @@ export default function JourneyMapScreen() {
     enlightenment: [],
   };
 
+  // Separate transcending levels (below 200) from healing category
+  const transcendingLevels: ConsciousnessLevel[] = [];
+  
   consciousnessLevels.forEach((level) => {
-    levelsByCategory[level.category].push(level);
+    if (level.level < 200) {
+      // Levels below 200 go to "Transcending Levels" section
+      transcendingLevels.push(level);
+    } else {
+      // Levels 200+ go to their original categories
+      levelsByCategory[level.category].push(level);
+    }
   });
 
   const openChapter = (level: ConsciousnessLevel, view: ChapterView) => {
@@ -414,8 +436,14 @@ export default function JourneyMapScreen() {
               <View style={styles.levelContent}>
                 <View style={styles.levelHeader}>
                   <View style={styles.levelTitleContainer}>
-                    <Text
-                      style={[
+                    <EditableText
+                      screen="journey"
+                      section={level.id}
+                      id="title"
+                      originalContent={level.level < 200
+                        ? `Transcending ${String(level.name || '')}`
+                        : String(level.name || '')}
+                      textStyle={[
                         styles.levelTitle,
                         theme.mode === 'dark' && {
                           textShadowColor: toRgba(glowTint, 0.5),
@@ -423,11 +451,8 @@ export default function JourneyMapScreen() {
                           textShadowRadius: 8,
                         },
                       ]}
-                    >
-                      {level.level < 200
-                        ? `Transcending ${String(level.name || '')}`
-                        : String(level.name || '')}
-                    </Text>
+                      type="title"
+                    />
                   </View>
                 </View>
 
@@ -442,8 +467,14 @@ export default function JourneyMapScreen() {
                     }
                     style={styles.antithesisIcon}
                   />
-                  <Text
-                    style={[
+                  <EditableText
+                    screen="journey"
+                    section={level.id}
+                    id="antithesis"
+                    originalContent={level.level < 200
+                      ? `Through ${String(level.antithesis || '')}`
+                      : String(level.antithesis || '')}
+                    textStyle={[
                       styles.antithesisText,
                       {
                         color: theme.mode === 'dark' 
@@ -451,25 +482,23 @@ export default function JourneyMapScreen() {
                           : theme.primary,
                       },
                     ]}
-                    numberOfLines={2}
-                  >
-                    {level.level < 200
-                      ? `Through ${String(level.antithesis || '')}`
-                      : String(level.antithesis || '')}
-                  </Text>
+                    type="subtitle"
+                  />
                 </View>
 
-                <Text
-                  style={[
+                <EditableText
+                  screen="journey"
+                  section={level.id}
+                  id="description"
+                  originalContent={String(level.description || '')}
+                  textStyle={[
                     styles.levelDescription,
                     theme.mode === 'dark' && {
                       color: toRgba('#E9F1F6', 0.82),
                     },
                   ]}
-                  numberOfLines={Platform.OS === 'android' ? 6 : 4}
-                >
-                  {String(level.description || '')}
-                </Text>
+                  type="description"
+                />
 
                 <View style={styles.levelActions}>
                   <Pressable
@@ -686,10 +715,22 @@ export default function JourneyMapScreen() {
                 />
               </View>
               <View style={styles.categoryTextWrap}>
-                <Text style={styles.categoryTitle}>{String(meta?.title || '')}</Text>
-                <Text style={styles.categoryDescription}>
-                  {String(categoryDescriptions[category] || '')}
-                </Text>
+                <EditableText
+                  screen="journey-map"
+                  section="categories"
+                  id={`${category}-title`}
+                  originalContent={String(meta?.title || '')}
+                  textStyle={styles.categoryTitle}
+                  type="title"
+                />
+                <EditableText
+                  screen="journey-map"
+                  section="categories"
+                  id={`${category}-description`}
+                  originalContent={categoryDescriptions[category] || ''}
+                  textStyle={styles.categoryDescription}
+                  type="description"
+                />
               </View>
               <View style={styles.categoryToggle}>
                 <Ionicons
@@ -729,6 +770,7 @@ export default function JourneyMapScreen() {
 
   return (
     <View style={styles.container}>
+      <EditModeIndicator />
       {theme.mode === 'dark' && (
         <Animated.View
           pointerEvents="none"
@@ -808,11 +850,22 @@ export default function JourneyMapScreen() {
                 color={theme.accentGold}
               />
               <View style={styles.disclaimerContent}>
-                <Text style={styles.disclaimerTitle}>Courage is opening</Text>
-                <Text style={styles.disclaimerText}>
-                  Crossing into level 200 shifts you from force to power.
-                  Expect old patterns to soften - move gently.
-                </Text>
+                <EditableText
+                  screen="journey"
+                  section="courage-disclaimer"
+                  id="title"
+                  originalContent="Courage is opening"
+                  textStyle={styles.disclaimerTitle}
+                  type="title"
+                />
+                <EditableText
+                  screen="journey"
+                  section="courage-disclaimer"
+                  id="text"
+                  originalContent="Crossing into level 200 shifts you from force to power. Expect old patterns to soften - move gently."
+                  textStyle={styles.disclaimerText}
+                  type="description"
+                />
               </View>
               <Ionicons name="close" size={18} color={theme.textSecondary} />
             </Pressable>
@@ -825,6 +878,103 @@ export default function JourneyMapScreen() {
               onOpenQuickHelp={() => setShowWhyFeelingSheet(true)}
             />
           </View>
+
+          {/* Transcending Levels Section */}
+          {transcendingLevels.length > 0 && (
+            <View style={styles.categorySection}>
+              <Pressable
+                onPress={() => {
+                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                  setTranscendingExpanded(!transcendingExpanded);
+                }}
+                style={({ pressed }) => [
+                  styles.categoryHero,
+                  pressed && styles.categoryHeroPressed,
+                  // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
+                  glowEnabled && theme.mode === 'dark' && {
+                    shadowColor: theme.primary,
+                    shadowOpacity: 0.34,
+                    shadowRadius: 20,
+                    shadowOffset: { width: 0, height: 0 },
+                    elevation: 0, // Override base elevation for glow
+                    boxShadow: [
+                      `0 0 30px ${toRgba(theme.primary, 0.53)}`,
+                      `0 0 60px ${toRgba(theme.primary, 0.27)}`,
+                      `inset 0 0 20px ${toRgba(theme.primary, 0.13)}`,
+                    ].join(', '),
+                  },
+                  glowEnabled && theme.mode === 'light' && {
+                    shadowColor: theme.primary,
+                    shadowOpacity: 0.25,
+                    shadowRadius: 18,
+                    shadowOffset: { width: 0, height: 0 },
+                    elevation: 0, // Override base elevation for glow
+                    boxShadow: [
+                      `0 0 25px ${toRgba(theme.primary, 0.4)}`,
+                      `0 0 50px ${toRgba(theme.primary, 0.2)}`,
+                      `inset 0 0 15px ${toRgba(theme.primary, 0.1)}`,
+                    ].join(', '),
+                  },
+                ]}
+              >
+                <LinearGradient
+                  key={`hero-transcending-${theme.mode}-${glowEnabled ? 1 : 0}`}
+                  colors={transcendingVisuals.gradient}
+                  style={styles.categoryHeroGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                >
+                  <SafeBlurView
+                    intensity={50}
+                    tint={theme.mode === 'dark' ? 'dark' : 'light'}
+                    style={styles.categoryHeroBlur}
+                  />
+                  <View style={styles.categoryHeroContent}>
+                    <View style={styles.categoryIconWrap}>
+                      <Ionicons
+                        name="arrow-up-circle-outline"
+                        size={22}
+                        color={theme.textPrimary}
+                      />
+                    </View>
+                    <View style={styles.categoryTextWrap}>
+                      <EditableText
+                        screen="journey-map"
+                        section="transcending-levels"
+                        id="title"
+                        originalContent={transcendingVisuals.title}
+                        textStyle={styles.categoryTitle}
+                        type="title"
+                      />
+                      <EditableText
+                        screen="journey-map"
+                        section="transcending-levels"
+                        id="description"
+                        originalContent={transcendingVisuals.description}
+                        textStyle={styles.categoryDescription}
+                        type="description"
+                      />
+                    </View>
+                    <View style={styles.categoryToggle}>
+                      <Ionicons
+                        name={transcendingExpanded ? 'chevron-up' : 'chevron-down'}
+                        size={20}
+                        color={theme.textPrimary}
+                      />
+                    </View>
+                  </View>
+                </LinearGradient>
+              </Pressable>
+
+              {transcendingExpanded && (
+                <View style={styles.levelsGrid}>
+                  {transcendingLevels.map((level, index) =>
+                    renderLevelCard(level, index)
+                  )}
+                </View>
+              )}
+            </View>
+          )}
 
           {categoryOrder.map((category) => {
             const levels = levelsByCategory[category];

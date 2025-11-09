@@ -11,6 +11,7 @@ import {
   ThemeColors,
 } from '../theme/colors';
 import { LinearGradient } from 'expo-linear-gradient';
+import EditableText from './EditableText';
 
 interface MeditationCardProps {
   meditation: Meditation;
@@ -276,15 +277,17 @@ export default function MeditationCard({
 
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text
-              style={[
+            <EditableText
+              screen="meditation"
+              section={meditation.id}
+              id="title"
+              originalContent={meditation.title}
+              textStyle={[
                 styles.title,
                 useLightText && { color: theme.textLight || '#E8F1F2' },
               ]}
-              numberOfLines={1}
-            >
-              {meditation.title}
-            </Text>
+              type="title"
+            />
             {meditation.isPremium && (
               <View style={styles.premiumBadge}>
                 <Ionicons name="star" size={10} color={theme.accentGold} />
@@ -292,15 +295,17 @@ export default function MeditationCard({
             )}
           </View>
 
-          <Text
-            style={[
+          <EditableText
+            screen="meditation"
+            section={meditation.id}
+            id="description"
+            originalContent={meditation.description}
+            textStyle={[
               styles.description,
               useLightText && { color: theme.textLight || '#C7D2D4' },
             ]}
-            numberOfLines={2}
-          >
-            {meditation.description}
-          </Text>
+            type="description"
+          />
 
           <View style={styles.footer}>
             <View

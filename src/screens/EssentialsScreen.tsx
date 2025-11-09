@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   useThemeColors,
+  useGlowEnabled,
   spacing,
   typography,
   borderRadius,
@@ -20,13 +21,35 @@ import {
 } from '../theme/colors';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { essentialItems } from '../data/essentials';
+import EditableText from '../components/EditableText';
+import EditModeIndicator from '../components/EditModeIndicator';
+import { useContentStructure } from '../hooks/useContentStructure';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+// Helper to convert hex to rgba
+const toRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+};
 
 export default function EssentialsScreen() {
   const navigation = useNavigation<NavigationProp>();
   const theme = useThemeColors();
+  const glowEnabled = useGlowEnabled();
   const styles = getStyles(theme);
+  const [structureRefreshKey, setStructureRefreshKey] = useState(0);
+  
+  // Load content structure
+  const { structure, refreshStructure } = useContentStructure('essentials', 'main');
+  
+  const handleStructureChange = () => {
+    refreshStructure();
+    setStructureRefreshKey(prev => prev + 1);
+  };
 
   const handleEssentialPress = (item: typeof essentialItems[0]) => {
     if (item.route.screen === 'Chapter') {
@@ -35,6 +58,38 @@ export default function EssentialsScreen() {
       navigation.navigate('LearnHub');
     } else if (item.route.screen === 'WhatYouReallyAre') {
       navigation.navigate('WhatYouReallyAre');
+    } else if (item.route.screen === 'Tension') {
+      navigation.navigate('Tension');
+    } else if (item.route.screen === 'Mantras') {
+      navigation.navigate('Mantras');
+    } else if (item.route.screen === 'NaturalHappiness') {
+      navigation.navigate('NaturalHappiness' as never);
+    } else if (item.route.screen === 'PowerVsForce') {
+      navigation.navigate('PowerVsForce' as never);
+    } else if (item.route.screen === 'LevelsOfTruth') {
+      navigation.navigate('LevelsOfTruth' as never);
+    } else if (item.route.screen === 'Intention') {
+      navigation.navigate('Intention' as never);
+    } else if (item.route.screen === 'MusicAsTool') {
+      navigation.navigate('MusicAsTool' as never);
+    } else if (item.route.screen === 'FatigueVsEnergy') {
+      navigation.navigate('FatigueVsEnergy' as never);
+    } else if (item.route.screen === 'FulfillmentVsSatisfaction') {
+      navigation.navigate('FulfillmentVsSatisfaction' as never);
+    } else if (item.route.screen === 'PositiveReprogramming') {
+      navigation.navigate('PositiveReprogramming' as never);
+    } else if (item.route.screen === 'Effort') {
+      navigation.navigate('Effort' as never);
+    } else if (item.route.screen === 'ShadowWork') {
+      navigation.navigate('ShadowWork' as never);
+    } else if (item.route.screen === 'NonReactivity') {
+      navigation.navigate('NonReactivity' as never);
+    } else if (item.route.screen === 'Relaxing') {
+      navigation.navigate('Relaxing' as never);
+    } else if (item.route.screen === 'Knowledge') {
+      navigation.navigate('Knowledge' as never);
+    } else if (item.route.screen === 'Addiction') {
+      navigation.navigate('Addiction' as never);
     }
   };
 
@@ -46,6 +101,7 @@ export default function EssentialsScreen() {
       end={{ x: 1, y: 1 }}
       locations={[0, 0.45, 1]}
     >
+      <EditModeIndicator />
       {/* Header */}
       <View style={styles.header} accessibilityRole="header">
         <TouchableOpacity
@@ -62,9 +118,14 @@ export default function EssentialsScreen() {
 
       {/* Subtitle */}
       <View style={styles.subtitleContainer}>
-        <Text style={styles.subtitle}>
-          The core things to know about you, your mind, and your feelings.
-        </Text>
+        <EditableText
+          screen="essentials"
+          section="main"
+          id="subtitle"
+          originalContent="The core things to know about you, your mind, and your feelings."
+          textStyle={styles.subtitle}
+          type="subtitle"
+        />
       </View>
 
       {/* Content */}
@@ -74,16 +135,57 @@ export default function EssentialsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Explore the Essentials Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Explore the Essentials</Text>
+        <View style={styles.section} key={structureRefreshKey}>
+          <EditableText
+            screen="essentials"
+            section="main"
+            id="section-title"
+            originalContent="Explore the Essentials"
+            textStyle={styles.sectionTitle}
+            type="title"
+          />
           <View style={styles.essentialsGrid}>
-            {essentialItems.map((item) => (
+            {essentialItems.map((item) => {
+              const glowTint = theme.primary;
+              return (
               <Pressable
                 key={item.id}
                 onPress={() => handleEssentialPress(item)}
                 style={({ pressed }) => [
                   styles.essentialCard,
                   pressed && styles.essentialCardPressed,
+                  // Apply glow effects to all cards when glow is enabled
+                  glowEnabled && theme.mode === 'dark'
+                    ? {
+                        borderWidth: 2,
+                        borderColor: toRgba(glowTint, 0.8),
+                        shadowColor: glowTint,
+                        shadowOpacity: 0.34,
+                        shadowRadius: 20,
+                        shadowOffset: { width: 0, height: 0 },
+                        elevation: 0,
+                        boxShadow: [
+                          `0 0 30px ${toRgba(glowTint, 0.53)}`,
+                          `0 0 60px ${toRgba(glowTint, 0.27)}`,
+                          `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
+                        ].join(', '),
+                      }
+                    : glowEnabled && theme.mode === 'light'
+                    ? {
+                        borderWidth: 2,
+                        borderColor: toRgba(glowTint, 0.6),
+                        shadowColor: glowTint,
+                        shadowOpacity: 0.4,
+                        shadowRadius: 24,
+                        shadowOffset: { width: 0, height: 0 },
+                        elevation: 0,
+                        boxShadow: [
+                          `0 0 25px ${toRgba(glowTint, 0.4)}`,
+                          `0 0 50px ${toRgba(glowTint, 0.2)}`,
+                          `inset 0 0 15px ${toRgba(glowTint, 0.1)}`,
+                        ].join(', '),
+                      }
+                    : {},
                 ]}
                 accessibilityRole="button"
                 accessibilityLabel={`Open ${item.title} (Essentials)`}
@@ -96,8 +198,22 @@ export default function EssentialsScreen() {
                     style={styles.essentialIcon}
                   />
                 )}
-                <Text style={styles.essentialTitle}>{item.title}</Text>
-                <Text style={styles.essentialDescription}>{item.description}</Text>
+                <EditableText
+                  screen="essentials"
+                  section="cards"
+                  id={`${item.id}-title`}
+                  originalContent={item.title}
+                  textStyle={styles.essentialTitle}
+                  type="title"
+                />
+                <EditableText
+                  screen="essentials"
+                  section="cards"
+                  id={`${item.id}-description`}
+                  originalContent={item.description}
+                  textStyle={styles.essentialDescription}
+                  type="description"
+                />
                 <View style={styles.essentialArrow}>
                   <Ionicons
                     name="chevron-forward"
@@ -106,7 +222,8 @@ export default function EssentialsScreen() {
                   />
                 </View>
               </Pressable>
-            ))}
+              );
+            })}
           </View>
         </View>
       </ScrollView>

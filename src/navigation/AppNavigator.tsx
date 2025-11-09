@@ -18,6 +18,25 @@ import LearnHubScreen from '../screens/LearnHubScreen';
 import ChapterScreen from '../screens/ChapterScreen';
 import EssentialsScreen from '../screens/EssentialsScreen';
 import WhatYouReallyAreScreen from '../screens/WhatYouReallyAreScreen';
+import TensionScreen from '../screens/TensionScreen';
+import MantrasScreen from '../screens/MantrasScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import CommonTrapsScreen from '../screens/CommonTrapsScreen';
+import NaturalHappinessScreen from '../screens/NaturalHappinessScreen';
+import PowerVsForceScreen from '../screens/PowerVsForceScreen';
+import LevelsOfTruthScreen from '../screens/LevelsOfTruthScreen';
+import IntentionScreen from '../screens/IntentionScreen';
+import MusicAsToolScreen from '../screens/MusicAsToolScreen';
+import FatigueVsEnergyScreen from '../screens/FatigueVsEnergyScreen';
+import FulfillmentVsSatisfactionScreen from '../screens/FulfillmentVsSatisfactionScreen';
+import PositiveReprogrammingScreen from '../screens/PositiveReprogrammingScreen';
+import EffortScreen from '../screens/EffortScreen';
+import ShadowWorkScreen from '../screens/ShadowWorkScreen';
+import NonReactivityScreen from '../screens/NonReactivityScreen';
+import RelaxingScreen from '../screens/RelaxingScreen';
+import KnowledgeScreen from '../screens/KnowledgeScreen';
+import AddictionScreen from '../screens/AddictionScreen';
+import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
@@ -31,6 +50,25 @@ export type RootStackParamList = {
   Chapter: { chapterId: string; tab?: string };
   Essentials: undefined;
   WhatYouReallyAre: undefined;
+  Tension: undefined;
+  Mantras: undefined;
+  Settings: undefined;
+  CommonTraps: undefined;
+  NaturalHappiness: undefined;
+  PowerVsForce: undefined;
+  LevelsOfTruth: undefined;
+  Intention: undefined;
+  MusicAsTool: undefined;
+  FatigueVsEnergy: undefined;
+  FulfillmentVsSatisfaction: undefined;
+  PositiveReprogramming: undefined;
+  Effort: undefined;
+  ShadowWork: undefined;
+  NonReactivity: undefined;
+  Relaxing: undefined;
+  Knowledge: undefined;
+  Addiction: undefined;
+  LossAndAbandonment: undefined;
 };
 
 export type MainTabParamList = {
@@ -85,7 +123,7 @@ function MainTabs() {
             backgroundColor={theme.mode === 'dark'
               ? 'rgba(15, 28, 34, 0.85)' // Dark violet-tinted background
               : 'rgba(247, 245, 250, 0.9)'} // Light violet-tinted background
-            style={StyleSheet.absoluteFill}
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           />
         ),
         headerShown: false,
@@ -162,6 +200,101 @@ export default function AppNavigator() {
         <Stack.Screen
           name="WhatYouReallyAre"
           component={WhatYouReallyAreScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Tension"
+          component={TensionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Mantras"
+          component={MantrasScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Settings"
+          component={SettingsScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
+        />
+        <Stack.Screen
+          name="CommonTraps"
+          component={CommonTrapsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="NaturalHappiness"
+          component={NaturalHappinessScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PowerVsForce"
+          component={PowerVsForceScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LevelsOfTruth"
+          component={LevelsOfTruthScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Intention"
+          component={IntentionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MusicAsTool"
+          component={MusicAsToolScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FatigueVsEnergy"
+          component={FatigueVsEnergyScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="FulfillmentVsSatisfaction"
+          component={FulfillmentVsSatisfactionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="PositiveReprogramming"
+          component={PositiveReprogrammingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Effort"
+          component={EffortScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="ShadowWork"
+          component={ShadowWorkScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="NonReactivity"
+          component={NonReactivityScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Relaxing"
+          component={RelaxingScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Knowledge"
+          component={KnowledgeScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Addiction"
+          component={AddictionScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="LossAndAbandonment"
+          component={LossAndAbandonmentScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

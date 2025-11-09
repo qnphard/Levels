@@ -307,24 +307,7 @@ When fear of the future subsides:
 Stress ends not by controlling life, but by **trusting life**.  
 You stop living in "what if" and start living in "what is."
 
-> "Peace is already here when fear of the future is surrendered." — *Letting Go*
-
----
-
-## UI Notes (App Integration)
-
-**Title Card:**  
-> "Stress isn't pressure from life — it's fear of the future."
-
-**Section Titles:**  
-- What stress really is  
-- Fear and the future  
-- How it feels in the body  
-- Failed coping patterns  
-- Letting go of fear  
-- Returning to the present  
-
-- **Cross-links:** From this chapter, link to Suppression, Repression, Expression, and Escape for deeper dives.`;
+> "Peace is already here when fear of the future is surrendered." — *Letting Go*`;
 
 // Mapping chapter IDs to markdown content
 export const markdownContentMap: Record<string, string> = {

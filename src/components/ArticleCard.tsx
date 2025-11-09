@@ -1,6 +1,9 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Article } from '../types';
+import { RootStackParamList } from '../navigation/AppNavigator';
 import {
   useThemeColors,
   spacing,
@@ -8,6 +11,8 @@ import {
   borderRadius,
   ThemeColors,
 } from '../theme/colors';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface ArticleCardProps {
   article: Article;
@@ -17,18 +22,33 @@ interface ArticleCardProps {
 
 export default function ArticleCard({ article, onPress, style }: ArticleCardProps) {
   const theme = useThemeColors();
+  const navigation = useNavigation<NavigationProp>();
   const styles = getStyles(theme);
   const stageKey = article.stage.toLowerCase() as keyof typeof theme.experience;
   const stageToken =
     theme.experience[stageKey] ?? theme.experience.settle;
 
   const handlePress = () => {
+    // Handle chapter:// URLs for navigation to Chapter screen
+    if (article.url && article.url.startsWith('chapter://')) {
+      const chapterId = article.url.replace('chapter://', '');
+      navigation.navigate('Chapter', { chapterId });
+      return;
+    }
+    
+    // Handle screen:// URLs for navigation to specific screens
+    if (article.url && article.url.startsWith('screen://')) {
+      const screenName = article.url.replace('screen://', '') as keyof RootStackParamList;
+      navigation.navigate(screenName as never);
+      return;
+    }
+    
     if (onPress) {
       onPress(article);
     }
   };
 
-  const pressable = Boolean(onPress);
+  const pressable = Boolean(onPress || article.url);
 
   return (
     <TouchableOpacity

@@ -5,7 +5,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as NavigationBar from 'expo-navigation-bar';
 import AppNavigator from './src/navigation/AppNavigator';
 import { UserProgressProvider } from './src/context/UserProgressContext';
-import ThemeToggleButton from './src/components/ThemeToggleButton';
+import { ContentEditProvider } from './src/context/ContentEditContext';
 import TutorialPopup, { useTutorialPopup } from './src/components/TutorialPopup';
 import {
   ThemeProvider,
@@ -44,7 +44,6 @@ function AppContent() {
         ]}
       />
       <AppNavigator />
-      <ThemeToggleButton />
       <TutorialPopup visible={showTutorial} onDismiss={dismissTutorial} />
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
     </View>
@@ -55,7 +54,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <UserProgressProvider>
-        <AppContent />
+        <ContentEditProvider>
+          <AppContent />
+        </ContentEditProvider>
       </UserProgressProvider>
     </ThemeProvider>
   );

@@ -23,6 +23,10 @@ import {
 import { useUserProgress } from '../context/UserProgressContext';
 import PrimaryButton from '../components/PrimaryButton';
 import WhyFeelingSheet from '../components/WhyFeelingSheet';
+import EditableText from '../components/EditableText';
+import EditModeIndicator from '../components/EditModeIndicator';
+import ContentBuilder from '../components/ContentBuilder';
+import { useContentStructure } from '../hooks/useContentStructure';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type LevelDetailRouteProp = RouteProp<RootStackParamList, 'LevelDetail'>;
@@ -67,6 +71,11 @@ export default function LevelDetailScreen() {
   const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
     useUserProgress();
   const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
+  const [structureRefreshKey, setStructureRefreshKey] = useState(0);
+
+  const handleStructureChange = () => {
+    setStructureRefreshKey(prev => prev + 1);
+  };
 
   useEffect(() => {
     // Mark this level as explored when viewing
@@ -130,6 +139,7 @@ export default function LevelDetailScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
+      <EditModeIndicator />
       {/* Header with gradient */}
       <LinearGradient
         colors={theme.mode === 'dark'
@@ -189,25 +199,65 @@ export default function LevelDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Description */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Understanding {String(level.name || '')}</Text>
-          <Text style={styles.descriptionText}>{String(level.description || '')}</Text>
+        <View style={styles.section} key={structureRefreshKey}>
+          <EditableText
+            screen="level-detail"
+            section={levelId}
+            id="title"
+            originalContent={`Understanding ${String(level.name || '')}`}
+            textStyle={styles.sectionTitle}
+            type="title"
+          />
+          <EditableText
+            screen="level-detail"
+            section={levelId}
+            id="description"
+            originalContent={String(level.description || '')}
+            textStyle={styles.descriptionText}
+            type="paragraph"
+          />
+          <ContentBuilder
+            screen="level-detail"
+            section={levelId}
+            onStructureChange={handleStructureChange}
+          />
         </View>
 
         {/* Characteristics */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>You Might Notice</Text>
+          <EditableText
+            screen="level-detail"
+            section={levelId}
+            id="characteristics-title"
+            originalContent="You Might Notice"
+            textStyle={styles.sectionTitle}
+            type="title"
+          />
           {level.characteristics.map((char, index) => (
             <View key={index} style={styles.listItem}>
               <View style={styles.bullet} />
-              <Text style={styles.listText}>{char}</Text>
+              <EditableText
+                screen="level-detail"
+                section={levelId}
+                id={`characteristic-${index}`}
+                originalContent={char}
+                textStyle={styles.listText}
+                type="paragraph"
+              />
             </View>
           ))}
         </View>
 
         {/* Physical Signs */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>In Your Body</Text>
+          <EditableText
+            screen="level-detail"
+            section={levelId}
+            id="physical-signs-title"
+            originalContent="In Your Body"
+            textStyle={styles.sectionTitle}
+            type="title"
+          />
           {level.physicalSigns.map((sign, index) => (
             <View key={index} style={styles.listItem}>
               <Ionicons
@@ -215,7 +265,14 @@ export default function LevelDetailScreen() {
                 size={16}
                 color={accentColor}
               />
-              <Text style={styles.listText}>{sign}</Text>
+              <EditableText
+                screen="level-detail"
+                section={levelId}
+                id={`physical-sign-${index}`}
+                originalContent={sign}
+                textStyle={styles.listText}
+                type="paragraph"
+              />
             </View>
           ))}
         </View>
@@ -224,9 +281,23 @@ export default function LevelDetailScreen() {
         <View style={[styles.section, styles.trapSection]}>
           <View style={styles.trapHeader}>
             <Ionicons name="alert-circle" size={20} color={accentColor} />
-            <Text style={styles.sectionTitle}>The Trap</Text>
+            <EditableText
+              screen="level-detail"
+              section={levelId}
+              id="trap-title"
+              originalContent="The Trap"
+              textStyle={styles.sectionTitle}
+              type="title"
+            />
           </View>
-          <Text style={styles.trapText}>{String(level.trapDescription || '')}</Text>
+          <EditableText
+            screen="level-detail"
+            section={levelId}
+            id="trap-description"
+            originalContent={String(level.trapDescription || '')}
+            textStyle={styles.trapText}
+            type="paragraph"
+          />
         </View>
 
         {/* The Way Through */}
@@ -254,9 +325,23 @@ export default function LevelDetailScreen() {
         ]}>
           <View style={styles.wayThroughHeader}>
             <Ionicons name="compass" size={20} color={accentColor} />
-            <Text style={styles.sectionTitle}>The Way Through</Text>
+            <EditableText
+              screen="level-detail"
+              section={levelId}
+              id="way-through-title"
+              originalContent="The Way Through"
+              textStyle={styles.sectionTitle}
+              type="title"
+            />
           </View>
-          <Text style={styles.wayThroughText}>{level.wayThrough}</Text>
+          <EditableText
+            screen="level-detail"
+            section={levelId}
+            id="way-through"
+            originalContent={level.wayThrough}
+            textStyle={styles.wayThroughText}
+            type="paragraph"
+          />
         </View>
 
         {/* Practices Section */}

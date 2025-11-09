@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -18,6 +18,10 @@ import {
   ThemeColors,
 } from '../theme/colors';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import EditableText from '../components/EditableText';
+import EditModeIndicator from '../components/EditModeIndicator';
+import ContentBuilder from '../components/ContentBuilder';
+import { useContentStructure } from '../hooks/useContentStructure';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -25,6 +29,15 @@ export default function WhatYouReallyAreScreen() {
   const navigation = useNavigation<NavigationProp>();
   const theme = useThemeColors();
   const styles = getStyles(theme);
+  const [structureRefreshKey, setStructureRefreshKey] = useState(0);
+  
+  // Load content structure
+  const { structure, refreshStructure } = useContentStructure('what-you-really-are', 'main');
+  
+  const handleStructureChange = () => {
+    refreshStructure();
+    setStructureRefreshKey(prev => prev + 1);
+  };
 
   return (
     <LinearGradient
@@ -34,6 +47,7 @@ export default function WhatYouReallyAreScreen() {
       end={{ x: 1, y: 1 }}
       locations={[0, 0.45, 1]}
     >
+      <EditModeIndicator />
       {/* Header */}
       <View style={styles.header} accessibilityRole="header">
         <TouchableOpacity
@@ -54,108 +68,332 @@ export default function WhatYouReallyAreScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Simple Version</Text>
+        <View style={styles.section} key={structureRefreshKey}>
+          <EditableText
+            screen="what-you-really-are"
+            section="simple-version"
+            id="title"
+            originalContent="Simple Version"
+            textStyle={styles.sectionTitle}
+            type="title"
+          />
           
           <View style={styles.conceptCard}>
-            <Text style={styles.conceptTitle}>Body</Text>
-            <Text style={styles.conceptBody}>
-              The body can't experience itself.
-            </Text>
-            <Text style={styles.conceptBody}>
-              Your arm doesn't know it's an arm; your chest doesn't know it's tight.
-            </Text>
-            <Text style={styles.conceptBody}>
-              The body is felt — but it's felt in the mind.
-            </Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="body-title"
+              originalContent="Body"
+              textStyle={styles.conceptTitle}
+              type="title"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="body-para-1"
+              originalContent={"The body can't experience itself."}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="body-para-2"
+              originalContent={"Your arm doesn't know it's an arm; your chest doesn't know it's tight."}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="body-para-3"
+              originalContent={"The body is felt — but it's felt in the mind."}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
           </View>
 
           <View style={styles.conceptCard}>
-            <Text style={styles.conceptTitle}>Mind</Text>
-            <Text style={styles.conceptBody}>
-              Thoughts, memories, feelings also can't experience themselves.
-            </Text>
-            <Text style={styles.conceptBody}>
-              A thought doesn't "know" it's a thought; it just appears.
-            </Text>
-            <Text style={styles.conceptBody}>
-              The whole movie of the mind is known inside something bigger.
-            </Text>
-            <Text style={styles.conceptBody}>
-              That "something" is consciousness.
-            </Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="mind-title"
+              originalContent="Mind"
+              textStyle={styles.conceptTitle}
+              type="title"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="mind-para-1"
+              originalContent={"Thoughts, memories, feelings also can't experience themselves."}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="mind-para-2"
+              originalContent={'A thought doesn\'t "know" it\'s a thought; it just appears.'}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="mind-para-3"
+              originalContent="The whole movie of the mind is known inside something bigger."
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="mind-para-4"
+              originalContent={'That "something" is consciousness.'}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
           </View>
 
           <View style={styles.conceptCard}>
-            <Text style={styles.conceptTitle}>Consciousness</Text>
-            <Text style={styles.conceptBody}>
-              Consciousness is like the screen everything plays on: body sensations, thoughts, emotions, images.
-            </Text>
-            <Text style={styles.conceptBody}>
-              Because there is consciousness, you can notice: "I have a body," "I'm having this thought," "This feeling is here."
-            </Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="consciousness-title"
+              originalContent="Consciousness"
+              textStyle={styles.conceptTitle}
+              type="title"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="consciousness-para-1"
+              originalContent="Consciousness is like the screen everything plays on: body sensations, thoughts, emotions, images."
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="consciousness-para-2"
+              originalContent={'Because there is consciousness, you can notice: "I have a body," "I\'m having this thought," "This feeling is here."'}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
           </View>
 
           <View style={styles.conceptCard}>
-            <Text style={styles.conceptTitle}>Awareness</Text>
-            <Text style={styles.conceptBody}>
-              Even consciousness (all these experiences) is noticed.
-            </Text>
-            <Text style={styles.conceptBody}>
-              That quiet noticing is awareness.
-            </Text>
-            <Text style={styles.conceptBody}>
-              Awareness doesn't come and go with moods. It's the steady background that everything appears in.
-            </Text>
-            <Text style={styles.conceptBody}>
-              The more you rest as that awareness, the less trapped you feel by what passes through it.
-            </Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="awareness-title"
+              originalContent="Awareness"
+              textStyle={styles.conceptTitle}
+              type="title"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="awareness-para-1"
+              originalContent="Even consciousness (all these experiences) is noticed."
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="awareness-para-2"
+              originalContent="That quiet noticing is awareness."
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="awareness-para-3"
+              originalContent={"Awareness doesn't come and go with moods. It's the steady background that everything appears in."}
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="awareness-para-4"
+              originalContent="The more you rest as that awareness, the less trapped you feel by what passes through it."
+              textStyle={styles.conceptBody}
+              type="paragraph"
+            />
           </View>
 
           <View style={styles.summaryCard}>
-            <Text style={styles.summaryText}>
-              You are not just a hurting body or a chaotic mind. You are the awareness that can notice, hold, and gently heal what shows up.
-            </Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="simple-version"
+              id="summary"
+              originalContent="You are not just a hurting body or a chaotic mind. You are the awareness that can notice, hold, and gently heal what shows up."
+              textStyle={styles.summaryText}
+              type="paragraph"
+            />
           </View>
+          
+          <ContentBuilder
+            screen="what-you-really-are"
+            section="simple-version"
+            onStructureChange={handleStructureChange}
+          />
         </View>
 
         {/* Why This Matters Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Why This Matters When You're Suffering</Text>
-          <Text style={styles.sectionBody}>
-            When you believe you are the pain, the panic, or the story in your head, everything feels life-or-death.
-          </Text>
-          <Text style={styles.sectionBody}>
-            Seeing the layers gives you space:
-          </Text>
+        <View style={styles.section} key={`why-matters-${structureRefreshKey}`}>
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="title"
+            originalContent={"Why This Matters When You're Suffering"}
+            textStyle={styles.sectionTitle}
+            type="title"
+          />
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="para-1"
+            originalContent="When you believe you are the pain, the panic, or the story in your head, everything feels life-or-death."
+            textStyle={styles.sectionBody}
+            type="paragraph"
+          />
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="para-2"
+            originalContent="Seeing the layers gives you space:"
+            textStyle={styles.sectionBody}
+            type="paragraph"
+          />
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>Signals arise in the body.</Text>
-            <Text style={styles.bulletItem}>The actual experience of pain and emotion happens in the mind.</Text>
-            <Text style={styles.bulletItem}>All sensations, thoughts, and feelings appear in consciousness.</Text>
-            <Text style={styles.bulletItem}>All of this is held in awareness, which is not broken.</Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-1"
+              originalContent="Signals arise in the body."
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-2"
+              originalContent="The actual experience of pain and emotion happens in the mind."
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-3"
+              originalContent="All sensations, thoughts, and feelings appear in consciousness."
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-4"
+              originalContent="All of this is held in awareness, which is not broken."
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
           </View>
-          <Text style={styles.sectionBody}>
-            From this view:
-          </Text>
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="para-3"
+            originalContent="From this view:"
+            textStyle={styles.sectionBody}
+            type="paragraph"
+          />
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>The body isn't your enemy.</Text>
-            <Text style={styles.bulletItem}>The mind isn't the final truth.</Text>
-            <Text style={styles.bulletItem}>Pain is something appearing to you, not the whole of you.</Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-5"
+              originalContent={"The body isn't your enemy."}
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-6"
+              originalContent={"The mind isn't the final truth."}
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-7"
+              originalContent="Pain is something appearing to you, not the whole of you."
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
           </View>
-          <Text style={styles.sectionBody}>
-            That space is what makes tools like
-          </Text>
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="para-4"
+            originalContent="That space is what makes tools like"
+            textStyle={styles.sectionBody}
+            type="paragraph"
+          />
           <View style={styles.bulletList}>
-            <Text style={styles.bulletItem}>understanding feelings,</Text>
-            <Text style={styles.bulletItem}>letting go,</Text>
-            <Text style={styles.bulletItem}>and working at the root of stress</Text>
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-8"
+              originalContent="understanding feelings,"
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-9"
+              originalContent="letting go,"
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
+            <EditableText
+              screen="what-you-really-are"
+              section="why-matters"
+              id="bullet-10"
+              originalContent="and working at the root of stress"
+              textStyle={styles.bulletItem}
+              type="paragraph"
+            />
           </View>
-          <Text style={styles.sectionBody}>
-            start to land as real support instead of fake positivity.
-          </Text>
-          <Text style={styles.sectionBody}>
-            Just a quiet, practical sense of: "There's more to me than this storm."
-          </Text>
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="para-5"
+            originalContent="start to land as real support instead of fake positivity."
+            textStyle={styles.sectionBody}
+            type="paragraph"
+          />
+          <EditableText
+            screen="what-you-really-are"
+            section="why-matters"
+            id="para-6"
+            originalContent={'Just a quiet, practical sense of: "There\'s more to me than this storm."'}
+            textStyle={styles.sectionBody}
+            type="paragraph"
+          />
+          
+          <ContentBuilder
+            screen="what-you-really-are"
+            section="why-matters"
+            onStructureChange={handleStructureChange}
+          />
         </View>
       </ScrollView>
     </LinearGradient>

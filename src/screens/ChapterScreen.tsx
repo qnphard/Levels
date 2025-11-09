@@ -24,6 +24,9 @@ import { getChapterById, feelingsChapters } from '../data/feelingsChapters';
 import { useMarkdownChapter, ParsedSection } from '../hooks/useMarkdownChapter';
 import { useChapterProgress } from '../hooks/useChapterProgress';
 import { RootStackParamList } from '../navigation/AppNavigator';
+import EditableText from '../components/EditableText';
+import EditModeIndicator from '../components/EditModeIndicator';
+import EditableMarkdown from '../components/EditableMarkdown';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'Chapter'>;
 type ChapterRouteProp = RouteProp<RootStackParamList, 'Chapter'>;
@@ -208,6 +211,7 @@ function ChapterScreenContent({ chapterId }: { chapterId: string }) {
       end={{ x: 1, y: 1 }}
       locations={[0, 0.45, 1]}
     >
+      <EditModeIndicator />
       {/* Header */}
       <View style={styles.header} accessibilityRole="header">
         <TouchableOpacity
@@ -281,16 +285,33 @@ function ChapterScreenContent({ chapterId }: { chapterId: string }) {
         >
           <Ionicons name="bulb-outline" size={24} color={glowColor} />
           <View style={styles.calloutContent}>
-            <Text style={styles.calloutTitle}>Key Takeaways</Text>
-            <Text style={styles.calloutText}>
-              {String(chapter.summary || '')}
-            </Text>
+            <EditableText
+              screen="chapter"
+              section={chapterId}
+              id="key-takeaways-title"
+              originalContent="Key Takeaways"
+              textStyle={styles.calloutTitle}
+              type="title"
+            />
+            <EditableText
+              screen="chapter"
+              section={chapterId}
+              id="key-takeaways-summary"
+              originalContent={String(chapter.summary || '')}
+              textStyle={styles.calloutText}
+              type="paragraph"
+            />
           </View>
         </View>
 
         {/* Markdown Content */}
         <View style={styles.markdownContainer}>
-          <Markdown style={markdownStyles}>{content}</Markdown>
+          <EditableMarkdown
+            screen="chapter"
+            section={chapterId}
+            originalContent={content}
+            markdownStyles={markdownStyles}
+          />
         </View>
 
         {/* Related Chapters */}
