@@ -7,12 +7,6 @@ on:
       - main
       - master
       - levels-updated
-    paths:
-      - 'src/**'
-      - 'App.tsx'
-      - 'app.json'
-      - 'package.json'
-      - 'android/**'
 
 jobs:
   build:
