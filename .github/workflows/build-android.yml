@@ -60,20 +60,60 @@ jobs:
         run: chmod +x android/gradlew
         working-directory: ${{ github.workspace }}
 
-      - name: Build APK
+      - name: Build Universal APK
         run: |
           cd android
+          ./gradlew clean
+          # Build universal APK (includes all architectures)
           ./gradlew assembleRelease -x lint -x test
+          # Also try to build bundle and convert to universal APK if needed
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           JAVA_HOME: ${{ env.JAVA_HOME }}
+          GRADLE_OPTS: "-Dorg.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=512m"
 
       - name: Find APK
         id: find_apk
         run: |
-          APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          # Look for universal APK first, then any APK
+          UNIVERSAL_APK=$(find android/app/build/outputs/apk/release -name "*universal*.apk" | head -n 1)
+          if [ -n "$UNIVERSAL_APK" ]; then
+            APK_PATH="$UNIVERSAL_APK"
+          else
+            # Find the largest APK (likely universal or main architecture)
+            APK_PATH=$(find android/app/build/outputs/apk/release -name "*.apk" -exec ls -lh {} \; | sort -k5 -hr | head -n 1 | awk '{print $NF}')
+          fi
+          if [ -z "$APK_PATH" ] || [ ! -f "$APK_PATH" ]; then
+            echo "Error: APK not found!"
+            echo "Checking directory contents:"
+            ls -la android/app/build/outputs/apk/release/ || true
+            exit 1
+          fi
           echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
           echo "Found APK at: $APK_PATH"
+          ls -lh "$APK_PATH"
+          file "$APK_PATH"
+
+      - name: Verify APK
+        run: |
+          APK_PATH="${{ steps.find_apk.outputs.apk_path }}"
+          if [ ! -f "$APK_PATH" ]; then
+            echo "Error: APK file does not exist!"
+            exit 1
+          fi
+          APK_SIZE=$(stat -f%z "$APK_PATH" 2>/dev/null || stat -c%s "$APK_PATH" 2>/dev/null || echo "0")
+          if [ "$APK_SIZE" -lt 1000000 ]; then
+            echo "Error: APK file is too small ($APK_SIZE bytes), likely corrupted!"
+            exit 1
+          fi
+          echo "APK Size: $APK_SIZE bytes"
+          # Verify APK is a valid ZIP file
+          unzip -t "$APK_PATH" > /dev/null 2>&1
+          if [ $? -ne 0 ]; then
+            echo "Error: APK is not a valid ZIP file!"
+            exit 1
+          fi
+          echo "APK verification passed!"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
