@@ -211,87 +211,117 @@ def get_image(filename: str, subfolder: str, folder_type: str) -> bytes:
 def create_workflow(animation_name: str, config: Dict) -> Dict:
     """Create a COMFYUI workflow for the animation using AnimateDiff Evolved"""
     
-    workflow = {
-        "1": {
-            "inputs": {
-                "text": f"{config['prompt']}, seamless loop, first frame equals last frame",
-                "clip": ["3", 0]
-            },
-            "class_type": "CLIPTextEncode",
-            "_meta": {"title": "CLIP Text Encode (Prompt)"}
-        },
-        "2": {
-            "inputs": {
-                "text": config.get('negative', 'static image, still frame, low quality, blurry, pixelated, distorted'),
-                "clip": ["3", 0]
-            },
-            "class_type": "CLIPTextEncode",
-            "_meta": {"title": "CLIP Text Encode (Negative)"}
-        },
-        "3": {
-            "inputs": {
-                "ckpt_name": "v1-5-pruned-emaonly.safetensors"  # Default model - adjust if needed
-            },
-            "class_type": "CheckpointLoaderSimple",
-            "_meta": {"title": "Load Checkpoint"}
-        },
-        "4": {
-            "inputs": {
-                "model_name": "mm_sd_v15_v2.ckpt",  # AnimateDiff motion model
-                "beta_schedule": "autoselect"
-            },
-            "class_type": "ADE_LoadAnimateDiffModel",
-            "_meta": {"title": "Load AnimateDiff Model"}
-        },
-        "5": {
-            "inputs": {
-                "model": ["3", 0],
-                "motion_model": ["4", 0]
-            },
-            "class_type": "ADE_ApplyAnimateDiffModel",
-            "_meta": {"title": "Apply AnimateDiff Model"}
-        },
-        "6": {
-            "inputs": {
-                "seed": 12345,
-                "steps": 20,
-                "cfg": 7.0,
-                "sampler_name": "euler",
-                "scheduler": "normal",
-                "denoise": 1.0,
-                "model": ["5", 0],
-                "positive": ["1", 0],
-                "negative": ["2", 0],
-                "latent_image": ["7", 0]
-            },
-            "class_type": "KSampler",
-            "_meta": {"title": "KSampler"}
-        },
-        "7": {
-            "inputs": {
-                "width": config['width'],
-                "height": config['height'],
-                "batch_size": config['frames']
-            },
-            "class_type": "EmptyLatentImage",
-            "_meta": {"title": "Empty Latent Image"}
-        },
-        "8": {
-            "inputs": {
-                "samples": ["6", 0],
-                "vae": ["3", 1]
-            },
-            "class_type": "VAEDecode",
-            "_meta": {"title": "VAE Decode"}
-        },
-        "9": {
-            "inputs": {
-                "filename_prefix": animation_name,
-                "images": ["8", 0]
-            },
-            "class_type": "SaveImage",
-            "_meta": {"title": "Save Image"}
+    # Use the base workflow structure from the JSON file
+    # Load base workflow and modify it
+    base_workflow_path = os.path.join(os.path.dirname(__file__), "..", "comfyui_workflows", "base_animation_workflow.json")
+    
+    try:
+        with open(base_workflow_path, 'r') as f:
+            workflow_data = json.load(f)
+    except FileNotFoundError:
+        # Fallback to programmatic workflow creation
+        workflow_data = {
+            "last_node_id": 9,
+            "last_link_id": 10,
+            "nodes": [],
+            "links": [],
+            "groups": [],
+            "config": {},
+            "extra": {},
+            "version": 0.4
         }
+    
+    # Convert workflow format to API format (node dictionary)
+    # COMFYUI API expects: {"prompt": {node_id: {inputs, class_type}}}
+    workflow = {}
+    
+    # Node 1: CLIP Text Encode (Prompt)
+    workflow["1"] = {
+        "inputs": {
+            "text": f"{config['prompt']}, seamless loop, first frame equals last frame",
+            "clip": ["3", 1]
+        },
+        "class_type": "CLIPTextEncode"
+    }
+    
+    # Node 2: CLIP Text Encode (Negative)
+    workflow["2"] = {
+        "inputs": {
+            "text": config.get('negative', 'static image, still frame, low quality, blurry, pixelated, distorted'),
+            "clip": ["3", 1]
+        },
+        "class_type": "CLIPTextEncode"
+    }
+    
+    # Node 3: Checkpoint Loader
+    workflow["3"] = {
+        "inputs": {
+            "ckpt_name": "v1-5-pruned-emaonly.safetensors"  # Adjust to your model
+        },
+        "class_type": "CheckpointLoaderSimple"
+    }
+    
+    # Node 4: Load AnimateDiff Model
+    workflow["4"] = {
+        "inputs": {
+            "model_name": "mm_sd_v15_v2.ckpt",
+            "beta_schedule": "autoselect"
+        },
+        "class_type": "ADE_LoadAnimateDiffModel"
+    }
+    
+    # Node 5: Apply AnimateDiff Model to base model
+    workflow["5"] = {
+        "inputs": {
+            "model": ["3", 0],  # Base model from checkpoint
+            "motion_model": ["4", 0]  # Motion model from loader
+        },
+        "class_type": "ADE_ApplyAnimateDiffModel"
+    }
+    
+    # Node 6: KSampler
+    workflow["6"] = {
+        "inputs": {
+            "seed": 12345,
+            "steps": 20,
+            "cfg": 7.0,
+            "sampler_name": "euler",
+            "scheduler": "normal",
+            "denoise": 1.0,
+            "model": ["5", 0],  # Animated model from ApplyAnimateDiffModel
+            "positive": ["1", 0],
+            "negative": ["2", 0],
+            "latent_image": ["7", 0]
+        },
+        "class_type": "KSampler"
+    }
+    
+    # Node 7: Empty Latent Image
+    workflow["7"] = {
+        "inputs": {
+            "width": config['width'],
+            "height": config['height'],
+            "batch_size": config['frames']
+        },
+        "class_type": "EmptyLatentImage"
+    }
+    
+    # Node 8: VAE Decode
+    workflow["8"] = {
+        "inputs": {
+            "samples": ["6", 0],
+            "vae": ["3", 2]
+        },
+        "class_type": "VAEDecode"
+    }
+    
+    # Node 9: Save Image (required output node)
+    workflow["9"] = {
+        "inputs": {
+            "filename_prefix": animation_name,
+            "images": ["8", 0]
+        },
+        "class_type": "SaveImage"
     }
     
     return workflow
