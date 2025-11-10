@@ -67,3 +67,5 @@ npx eas-cli build --platform android --profile preview
 The app is currently using `./assets/icon.png` for the adaptive icon foreground. If this doesn't work, you'll need to create a properly formatted `adaptive-icon.png` following the steps above.
 
 
+
+

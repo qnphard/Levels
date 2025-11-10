@@ -171,16 +171,29 @@ ANIMATIONS = {
 }
 
 
-def queue_prompt(prompt: Dict) -> str:
-    """Queue a prompt in COMFYUI and return the prompt ID"""
+def queue_prompt(prompt: Dict) -> Dict:
+    """Queue a prompt in COMFYUI and return the response"""
     p = {"prompt": prompt}
     data = json.dumps(p).encode('utf-8')
-    req = urllib.request.Request(f"{COMFYUI_URL}/prompt", data=data)
+    req = urllib.request.Request(f"{COMFYUI_URL}/prompt", data=data, headers={'Content-Type': 'application/json'})
     
     try:
         with urllib.request.urlopen(req) as response:
             result = json.loads(response.read())
-            return result['prompt_id']
+            return result
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode('utf-8')
+        print(f"Error queueing prompt: HTTP {e.code}")
+        print(f"Error details: {error_body}")
+        try:
+            error_json = json.loads(error_body)
+            if 'error' in error_json:
+                print(f"Error message: {error_json.get('error', {}).get('message', 'Unknown error')}")
+                if 'node_errors' in error_json.get('error', {}):
+                    print(f"Node errors: {json.dumps(error_json['error']['node_errors'], indent=2)}")
+        except:
+            pass
+        raise
     except Exception as e:
         print(f"Error queueing prompt: {e}")
         raise
@@ -351,11 +364,11 @@ def generate_animation(animation_name: str, config: Dict, output_dir: str = "ass
     
     # Queue prompt - COMFYUI expects {"prompt": workflow}
     try:
-        prompt_data = {"prompt": workflow}
-        result = queue_prompt(prompt_data)
+        result = queue_prompt(workflow)
         prompt_id = result.get('prompt_id') if isinstance(result, dict) else None
         if not prompt_id:
             print(f"[ERROR] No prompt_id returned. Response: {result}")
+            print(f"Workflow structure: {json.dumps(workflow, indent=2)[:500]}...")
             return False
         print(f"Queued with ID: {prompt_id}")
         
