@@ -49,32 +49,10 @@ export const palette = {
 
   teal500: '#5FB5A9',
 
-  // Bioluminescent glow colors (updated to violet)
-  bioGlow: '#8B5CF6', // Primary bioluminescent violet
-  bioCore: '#C4B5FD', // Bright lavender core
-  bioPulse: 'rgba(139, 92, 246, 0.4)', // Pulsing outer glow
-
-  // Per-level luminous glow tokens (light mode - low opacity ≤0.20)
-  glowShame: 'rgba(244, 114, 182, 0.20)',
-  glowGuilt: 'rgba(251, 191, 36, 0.20)',
-  glowApathy: 'rgba(56, 189, 248, 0.18)',
-  glowGrief: 'rgba(94, 234, 212, 0.18)',
-  glowFear: 'rgba(250, 204, 21, 0.20)',
-  glowDesire: 'rgba(251, 146, 60, 0.20)',
-  glowAnger: 'rgba(248, 113, 113, 0.20)',
-  glowPride: 'rgba(167, 139, 250, 0.20)',
-  glowCourage: 'rgba(52, 211, 153, 0.20)',
-  glowNeutral: 'rgba(148, 163, 184, 0.16)',
-  glowWilling: 'rgba(74, 222, 128, 0.20)',
-  glowAccept: 'rgba(192, 132, 252, 0.20)',
-  glowReason: 'rgba(96, 165, 250, 0.18)',
-
-  // Feelings Explained chapter glow colors
-  glowRose: '#F472B6', // Suppression - rose pink
-  glowViolet: '#A78BFA', // Repression - violet purple
-  glowAmber: '#FBBF24', // Expression - amber gold
-  glowTeal: '#5FB5A9', // Escape - teal cyan
-  glowSky: '#60A5FA', // Stress - sky blue
+  // Bioluminescent glow colors
+  bioGlow: '#5FB5A9', // Primary bioluminescent teal
+  bioCore: '#8BE9FD', // Bright cyan core
+  bioPulse: 'rgba(95, 181, 169, 0.4)', // Pulsing outer glow
 };
 
 export const gradients = {
@@ -222,20 +200,17 @@ const sharedCategoryChips = (mode: ThemeMode) => {
 
 const buildTheme = (mode: ThemeMode): ThemeColors => {
   const isDark = mode === 'dark';
-  const background = isDark ? '#0E1F25' : '#EDEFF2'; // Light canvas in L* ~90 for airy glow
-  const surface = isDark ? '#132A31' : palette.sand100; // Softer dark surface
+  // Enhanced dark theme with deeper cosmic tones
+  const background = isDark ? '#0f172a' : '#F6F7FB';
+  const surface = isDark ? '#1e293b' : 'rgba(255,255,255,0.72)';
   const cardBackground = isDark
-    ? 'rgba(15, 28, 34, 0.72)'
-    : palette.sand100;
+    ? 'rgba(30, 41, 59, 0.65)'
+    : 'rgba(255,255,255,0.78)';
   const appBackgroundGradient = isDark
-    ? (['#0E1F25', '#16323B', '#1D4250'] as const) // Slate-teal night gradient (brighter)
-    : ([
-        '#E7ECF0', // Misty Slate top
-        '#DCE4EB', // Balanced middle
-        '#EAEFF3', // Soft base
-      ] as const);
-  const canvasOverlay = isDark ? 'rgba(7,16,24,0.35)' : 'rgba(255,255,255,0)';
-  const border = isDark ? 'rgba(255,255,255,0.09)' : palette.sand200;
+    ? (['#0f172a', '#1e293b', '#334155'] as const)
+    : (['#F6F7FB', '#FBFAFE', '#F9F6F8'] as const);
+  const canvasOverlay = isDark ? 'rgba(15,23,42,0.55)' : 'rgba(255,255,255,0.5)';
+  const border = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.08)';
   const textPrimary = isDark ? palette.ice50 : palette.stone800;
   const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
   const textMuted = isDark ? '#89A1A5' : '#8F8B82';
@@ -256,11 +231,11 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const warningSubtle = isDark ? 'rgba(230,194,121,0.18)' : 'rgba(230,194,121,0.32)';
   const error = palette.danger500;
 
-  // Bioluminescent colors for ripple effects (updated to violet)
+  // Bioluminescent colors for ripple effects
   const bioluminescence = {
-    glow: isDark ? palette.bioGlow : palette.violet600,
-    core: isDark ? palette.bioCore : palette.violet300,
-    pulse: isDark ? 'rgba(139, 92, 246, 0.4)' : 'rgba(124, 58, 237, 0.3)',
+    glow: isDark ? palette.bioGlow : palette.sage600,
+    core: isDark ? palette.bioCore : palette.sage400,
+    pulse: isDark ? 'rgba(95, 181, 169, 0.4)' : 'rgba(111, 164, 145, 0.3)',
   };
 
   return {
@@ -318,11 +293,11 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
       rest: { background: palette.night900, accent: palette.night700 },
     },
     feelingsChapters: {
-      rose: palette.glowRose,
-      violet: palette.glowViolet,
-      amber: palette.glowAmber,
-      teal: palette.glowTeal,
-      sky: palette.glowSky,
+      rose: '#F472B6', // Suppression - rose pink
+      violet: '#A78BFA', // Repression - violet purple
+      amber: '#FBBF24', // Expression - amber gold
+      teal: '#5FB5A9', // Escape - teal cyan
+      sky: '#60A5FA', // Stress - sky blue
     },
     gradients,
     states: {

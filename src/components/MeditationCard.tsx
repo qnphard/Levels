@@ -365,24 +365,14 @@ const getStyles = (theme: ThemeColors) =>
     card: {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
-    },
-    cardGlow: {
-      position: 'absolute',
-      top: -8,
-      left: -8,
-      right: -8,
-      bottom: -8,
-      borderRadius: borderRadius.lg + 8,
-      opacity: 0.8, // Increased opacity
-    },
-    lightHalo: {
-      position: 'absolute',
-      top: -60,
-      left: -60,
-      right: -60,
-      bottom: -60,
-      borderRadius: borderRadius.lg + 60,
-      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: theme.mode === 'dark' ? theme.bioluminescence.glow + '40' : theme.border,
+      shadowColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
+      shadowOffset: { width: 0, height: 0 },
+      shadowOpacity: theme.mode === 'dark' ? 0.6 : 0.08,
+      shadowRadius: theme.mode === 'dark' ? 20 : 8,
+      elevation: theme.mode === 'dark' ? 8 : 3,
+      backgroundColor: theme.cardBackground,
     },
     gradientBackground: {
       flexDirection: 'row',

@@ -48,6 +48,25 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type CategoryKey = ConsciousnessLevel['category'];
 type ChapterView = 'overview' | 'meditations' | 'articles';
 
+const lightGlowPalette: Record<string, string> = {
+  shame: '#F472B6',
+  guilt: '#FBBF24',
+  apathy: '#38BDF8',
+  grief: '#5EEAD4',
+  fear: '#FACC15',
+  desire: '#FB923C',
+  anger: '#F87171',
+  pride: '#A78BFA',
+  courage: '#34D399',
+  neutrality: '#94A3B8',
+  willingness: '#4ADE80',
+  acceptance: '#C084FC',
+  reason: '#60A5FA',
+  love: '#F472B6',
+  joy: '#FACC15',
+  peace: '#93C5FD',
+};
+
 const { width } = Dimensions.get('window');
 const canBlur = Platform.OS !== 'web';
 const CARD_HEIGHT = Platform.OS === 'android' ? 320 : 300; // Increased height to accommodate more text
@@ -162,11 +181,11 @@ export default function JourneyMapScreen() {
   const horizonGradient = useMemo<readonly [string, string, string]>(() => {
     const pick = (colors: readonly string[]) =>
       [colors[0], colors[1], colors[2]] as const;
-    // In dark mode, always use the night gradient to ensure a truly dark canvas
+
     if (theme.mode === 'dark') {
-      return pick(theme.gradients.horizonNight);
+      return ['#03070F', '#0B1626', '#102436'] as const;
     }
-    // Light mode: vary by time of day
+
     const hour = new Date().getHours();
     if (hour >= 20 || hour < 5) {
       return pick(theme.gradients.horizonNight);
@@ -295,9 +314,43 @@ export default function JourneyMapScreen() {
     
     // Use level-specific colors for glow effects
     const glowBase = level.glowDark ?? gradientColors[0];
-    const glowTint =
-      theme.mode === 'dark' ? glowBase : adjustColor(gradientColors[0], -12);
-    // Removed the old float/bobbing animation to keep cards stable
+    const glowLight =
+      lightGlowPalette[level.id] ?? adjustColor(gradientColors[0], -12);
+
+    const levelGlowColor = theme.mode === 'dark' ? glowBase : glowLight;
+    const levelGlowStyle: Record<string, unknown> = {
+      borderColor:
+        theme.mode === 'dark'
+          ? toRgba(levelGlowColor, isCurrent ? 0.6 : 0.45)
+          : toRgba(levelGlowColor, 0.22),
+      shadowColor: levelGlowColor,
+      shadowOpacity: theme.mode === 'dark' ? 0.6 : 0.24,
+      shadowRadius: theme.mode === 'dark' ? 30 : 18,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 10 },
+      elevation: theme.mode === 'dark' ? 8 : 4,
+    };
+
+    if (Platform.OS === 'web') {
+      levelGlowStyle.boxShadow =
+        theme.mode === 'dark'
+          ? `0 0 44px ${toRgba(levelGlowColor, 0.55)}, 0 0 120px ${toRgba(levelGlowColor, 0.32)}, inset 0 0 28px ${toRgba(levelGlowColor, 0.22)}`
+          : `0 10px 32px rgba(15, 23, 42, 0.12), 0 0 60px ${toRgba(levelGlowColor, 0.24)}, 0 0 110px ${toRgba(levelGlowColor, 0.16)}`;
+    }
+
+    const antithesisColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.85) : theme.textSecondary;
+    const descriptionColor =
+      theme.mode === 'dark' ? toRgba('#E9F1F6', 0.82) : theme.textSecondary;
+    const chapterLinkColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.86) : theme.accentTeal;
+    const secondaryIconColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.92) : theme.textPrimary;
+    const exploredTextColor =
+      theme.mode === 'dark' ? toRgba('#E8F4F4', 0.82) : theme.textPrimary;
+    const exploredIconColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.9) : theme.accentTeal;
+    const thresholdIconColor =
+      theme.mode === 'dark' ? toRgba(glowBase, 0.94) : theme.accentGold;
 
     return (
       <View
@@ -319,7 +372,10 @@ export default function JourneyMapScreen() {
           onPress={() => handleLevelPress(level)}
           style={({ pressed }) => [
             styles.levelCard,
-            // Apply "current" and "courage" base tweaks first
+            levelGlowStyle,
+            theme.mode === 'dark' && {
+              backgroundColor: 'rgba(10, 24, 30, 0.82)',
+            },
             isCurrent && styles.levelCardCurrent,
             isCourage && styles.levelCardCourage,
             // Then apply theme + glow so it wins for shadow/border
@@ -327,18 +383,18 @@ export default function JourneyMapScreen() {
               ? (glowEnabled
                   ? {
                       borderWidth: 2,
-                      borderColor: toRgba(glowTint, 0.8),
+                      borderColor: toRgba(levelGlowColor, 0.8),
                       backgroundColor: 'rgba(9, 19, 28, 0.75)',
                       // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
-                      shadowColor: glowTint,
+                      shadowColor: levelGlowColor,
                       shadowOpacity: 0.34,
                       shadowRadius: 25,
                       shadowOffset: { width: 0, height: 0 },
                       elevation: 0, // Override base elevation for glow
                       boxShadow: [
-                        `0 0 30px ${toRgba(glowTint, 0.53)}`,
-                        `0 0 60px ${toRgba(glowTint, 0.27)}`,
-                        `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
+                        `0 0 30px ${toRgba(levelGlowColor, 0.53)}`,
+                        `0 0 60px ${toRgba(levelGlowColor, 0.27)}`,
+                        `inset 0 0 20px ${toRgba(levelGlowColor, 0.13)}`,
                       ].join(', '),
                     }
                   : {
@@ -349,19 +405,19 @@ export default function JourneyMapScreen() {
               : (glowEnabled
                   ? {
                       borderWidth: 2,
-                      borderColor: toRgba(glowTint, 0.6),
+                      borderColor: toRgba(levelGlowColor, 0.6),
                       backgroundColor: theme.cardBackground,
                       transform: pressed ? [{ translateY: -2 }] : [],
                       // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
-                      shadowColor: glowTint,
+                      shadowColor: levelGlowColor,
                       shadowOpacity: 0.25,
                       shadowRadius: 20,
                       shadowOffset: { width: 0, height: 0 },
                       elevation: 0, // Override base elevation for glow
                       boxShadow: [
-                        `0 0 25px ${toRgba(glowTint, 0.4)}`,
-                        `0 0 50px ${toRgba(glowTint, 0.2)}`,
-                        `inset 0 0 15px ${toRgba(glowTint, 0.1)}`,
+                        `0 0 25px ${toRgba(levelGlowColor, 0.4)}`,
+                        `0 0 50px ${toRgba(levelGlowColor, 0.2)}`,
+                        `inset 0 0 15px ${toRgba(levelGlowColor, 0.1)}`,
                       ].join(', '),
                     }
                   : {
@@ -379,6 +435,22 @@ export default function JourneyMapScreen() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
+            <View
+              pointerEvents="none"
+              style={[
+                styles.levelGlow,
+                {
+                  backgroundColor: toRgba(
+                    levelGlowColor,
+                    theme.mode === 'dark' ? 0.22 : 0.14
+                  ),
+                  shadowColor: toRgba(
+                    levelGlowColor,
+                    theme.mode === 'dark' ? 0.55 : 0.34
+                  ),
+                },
+              ]}
+            />
             {canBlur ? (
               <SafeBlurView
                 intensity={theme.mode === 'dark' ? 45 : 20} // Less blur in light mode
@@ -435,37 +507,36 @@ export default function JourneyMapScreen() {
             <View style={styles.textOverlay}>
               <View style={styles.levelContent}>
                 <View style={styles.levelHeader}>
-                  <View style={styles.levelTitleContainer}>
-                    <EditableText
-                      screen="journey"
-                      section={level.id}
-                      id="title"
-                      originalContent={level.level < 200
-                        ? `Transcending ${String(level.name || '')}`
-                        : String(level.name || '')}
-                      textStyle={[
-                        styles.levelTitle,
+                  <Text
+                    style={[
+                      styles.levelTitle,
+                      theme.mode === 'dark' && {
+                        textShadowColor: toRgba(levelGlowColor, 0.38),
+                        textShadowRadius: 6,
+                      },
+                    ]}
+                  >
+                    {level.level < 200
+                      ? `Transcending ${level.name}`
+                      : level.name}
+                  </Text>
+                  {isCurrent && (
+                    <View
+                      style={[
+                        styles.currentBadge,
                         theme.mode === 'dark' && {
-                          textShadowColor: toRgba(glowTint, 0.5),
-                          textShadowOffset: { width: 0, height: 1 },
-                          textShadowRadius: 8,
+                          backgroundColor: toRgba(levelGlowColor, 0.32),
                         },
                       ]}
-                      type="title"
                     />
-                  </View>
+                  )}
                 </View>
 
                 <View style={styles.antithesisContainer}>
                   <Ionicons
                     name="arrow-forward"
                     size={14}
-                    color={
-                      theme.mode === 'dark'
-                        ? toRgba(glowTint, 0.68) // Further reduced opacity (0.85 * 0.8 = 0.68)
-                        : theme.primary
-                    }
-                    style={styles.antithesisIcon}
+                    color={antithesisColor}
                   />
                   <EditableText
                     screen="journey"
@@ -476,11 +547,7 @@ export default function JourneyMapScreen() {
                       : String(level.antithesis || '')}
                     textStyle={[
                       styles.antithesisText,
-                      {
-                        color: theme.mode === 'dark' 
-                          ? toRgba(glowTint, 0.85)
-                          : theme.primary,
-                      },
+                      { color: antithesisColor },
                     ]}
                     type="subtitle"
                   />
@@ -493,9 +560,7 @@ export default function JourneyMapScreen() {
                   originalContent={String(level.description || '')}
                   textStyle={[
                     styles.levelDescription,
-                    theme.mode === 'dark' && {
-                      color: toRgba('#E9F1F6', 0.82),
-                    },
+                    { color: descriptionColor },
                   ]}
                   type="description"
                 />
@@ -545,11 +610,7 @@ export default function JourneyMapScreen() {
                     <Ionicons
                       name="book-outline"
                       size={16}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.92)
-                          : gradientColors[0]
-                      }
+                      color={secondaryIconColor}
                     />
                     <Text
                       style={[
@@ -577,25 +638,20 @@ export default function JourneyMapScreen() {
                   <Text
                     style={[
                       styles.chapterLinkText,
-                      {
-                        color:
-                          theme.mode === 'dark'
-                            ? toRgba(glowBase, 0.69) // Further reduced opacity (0.86 * 0.8 = 0.69)
-                            : theme.accentTeal,
-                      },
+                      { color: chapterLinkColor },
                     ]}
                   >
                     Chapter overview
                   </Text>
-                    <Ionicons
-                      name="chevron-forward"
-                      size={16}
-                      color={
-                        theme.mode === 'dark'
-                        ? toRgba(glowBase, 0.64) // Further reduced opacity (0.8 * 0.8 = 0.64)
+                  <Ionicons
+                    name="chevron-forward"
+                    size={16}
+                    color={
+                      theme.mode === 'dark'
+                        ? toRgba(levelGlowColor, 0.8)
                         : theme.textSecondary
-                      }
-                    />
+                    }
+                  />
                 </Pressable>
 
                 {isExplored && (
@@ -603,18 +659,12 @@ export default function JourneyMapScreen() {
                     <Ionicons
                       name="checkmark-circle"
                       size={16}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.72) // Further reduced opacity (0.9 * 0.8 = 0.72)
-                          : theme.accentTeal
-                      }
+                      color={exploredIconColor}
                     />
                     <Text
                       style={[
                         styles.exploredText,
-                        theme.mode === 'dark' && {
-                          color: toRgba('#E8F4F4', 0.82),
-                        },
+                        { color: exploredTextColor },
                       ]}
                     >
                       Explored - {String(completedCount)} practice
@@ -628,11 +678,7 @@ export default function JourneyMapScreen() {
                     <Ionicons
                       name="star"
                       size={14}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.75) // Further reduced opacity (0.94 * 0.8 = 0.75)
-                          : theme.accentGold
-                      }
+                      color={thresholdIconColor}
                     />
                     <Text 
                       style={styles.thresholdText}
@@ -650,7 +696,6 @@ export default function JourneyMapScreen() {
       </View>
     );
   };
-
   const renderCategorySection = (
     category: CategoryKey,
     levels: ConsciousnessLevel[]
@@ -808,7 +853,11 @@ export default function JourneyMapScreen() {
         </View>
       )}
       <LinearGradient
-        colors={theme.appBackgroundGradient}
+        colors={
+          theme.mode === 'dark'
+            ? horizonGradient
+            : theme.appBackgroundGradient
+        }
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -824,7 +873,11 @@ export default function JourneyMapScreen() {
       </LinearGradient>
 
       <LinearGradient
-        colors={theme.appBackgroundGradient}
+        colors={
+          theme.mode === 'dark'
+            ? horizonGradient
+            : theme.appBackgroundGradient
+        }
         style={styles.bodyGradient}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -838,6 +891,23 @@ export default function JourneyMapScreen() {
           }}
           scrollEventThrottle={16}
         >
+          <View style={(styles as any).stageSurface}>
+          <Pressable
+            style={styles.guidanceCard}
+            onPress={() => navigation.navigate('CheckIn')}
+          >
+            <Ionicons name="heart-outline" size={24} color={theme.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.guidanceText}>
+                Not sure where to start?{' '}
+                <Text style={styles.guidanceEmphasis}>
+                  Check in with yourself
+                </Text>{' '}
+                and we'll suggest a level.
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color={theme.textPrimary} />
+          </Pressable>
 
           {showDisclaimer && (
             <Pressable
@@ -994,6 +1064,7 @@ export default function JourneyMapScreen() {
               new layers. Revisiting is sacred.
             </Text>
           </View>
+          </View>
         </ScrollView>
       </LinearGradient>
       
@@ -1094,6 +1165,34 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       paddingTop: spacing.xl,
       paddingBottom: spacing.xxl,
       gap: spacing.xl,
+    },
+    guidanceCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.md,
+      backgroundColor: theme.cardBackground,
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      borderWidth: theme.mode === 'dark' ? 2 : 1,
+      borderColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.border,
+      shadowColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 4 },
+      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.12,
+      shadowRadius: theme.mode === 'dark' ? 18 : 12,
+      elevation: theme.mode === 'dark' ? 6 : 3,
+      // Web-specific glow
+      ...(theme.mode === 'dark' && {
+        boxShadow: `0 0 25px ${theme.bioluminescence.glow}66, 0 0 50px ${theme.bioluminescence.glow}33`,
+      }),
+    } as any,
+    guidanceText: {
+      fontSize: typography.body,
+      color: theme.textSecondary,
+      lineHeight: 22,
+    },
+    guidanceEmphasis: {
+      fontWeight: typography.semibold,
+      color: theme.textPrimary,
     },
     disclaimerCard: {
       flexDirection: 'row',
@@ -1229,14 +1328,38 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
     },
     levelCard: {
       borderRadius: borderRadius.lg,
-      overflow: 'hidden', // Changed back to hidden so gradient shows
       position: 'relative',
-      height: CARD_HEIGHT, // Fixed height for all cards (tallest card size)
-      // Shadow properties removed from base style - they're now applied inline based on glowEnabled
+      overflow: 'visible',
+      minHeight: 220,
       backgroundColor:
         theme.mode === 'dark'
           ? 'rgba(6, 14, 22, 0.7)'
-          : 'transparent', // Let gradient show through in light mode
+          : 'rgba(255,255,255,0.72)',
+      borderWidth: theme.mode === 'dark' ? 2 : 1,
+      borderColor:
+        theme.mode === 'dark'
+          ? theme.bioluminescence.glow
+          : 'rgba(15, 23, 42, 0.08)',
+      shadowColor:
+        theme.mode === 'dark'
+          ? theme.bioluminescence.glow
+          : 'rgba(15, 23, 42, 0.12)',
+      shadowOffset: {
+        width: 0,
+        height: theme.mode === 'dark' ? 0 : 12,
+      },
+      shadowOpacity: theme.mode === 'dark' ? 0.7 : 0.18,
+      shadowRadius: theme.mode === 'dark' ? 24 : 18,
+      elevation: theme.mode === 'dark' ? 8 : 4,
+      ...(theme.mode === 'dark'
+        ? {
+            boxShadow: `0 0 38px ${theme.bioluminescence.glow}88, 0 0 80px ${theme.bioluminescence.glow}44, inset 0 0 24px ${theme.bioluminescence.glow}22`,
+          }
+        : {
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            boxShadow: '0 12px 24px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255,255,255,0.6)',
+          }),
     } as any,
     levelCardPressed: {
       transform: [{ translateY: 2 }],
@@ -1508,13 +1631,18 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
         : theme.primarySubtle,
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
-      borderWidth: 1,
-      borderColor: theme.mode === 'dark' 
-        ? 'rgba(139, 92, 246, 0.5)' // Opaque border, less bright
-        : theme.primary,
-      // Removed shadow properties that were causing the square border effect
-      elevation: 0,
-    },
+      borderWidth: theme.mode === 'dark' ? 2 : 1,
+      borderColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.primary,
+      shadowColor: theme.mode === 'dark' ? theme.bioluminescence.glow : theme.shadowSoft,
+      shadowOffset: { width: 0, height: theme.mode === 'dark' ? 0 : 2 },
+      shadowOpacity: theme.mode === 'dark' ? 0.5 : 0.08,
+      shadowRadius: theme.mode === 'dark' ? 18 : 8,
+      elevation: theme.mode === 'dark' ? 6 : 2,
+      // Web-specific glow
+      ...(theme.mode === 'dark' && {
+        boxShadow: `0 0 25px ${theme.bioluminescence.glow}66, 0 0 50px ${theme.bioluminescence.glow}33`,
+      }),
+    } as any,
     reminderText: {
       flex: 1,
       fontSize: typography.body,
@@ -1523,6 +1651,11 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       fontStyle: 'italic',
     },
   });
+
+
+
+
+
 
 
 
