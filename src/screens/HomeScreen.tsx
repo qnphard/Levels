@@ -178,6 +178,33 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {/* AI Generator Module */}
+        <View style={styles.generatorModule}>
+          <TouchableOpacity
+            style={styles.generatorCard}
+            onPress={() => navigation.navigate('MeditationGenerator')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={['#8B5CF6', '#EC4899']}
+              style={styles.generatorGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.generatorContent}>
+                <View style={styles.generatorTextSection}>
+                  <Text style={styles.generatorLabel}>Custom Practice</Text>
+                  <Text style={styles.generatorTitle}>AI Meditation Generator</Text>
+                  <Text style={styles.generatorSubtitle}>Generate unique scripts & binaural beats</Text>
+                </View>
+                <View style={styles.generatorIconContainer}>
+                  <Ionicons name="sparkles" size={28} color="#FFFFFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
         {/* Category Filter */}
         <ScrollView
           horizontal
@@ -470,5 +497,57 @@ const createStyles = (theme: ThemeColors) =>
       justifyContent: 'center',
       borderWidth: 1,
       borderColor: theme.border,
+    },
+    generatorModule: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.lg,
+    },
+    generatorCard: {
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      elevation: 6,
+      shadowColor: '#EC4899',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+    },
+    generatorGradient: {
+      padding: spacing.lg,
+    },
+    generatorContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    generatorTextSection: {
+      flex: 1,
+      marginRight: spacing.md,
+    },
+    generatorLabel: {
+      fontSize: 10,
+      color: 'rgba(255, 255, 255, 0.9)',
+      fontWeight: typography.bold,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+      marginBottom: 2,
+    },
+    generatorTitle: {
+      fontSize: 20,
+      color: '#FFFFFF',
+      fontWeight: typography.bold,
+      marginBottom: 2,
+    },
+    generatorSubtitle: {
+      fontSize: 12,
+      color: 'rgba(255, 255, 255, 0.8)',
+      fontStyle: 'italic',
+    },
+    generatorIconContainer: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   });

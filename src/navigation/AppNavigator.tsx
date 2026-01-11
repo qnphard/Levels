@@ -41,6 +41,7 @@ import RelaxingScreen from '../screens/RelaxingScreen';
 import KnowledgeScreen from '../screens/KnowledgeScreen';
 import AddictionScreen from '../screens/AddictionScreen';
 import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
+import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
@@ -75,6 +76,7 @@ export type RootStackParamList = {
   Knowledge: undefined;
   Addiction: undefined;
   LossAndAbandonment: { initialTab?: string } | undefined;
+  MeditationGenerator: undefined;
   Profile: undefined;
 };
 
@@ -333,6 +335,11 @@ export default function AppNavigator() {
           name="LossAndAbandonment"
           component={LossAndAbandonmentScreen}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MeditationGenerator"
+          component={MeditationGeneratorScreen}
+          options={{ headerShown: false, presentation: 'modal' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
