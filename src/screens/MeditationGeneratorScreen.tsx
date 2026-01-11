@@ -19,13 +19,19 @@ import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
 import { useTTS } from '../hooks/useTTS';
 import { useSherpaTTS } from '../hooks/useSherpaTTS';
+import { geminiService } from '../services/geminiService';
+import { AI_CONFIG } from '../config/aiConfig';
 import { useBinauralBeats, BrainwaveType, BRAINWAVE_PRESETS } from '../hooks/useBinauralBeats';
 import {
     generateMeditationScript,
     sectionsToText,
     MeditationPurpose,
     MeditationDuration,
+    MeditationVibe,
     PURPOSE_LABELS,
+    VIBE_LABELS,
+    VIBE_ICONS,
+    VIBE_DESCRIPTIONS,
 } from '../data/meditationScripts';
 
 const PURPOSES: MeditationPurpose[] = [
@@ -38,6 +44,7 @@ const PURPOSES: MeditationPurpose[] = [
 ];
 
 const DURATIONS: MeditationDuration[] = [5, 10, 15, 20];
+const VIBES: MeditationVibe[] = ['mindfulness', 'clinical_hypnosis', 'ericksonian', 'performance'];
 
 const PURPOSE_ICONS: Record<MeditationPurpose, string> = {
     sleep: 'moon',
@@ -67,9 +74,12 @@ export default function MeditationGeneratorScreen() {
 
     const [purpose, setPurpose] = useState<MeditationPurpose>('calm');
     const [duration, setDuration] = useState<MeditationDuration>(10);
+    const [vibe, setVibe] = useState<MeditationVibe>('mindfulness');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [isBrewingAI, setIsBrewingAI] = useState(false);
     const [generatedScript, setGeneratedScript] = useState<string>('');
     const [showVoices, setShowVoices] = useState(false);
+    const [generationError, setGenerationError] = useState<string | null>(null);
 
     // Binaural beat settings
     const [binauralEnabled, setBinauralEnabled] = useState(true);
@@ -78,10 +88,33 @@ export default function MeditationGeneratorScreen() {
 
     const handleGenerate = useCallback(async () => {
         setIsGenerating(true);
+        setGenerationError(null);
 
-        // Generate the script
-        const sections = generateMeditationScript(purpose, duration);
-        const script = sectionsToText(sections);
+        let script = '';
+
+        // Generate the script via Gemini if API key is present
+        if (AI_CONFIG.GEMINI_API_KEY) {
+            try {
+                setIsBrewingAI(true);
+                script = await geminiService.generateScript({
+                    purpose,
+                    durationMinutes: duration,
+                    vibe,
+                });
+                setIsBrewingAI(false);
+            } catch (err: any) {
+                console.warn('Gemini generation failed, falling back to templates:', err);
+                setIsBrewingAI(false);
+                // Fallback to local templates
+                const sections = generateMeditationScript(purpose, duration);
+                script = sectionsToText(sections);
+            }
+        } else {
+            // No API key - standard template generation
+            const sections = generateMeditationScript(purpose, duration);
+            script = sectionsToText(sections);
+        }
+
         setGeneratedScript(script);
 
         // Start binaural beats if enabled
@@ -117,7 +150,7 @@ export default function MeditationGeneratorScreen() {
                 },
             });
         }
-    }, [purpose, duration, isUsingHighQuality, sherpaTTS, systemTTS, binauralEnabled, selectedBrainwave, binauralVolume, binaural]);
+    }, [purpose, duration, vibe, isUsingHighQuality, sherpaTTS, systemTTS, binauralEnabled, selectedBrainwave, binauralVolume, binaural]);
 
     const handleStop = useCallback(() => {
         if (isUsingHighQuality) {
@@ -149,6 +182,20 @@ export default function MeditationGeneratorScreen() {
                 colors={['#1a1a2e', '#16213e', '#0f0f23']}
                 style={StyleSheet.absoluteFill}
             />
+
+            {/* AI Brewing Overlay */}
+            {isBrewingAI && (
+                <View style={styles.brewingOverlay}>
+                    <View style={styles.brewingCard}>
+                        <Ionicons name="sparkles" size={48} color="#6366f1" />
+                        <Text style={styles.brewingTitle}>Brewing Your Meditation</Text>
+                        <Text style={styles.brewingSubtitle}>Gemini is composing a unique session for you...</Text>
+                        <View style={styles.loadingBar}>
+                            <View style={styles.loadingBarFill} />
+                        </View>
+                    </View>
+                </View>
+            )}
 
             <ScrollView
                 style={styles.scrollView}
@@ -216,6 +263,49 @@ export default function MeditationGeneratorScreen() {
                                     ]}
                                 >
                                     {d} min
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+
+                {/* Expert Style Selection */}
+                <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Expert Style</Text>
+                    <Text style={styles.sectionSubtitle}>Choose the psychological framework for your session</Text>
+                    <View style={styles.vibeGrid}>
+                        {VIBES.map((v) => (
+                            <TouchableOpacity
+                                key={v}
+                                style={[
+                                    styles.vibeCard,
+                                    vibe === v && styles.vibeCardSelected,
+                                ]}
+                                onPress={() => setVibe(v)}
+                                activeOpacity={0.7}
+                            >
+                                <View style={styles.vibeHeader}>
+                                    <View style={[
+                                        styles.vibeIconContainer,
+                                        vibe === v && styles.vibeIconContainerSelected
+                                    ]}>
+                                        <Ionicons
+                                            name={VIBE_ICONS[v] as any}
+                                            size={18}
+                                            color={vibe === v ? '#ffffff' : '#6366f1'}
+                                        />
+                                    </View>
+                                    <Text
+                                        style={[
+                                            styles.vibeLabel,
+                                            vibe === v && styles.vibeLabelSelected,
+                                        ]}
+                                    >
+                                        {VIBE_LABELS[v]}
+                                    </Text>
+                                </View>
+                                <Text style={styles.vibeDescription}>
+                                    {VIBE_DESCRIPTIONS[v]}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -710,6 +800,52 @@ const styles = StyleSheet.create({
         marginTop: 10,
         textAlign: 'center',
     },
+    // AI Brewing Styles
+    brewingOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(15, 15, 35, 0.9)',
+        zIndex: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 30,
+    },
+    brewingCard: {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: 24,
+        padding: 32,
+        alignItems: 'center',
+        width: '100%',
+        borderWidth: 1,
+        borderColor: 'rgba(99, 102, 241, 0.3)',
+    },
+    brewingTitle: {
+        fontSize: 22,
+        fontWeight: '700',
+        color: '#ffffff',
+        marginTop: 20,
+        textAlign: 'center',
+    },
+    brewingSubtitle: {
+        fontSize: 14,
+        color: '#8b8ba7',
+        marginTop: 8,
+        textAlign: 'center',
+        lineHeight: 20,
+    },
+    loadingBar: {
+        width: '100%',
+        height: 4,
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        borderRadius: 2,
+        marginTop: 24,
+        overflow: 'hidden',
+    },
+    loadingBarFill: {
+        width: '40%',
+        height: '100%',
+        backgroundColor: '#6366f1',
+        borderRadius: 2,
+    },
     voiceSelector: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -788,6 +924,57 @@ const styles = StyleSheet.create({
     playingText: {
         fontSize: 13,
         color: '#10b981',
+    },
+    // Vibe Selection Styles
+    sectionSubtitle: {
+        fontSize: 14,
+        color: '#8b8ba7',
+        marginTop: 4,
+        marginBottom: 16,
+    },
+    vibeGrid: {
+        gap: 12,
+    },
+    vibeCard: {
+        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        borderRadius: 16,
+        padding: 16,
+        borderWidth: 1,
+        borderColor: 'rgba(255, 255, 255, 0.1)',
+    },
+    vibeCardSelected: {
+        backgroundColor: 'rgba(99, 102, 241, 0.15)',
+        borderColor: '#6366f1',
+    },
+    vibeHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    vibeIconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 8,
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    vibeIconContainerSelected: {
+        backgroundColor: '#6366f1',
+    },
+    vibeLabel: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#ffffff',
+    },
+    vibeLabelSelected: {
+        color: '#ffffff',
+    },
+    vibeDescription: {
+        fontSize: 13,
+        color: '#8b8ba7',
+        lineHeight: 18,
     },
     // Preview
     previewSection: {
