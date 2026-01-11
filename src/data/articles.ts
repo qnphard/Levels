@@ -1,0 +1,127 @@
+import { Article } from '../types';
+
+export const featuredArticles: Article[] = [
+  {
+    id: 'article-1',
+    title: 'Observe Without Fixing',
+    summary:
+      'Awareness dissolves resistance. This short primer guides you through the Observe step of the Letting-Go mechanism.',
+    source: 'Letting Go · Chapter 2',
+    readingTime: 4,
+    stage: 'Notice',
+    calibration: 310,
+    tags: ['Letting Go', 'Observe'],
+  },
+  {
+    id: 'article-2',
+    title: 'Crossing the Courage Threshold',
+    summary:
+      'A practical look at why level 200 is the inflection point between force and power, with simple practices for staying above the line.',
+    source: 'Healing & Recovery · Lecture 1',
+    readingTime: 6,
+    stage: 'Release',
+    calibration: 200,
+    tags: ['Map of Consciousness', 'Field Notes'],
+  },
+  {
+    id: 'article-3',
+    title: 'Rest Without Earning It',
+    summary:
+      'Inspired by Transcending the Levels of Consciousness, this reflection normalizes rest and silence as natural states rather than goals to achieve.',
+    source: 'Transcending Levels · Section Four',
+    readingTime: 5,
+    stage: 'Rest',
+    calibration: 520,
+    tags: ['Rest', 'Stillness'],
+  },
+  {
+    id: 'preventing-stress',
+    title: 'Preventing Stress at the Source',
+    summary:
+      'Why fixing symptoms isn\'t enough—and how to reduce stress reactivity from within. Fear is limited in quantity and spills out into life experiences.',
+    source: 'Essentials · Stress/Fear/Anxiety',
+    readingTime: 7,
+    stage: 'Release',
+    calibration: 100, // Fear level
+    tags: ['Stress', 'Fear', 'Anxiety'],
+    url: 'chapter://stress', // Special URL format for chapter navigation
+  },
+  {
+    id: 'loss-and-abandonment',
+    title: 'Loss and Abandonment',
+    summary:
+      'Grief focuses on the past, fear on the future. All suffering is due to resistance. Grief is limited in quantity—letting go reduces spillout.',
+    source: 'Essentials · Grief/Loss',
+    readingTime: 6,
+    stage: 'Release',
+    calibration: 75, // Grief level
+    tags: ['Grief', 'Loss', 'Abandonment'],
+    url: 'screen://LossAndAbandonment', // Special URL format for screen navigation
+  },
+  {
+    id: 'breaking-apathy',
+    title: 'Breaking the Paralysis of Apathy',
+    summary: 'Apathy is a state of high resistance. Discover how the 1% rule and micro-victories can break the cycle of hopelessness.',
+    source: 'Field Notes · Level 50',
+    readingTime: 4,
+    stage: 'Notice',
+    calibration: 50,
+    tags: ['Apathy', 'Hopelessness', 'Action'],
+    url: 'chapter://breaking-apathy',
+  },
+  {
+    id: 'anger-fuel',
+    title: 'Anger as Fuel for Change',
+    summary: 'Anger contains the energy of movement. Learn how to transition from destructive force to constructive courage.',
+    source: 'Field Notes · Level 150',
+    readingTime: 5,
+    stage: 'Release',
+    calibration: 150,
+    tags: ['Anger', 'Energy', 'Shift'],
+    url: 'chapter://anger-fuel',
+  },
+  {
+    id: 'neutrality-freedom',
+    title: 'The Freedom of Neutrality',
+    summary: 'Neutrality is the foundation of non-attachment. Learn the power of "So What?" and releasing positionality.',
+    source: 'Field Notes · Level 250',
+    readingTime: 4,
+    stage: 'Rest',
+    calibration: 250,
+    tags: ['Neutrality', 'Non-attachment', 'Peace'],
+    url: 'chapter://neutrality-freedom',
+  },
+  {
+    id: 'willingness-magic',
+    title: 'The Magic of Being Willing',
+    summary: 'Willingness is the bridge to effortless growth. Discover the "Maybe" strategy and how to invite Grace.',
+    source: 'Field Notes · Level 310',
+    readingTime: 4,
+    stage: 'Release',
+    calibration: 310,
+    tags: ['Willingness', 'Surrender', 'Grace'],
+    url: 'chapter://willingness-magic',
+  },
+  {
+    id: 'reason-limits',
+    title: 'The Limits of Intellectualism',
+    summary: 'Logic hit a glass ceiling at Level 400. Learn how to jump to the Heart and value Subjectivity over Objectivity.',
+    source: 'Field Notes · Level 400',
+    readingTime: 5,
+    stage: 'Notice',
+    calibration: 400,
+    tags: ['Reason', 'Logic', 'Intuition'],
+    url: 'chapter://reason-limits',
+  },
+  {
+    id: 'spiritual-ego',
+    title: 'Anatomy of the Spiritual Ego',
+    summary: 'The ego often hitches a ride on spiritual progress. Learn the signs of spiritual pride and the remedy of true humility.',
+    source: 'Field Notes · Integrity',
+    readingTime: 6,
+    stage: 'Notice',
+    calibration: 200,
+    tags: ['Ego', 'Pride', 'Humility'],
+    url: 'chapter://spiritual-ego',
+  },
+];

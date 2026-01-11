@@ -1,0 +1,62 @@
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# COMFYUI (large dependency, should be installed separately)
+/ComfyUI/
+comfyui_workflows/
+comfyui_object_info.json
+
+# Generated animation assets
+/assets/animations/*.mp4
+
+# Non-code assets and reference materials
+/Books/
+/Feelings/
+/UI/
+/Guided meditations/
+# Build artifacts and temp files
+*.apk
+temp_audio/
+src/assets/audio_enhanced*/
+src/assets/audio_originals/
+*.wav
+# Worktree
+Levels-backup/
+

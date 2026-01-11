@@ -1,0 +1,42 @@
+{
+  "expo": {
+    "name": "Levels",
+    "slug": "meditation-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/play-store-thumbnail.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/play-store-thumbnail.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.anonymous.meditationapp",
+      "permissions": [
+        "INTERNET",
+        "WAKE_LOCK"
+      ],
+      "versionCode": 1
+    },
+    "web": {
+      "favicon": "./assets/images/play-store-thumbnail.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c5126454-5b79-4b01-8fcc-afa954b0e275"
+      }
+    },
+    "owner": "qnphard",
+    "plugins": [
+      "expo-dev-client"
+    ]
+  }
+}
