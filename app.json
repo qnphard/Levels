@@ -37,7 +37,8 @@
     "owner": "qnphard",
     "plugins": [
       "expo-dev-client",
-      "./plugins/withSherpaOnnx.js"
+      "./plugins/withSherpaOnnx.js",
+      "./plugins/withDisableMinify.js"
     ]
   }
 }
