@@ -36,7 +36,8 @@
     },
     "owner": "qnphard",
     "plugins": [
-      "expo-dev-client"
+      "expo-dev-client",
+      "./plugins/withSherpaOnnx.js"
     ]
   }
 }
