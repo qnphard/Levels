@@ -1,0 +1,4 @@
+python==3.10
+gradio==4.44.0
+piper-tts==1.2.0
+numpy

@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "gbox-android": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@gbox.ai/mcp-server@latest"
+      ],
+      "env": {
+        "GBOX_API_KEY": "gbox_4W4NuWVGNJGrVjSoSfNoFxqBcLZdrMqzRKNMTdoijnigfzRiV0"
+      }
+    }
+  }
+}
+
+
+
+
+
