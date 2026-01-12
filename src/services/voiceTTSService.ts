@@ -71,6 +71,8 @@ export async function checkAvailability(): Promise<boolean> {
 /**
  * Synthesize text to audio using F5-TTS voice cloning
  * Returns the audio URI that can be played with expo-av
+ * 
+ * Note: F5-TTS can take 7-10 minutes on CPU. This function polls until complete.
  */
 export async function synthesize(options: SynthesizeOptions): Promise<string> {
     const {
@@ -104,61 +106,109 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
     }
 
     const result = await response.json();
-
-    // Gradio returns an event_id, we need to poll for the result
     const eventId = result.event_id;
 
-    // Poll for result
-    const resultResponse = await fetch(`${VOICE_API_URL}/gradio_api/call/synthesize/${eventId}`);
-    const resultText = await resultResponse.text();
+    if (!eventId) {
+        throw new Error('No event ID returned from API');
+    }
 
-    // Parse SSE response to get audio URL
-    const lines = resultText.split('\n');
-    let lastError = '';
+    // Poll for result with timeout (15 minutes max for CPU generation)
+    const maxWaitTime = 15 * 60 * 1000; // 15 minutes
+    const pollInterval = 3000; // 3 seconds
+    const startTime = Date.now();
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+    while (Date.now() - startTime < maxWaitTime) {
+        try {
+            const resultResponse = await fetch(`${VOICE_API_URL}/gradio_api/call/synthesize/${eventId}`);
+            const resultText = await resultResponse.text();
 
-        if (line.startsWith('event: error')) {
-            const nextLine = lines[i + 1];
-            if (nextLine && nextLine.startsWith('data: ')) {
-                lastError = nextLine.slice(6).trim();
-            }
-        }
+            // Parse SSE response to get audio URL
+            const lines = resultText.split('\n');
+            let lastError = '';
 
-        if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6).trim();
-            if (dataStr === 'null' || dataStr === '') continue;
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
 
-            try {
-                const data = JSON.parse(dataStr);
-
-                if (data.error) {
-                    throw new Error(`Gradio error: ${data.error}`);
+                // Check for heartbeat (still processing)
+                if (line.startsWith('event: heartbeat')) {
+                    // Still processing, continue polling
+                    break;
                 }
 
-                if (Array.isArray(data) && data[0]) {
-                    const fileData = data[0];
-                    if (typeof fileData === 'string') {
-                        return fileData;
-                    } else if (fileData.url) {
-                        return fileData.url;
-                    } else if (fileData.path) {
-                        return `${VOICE_API_URL}/file=${fileData.path}`;
+                if (line.startsWith('event: error')) {
+                    const nextLine = lines[i + 1];
+                    if (nextLine && nextLine.startsWith('data: ')) {
+                        lastError = nextLine.slice(6).trim();
                     }
                 }
-            } catch (parseError: any) {
-                if (parseError.message.includes('Gradio error')) throw parseError;
-                console.warn('Failed to parse SSE data:', dataStr);
+
+                if (line.startsWith('event: complete')) {
+                    // Look for the data line after complete
+                    const nextLine = lines[i + 1];
+                    if (nextLine && nextLine.startsWith('data: ')) {
+                        const dataStr = nextLine.slice(6).trim();
+                        try {
+                            const data = JSON.parse(dataStr);
+                            if (Array.isArray(data) && data[0]) {
+                                const fileData = data[0];
+                                if (typeof fileData === 'string') {
+                                    return fileData;
+                                } else if (fileData.url) {
+                                    return fileData.url;
+                                } else if (fileData.path) {
+                                    return `${VOICE_API_URL}/file=${fileData.path}`;
+                                }
+                            }
+                        } catch (parseError) {
+                            console.warn('Failed to parse complete data:', dataStr);
+                        }
+                    }
+                }
+
+                if (line.startsWith('data: ')) {
+                    const dataStr = line.slice(6).trim();
+                    if (dataStr === 'null' || dataStr === '') continue;
+
+                    try {
+                        const data = JSON.parse(dataStr);
+
+                        if (data.error) {
+                            throw new Error(`Gradio error: ${data.error}`);
+                        }
+
+                        if (Array.isArray(data) && data[0]) {
+                            const fileData = data[0];
+                            if (typeof fileData === 'string') {
+                                return fileData;
+                            } else if (fileData.url) {
+                                return fileData.url;
+                            } else if (fileData.path) {
+                                return `${VOICE_API_URL}/file=${fileData.path}`;
+                            }
+                        }
+                    } catch (parseError: any) {
+                        if (parseError.message.includes('Gradio error')) throw parseError;
+                        // Not ready yet, continue polling
+                    }
+                }
             }
+
+            if (lastError) {
+                throw new Error(`API Error: ${lastError}`);
+            }
+        } catch (fetchError: any) {
+            if (fetchError.message.includes('Gradio error') || fetchError.message.includes('API Error')) {
+                throw fetchError;
+            }
+            // Network error, retry
+            console.warn('Polling error, retrying:', fetchError.message);
         }
+
+        // Wait before next poll
+        await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
-    if (lastError) {
-        throw new Error(`API Error: ${lastError}`);
-    }
-
-    throw new Error('No audio URL in response. The model might be loading or the request timed out.');
+    throw new Error('Generation timed out. F5-TTS on CPU can take 7-10 minutes. Please try again or upgrade to GPU.');
 }
 
 /**
