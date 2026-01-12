@@ -1,8 +1,8 @@
 /**
- * Voice TTS Service - Calls self-hosted F5-TTS API on Hugging Face
+ * Voice TTS Service - Calls self-hosted XTTS-v2 API on Hugging Face
  * 
  * Provides zero-shot voice cloning for meditation audio with binaural beats
- * and ambient background sounds.
+ * and ambient background sounds. XTTS-v2 is ~10x faster than F5-TTS.
  */
 
 import { Audio } from 'expo-av';
@@ -69,10 +69,10 @@ export async function checkAvailability(): Promise<boolean> {
 }
 
 /**
- * Synthesize text to audio using F5-TTS voice cloning
+ * Synthesize text to audio using XTTS-v2 voice cloning
  * Returns the audio URI that can be played with expo-av
  * 
- * Note: F5-TTS can take 7-10 minutes on CPU. This function polls until complete.
+ * Note: XTTS-v2 is much faster than F5-TTS (~30-60s on CPU, <1s on GPU).
  */
 export async function synthesize(options: SynthesizeOptions): Promise<string> {
     const {
@@ -112,8 +112,8 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
         throw new Error('No event ID returned from API');
     }
 
-    // Poll for result with timeout (15 minutes max for CPU generation)
-    const maxWaitTime = 15 * 60 * 1000; // 15 minutes
+    // Poll for result with timeout (5 minutes max for CPU generation)
+    const maxWaitTime = 5 * 60 * 1000; // 5 minutes (XTTS is faster)
     const pollInterval = 3000; // 3 seconds
     const startTime = Date.now();
 
@@ -208,7 +208,7 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
         await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
-    throw new Error('Generation timed out. F5-TTS on CPU can take 7-10 minutes. Please try again or upgrade to GPU.');
+    throw new Error('Generation timed out. XTTS-v2 on CPU can take 30-60 seconds. Please try again.');
 }
 
 /**
