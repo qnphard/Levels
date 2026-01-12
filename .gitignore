@@ -23,6 +23,7 @@ Books/
 # OS/Binary
 *.a
 *.jar
+!android/gradle/wrapper/gradle-wrapper.jar
 *.so
 *.dll
 *.exe
