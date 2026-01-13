@@ -26,6 +26,9 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf /opt/hostedtoolcache/CodeQL
           sudo apt-get clean
+          # Recreate android directory with proper permissions for SDK setup
+          sudo mkdir -p /usr/local/lib/android
+          sudo chown -R $USER:$USER /usr/local/lib/android
           echo "=== After cleanup ==="
           df -h
 
