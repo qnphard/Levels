@@ -15,7 +15,6 @@ export type MeditationDuration = 5 | 10 | 15 | 20;
 
 export type MeditationVibe =
     | 'mindfulness'
-    | 'clinical_hypnosis'
     | 'ericksonian'
     | 'performance';
 
@@ -288,21 +287,18 @@ export const DURATION_LABELS: Record<MeditationDuration, string> = {
 // Vibe labels and metadata
 export const VIBE_LABELS: Record<MeditationVibe, string> = {
     mindfulness: 'Mindfulness',
-    clinical_hypnosis: 'Clinical Hypnosis',
     ericksonian: 'Ericksonian',
     performance: 'Performance',
 };
 
 export const VIBE_DESCRIPTIONS: Record<MeditationVibe, string> = {
-    mindfulness: 'Non-judgmental awareness and labeling of the present moment.',
-    clinical_hypnosis: 'Direct, focused suggestions for deep physiological change.',
-    ericksonian: 'Artful metaphors and storytelling to bypass mental resistance.',
-    performance: 'Visualization and mental rehearsal for peak focus and results.',
+    mindfulness: 'Non-judgmental awareness, presence, and stabilizing attention.',
+    ericksonian: 'Natural language and permissive metaphors without suggestion.',
+    performance: 'Clarity and readiness without goal forcing or outcome visualization.',
 };
 
 export const VIBE_ICONS: Record<MeditationVibe, string> = {
     mindfulness: 'leaf',
-    clinical_hypnosis: 'pulse',
     ericksonian: 'color-wand',
     performance: 'rocket',
 };

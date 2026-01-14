@@ -17,6 +17,7 @@ import PlayerScreen from '../screens/PlayerScreen';
 import JourneyMapScreen from '../screens/JourneyMapScreen';
 import LevelDetailScreen from '../screens/LevelDetailScreen';
 import LevelChapterScreen from '../screens/LevelChapterScreen';
+import LevelRoomScreen from '../screens/LevelRoomScreen';
 import JournalScreen from '../screens/JournalScreen';
 import LearnHubScreen from '../screens/LearnHubScreen';
 import ChapterScreen from '../screens/ChapterScreen';
@@ -78,6 +79,7 @@ export type RootStackParamList = {
   LossAndAbandonment: { initialTab?: string } | undefined;
   MeditationGenerator: undefined;
   Profile: undefined;
+  LevelRoom: { levelId: string };
 };
 
 export type MainTabParamList = {
@@ -162,6 +164,8 @@ function MainTabs() {
   );
 }
 
+import GenerationStatusToast from '../components/GenerationStatusToast';
+
 export default function AppNavigator() {
   const isOnboardingComplete = useOnboardingStore((s) => s.isComplete);
   const showOnboarding = useOnboardingStore((s) => s.showOnboarding);
@@ -176,6 +180,7 @@ export default function AppNavigator() {
 
   return (
     <NavigationContainer>
+      <GenerationStatusToast />
       <Stack.Navigator>
         {shouldShowOnboarding && (
           <Stack.Screen
@@ -337,9 +342,14 @@ export default function AppNavigator() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="LevelRoom"
+          component={LevelRoomScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="MeditationGenerator"
           component={MeditationGeneratorScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

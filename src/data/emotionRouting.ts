@@ -13,17 +13,19 @@ export interface EmotionRoute {
 
 /**
  * Tie-breaker priority order for disambiguation
- * Higher index = higher priority
+ * Higher index = higher priority.
+ * We prioritize lower levels of consciousness because they are often the "root" 
+ * of higher negative emotions (e.g., Fear is often a symptom of Shame).
  */
 const PRIORITY_ORDER: string[] = [
   'pride',   // Lowest priority
-  'apathy',
-  'shame',
-  'guilt',
-  'grief',
-  'desire',
   'anger',
-  'fear',    // Highest priority (includes stress/overwhelmed)
+  'desire',
+  'fear',
+  'grief',
+  'apathy',
+  'guilt',
+  'shame',  // Highest priority (Deepest root)
 ];
 
 /**
@@ -39,26 +41,25 @@ function getPriority(levelId: string): number {
  */
 function applyDisambiguationRules(selectedLevels: string[]): { primary: string; secondaries: string[] } {
   const uniqueLevels = [...new Set(selectedLevels)];
-  
+
   if (uniqueLevels.length === 0) {
     return { primary: 'fear', secondaries: [] }; // Default fallback
   }
-  
+
   if (uniqueLevels.length === 1) {
     return { primary: uniqueLevels[0], secondaries: [] };
   }
-  
-  // Rule 1: Shame + Guilt → Primary: Guilt, Secondary: Shame (action > identity)
+
+  // Rule 1: Shame + Guilt → Primary: Shame (ontological root > behavioral error)
   if (uniqueLevels.includes('shame') && uniqueLevels.includes('guilt')) {
     const others = uniqueLevels.filter(id => id !== 'shame' && id !== 'guilt');
     return {
-      primary: 'guilt',
-      secondaries: ['shame', ...others],
+      primary: 'shame',
+      secondaries: ['guilt', ...others],
     };
   }
-  
+
   // Rule 2: Overwhelmed/Stress + Numb/Burned out → Primary: Apathy, Secondary: Fear
-  // (Check if we have fear-related and apathy-related emotions)
   const hasFear = uniqueLevels.includes('fear');
   const hasApathy = uniqueLevels.includes('apathy');
   if (hasFear && hasApathy) {
@@ -68,12 +69,9 @@ function applyDisambiguationRules(selectedLevels: string[]): { primary: string; 
       secondaries: ['fear', ...others],
     };
   }
-  
-  // Rule 3: Jealous → Primary: Desire, Secondary: Fear (fear of loss)
-  // This is handled by the emotion data itself (jealous maps to desire)
-  
-  // Default: Use priority order
-  const sorted = uniqueLevels.sort((a, b) => getPriority(b) - getPriority(a)); // Higher priority first
+
+  // Default: Use priority order (higher priority = lower calibration root)
+  const sorted = uniqueLevels.sort((a, b) => getPriority(b) - getPriority(a));
   return {
     primary: sorted[0],
     secondaries: sorted.slice(1),
@@ -86,10 +84,10 @@ function applyDisambiguationRules(selectedLevels: string[]): { primary: string; 
  */
 function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
   const normalized = emotionLabel.toLowerCase().trim();
-  
+
   // Direct mapping of emotion labels and synonyms to level IDs
   const emotionToLevelMap: Record<string, string> = {
-    // Shame
+    // Shame (20)
     'shame': 'shame',
     'ashamed': 'shame',
     'embarrassed': 'shame',
@@ -103,8 +101,12 @@ function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
     'exposed': 'shame',
     'defective': 'shame',
     'flawed': 'shame',
-    
-    // Guilt
+    'small': 'shame',
+    'invisible': 'shame',
+    'eliminated': 'shame',
+    'loser': 'shame',
+
+    // Guilt (30)
     'guilt': 'guilt',
     'guilty': 'guilt',
     'remorse': 'guilt',
@@ -115,8 +117,50 @@ function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
     'my fault': 'guilt',
     'over-apologizing': 'guilt',
     'atone': 'guilt',
-    
-    // Fear
+    'blame': 'guilt',
+    'self-attack': 'guilt',
+    'reproach': 'guilt',
+
+    // Apathy (50)
+    'apathy': 'apathy',
+    'numb': 'apathy',
+    'blah': 'apathy',
+    'meh': 'apathy',
+    'checked out': 'apathy',
+    'drained': 'apathy',
+    'exhausted': 'apathy',
+    'burned out': 'apathy',
+    'burn out': 'apathy',
+    'over it': 'apathy',
+    'dead inside': 'apathy',
+    'flat': 'apathy',
+    'stuck': 'apathy',
+    'unmotivated': 'apathy',
+    'hopeless': 'apathy',
+    'why bother': 'apathy',
+    'despair': 'apathy',
+    'helpless': 'apathy',
+    'lifeless': 'apathy',
+
+    // Grief (75)
+    'grief': 'grief',
+    'heartbroken': 'grief',
+    'devastated': 'grief',
+    'heavy-hearted': 'grief',
+    'missing you': 'grief',
+    'lonely': 'grief',
+    'homesick': 'grief',
+    'bereft': 'grief',
+    'sorrow': 'grief',
+    'blue': 'grief',
+    'tearful': 'grief',
+    'disappointed': 'grief',
+    'let down': 'grief',
+    'sad': 'grief',
+    'mourning': 'grief',
+    'rejected': 'grief',
+
+    // Fear (100)
     'fear': 'fear',
     'anxious': 'fear',
     'worried': 'fear',
@@ -135,27 +179,10 @@ function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
     'fear of failure': 'fear',
     'fear of rejection': 'fear',
     'fear of uncertainty': 'fear',
-    
-    // Anger
-    'anger': 'anger',
-    'pissed': 'anger',
-    'mad': 'anger',
-    'annoyed': 'anger',
-    'irritated': 'anger',
-    'frustrated': 'anger',
-    'fed up': 'anger',
-    'offended': 'anger',
-    'disrespected': 'anger',
-    'resentful': 'anger',
-    'bitter': 'anger',
-    'outraged': 'anger',
-    'livid': 'anger',
-    'snappy': 'anger',
-    'triggered': 'anger',
-    'vengeful': 'anger',
-    'road-rage': 'anger',
-    
-    // Desire
+    'threatened': 'fear',
+    'insecure': 'fear',
+
+    // Desire (125)
     'desire': 'desire',
     'crave': 'desire',
     'lust': 'desire',
@@ -179,44 +206,32 @@ function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
     'nicotine hit': 'desire',
     'thirsty': 'desire',
     'impulsive': 'desire',
-    
-    // Grief
-    'grief': 'grief',
-    'heartbroken': 'grief',
-    'devastated': 'grief',
-    'heavy-hearted': 'grief',
-    'missing you': 'grief',
-    'lonely': 'grief',
-    'homesick': 'grief',
-    'bereft': 'grief',
-    'sorrow': 'grief',
-    'blue': 'grief',
-    'tearful': 'grief',
-    'disappointed': 'grief',
-    'let down': 'grief',
-    'sad': 'grief',
-    
-    // Apathy
-    'apathy': 'apathy',
-    'numb': 'apathy',
-    'blah': 'apathy',
-    'meh': 'apathy',
-    'checked out': 'apathy',
-    'drained': 'apathy',
-    'exhausted': 'apathy',
-    'burned out': 'apathy',
-    'burn out': 'apathy',
-    'over it': 'apathy',
-    'dead inside': 'apathy',
-    'flat': 'apathy',
-    'stuck': 'apathy',
-    'unmotivated': 'apathy',
-    'hopeless': 'apathy',
-    'why bother': 'apathy',
-    
-    // Pride
+    'insatiable': 'desire',
+
+    // Anger (150)
+    'anger': 'anger',
+    'pissed': 'anger',
+    'mad': 'anger',
+    'annoyed': 'anger',
+    'irritated': 'anger',
+    'frustrated': 'anger',
+    'fed up': 'anger',
+    'offended': 'anger',
+    'disrespected': 'anger',
+    'resentful': 'anger',
+    'bitter': 'anger',
+    'outraged': 'anger',
+    'livid': 'anger',
+    'snappy': 'anger',
+    'triggered': 'anger',
+    'vengeful': 'anger',
+    'road-rage': 'anger',
+    'hateful': 'anger',
+    'critical': 'anger',
+    'judgmental': 'anger',
+
+    // Pride (175)
     'pride': 'pride',
-    'defensive': 'pride',
     'superior': 'pride',
     'smug': 'pride',
     'righteous': 'pride',
@@ -224,9 +239,11 @@ function getLevelIdFromEmotion(emotionLabel: string): string | undefined {
     "i'm right": 'pride',
     "can't admit fault": 'pride',
     'holier-than-thou': 'pride',
-    'judgmental': 'pride',
+    'judgmental_pride': 'pride',
+    'arrogant': 'pride',
+    'defensive': 'pride',
   };
-  
+
   return emotionToLevelMap[normalized];
 }
 
@@ -241,16 +258,16 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
       relatedChapterIds: ['stress'],
     };
   }
-  
+
   // Map emotion labels (including synonyms) to level IDs directly
   const levelIds: string[] = [];
   const chapterIds: string[] = [];
   const clusters = new Map<string, typeof emotionClusters[0]>();
-  
+
   selectedEmotions.forEach((emotionLabel) => {
     // First try direct mapping
     let levelId = getLevelIdFromEmotion(emotionLabel);
-    
+
     // Fallback to cluster lookup if direct mapping doesn't work
     if (!levelId) {
       const cluster = findClusterByEmotion(emotionLabel);
@@ -267,15 +284,15 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
         clusters.set(levelId, cluster);
       }
     }
-    
+
     if (levelId && !levelIds.includes(levelId)) {
       levelIds.push(levelId);
     }
   });
-  
+
   // Apply disambiguation rules
   const { primary, secondaries } = applyDisambiguationRules(levelIds);
-  
+
   // Collect secondary level IDs from clusters and default mappings
   const secondarySet = new Set<string>();
   secondaries.forEach((levelId) => {
@@ -285,7 +302,7 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
       cluster.secondaryLevelIds.forEach(id => secondarySet.add(id));
     }
   });
-  
+
   // Add default secondary mappings based on primary level
   const defaultSecondaries: Record<string, string[]> = {
     'shame': ['guilt'],
@@ -297,13 +314,13 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
     'apathy': ['fear'],
     'pride': [],
   };
-  
+
   const defaultSecondary = defaultSecondaries[primary] || [];
   defaultSecondary.forEach(id => secondarySet.add(id));
-  
+
   // Collect related chapter IDs
   const relatedChapters = new Set<string>(chapterIds);
-  
+
   // Add default chapters based on primary level
   if (primary === 'fear') {
     relatedChapters.add('stress');
@@ -311,16 +328,16 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
   if (primary === 'anger') {
     relatedChapters.add('expression');
   }
-  
+
   // Also collect from clusters
   const primaryCluster = clusters.get(primary);
   if (primaryCluster) {
     primaryCluster.relatedChapterIds.forEach(id => relatedChapters.add(id));
   }
-  
+
   // Remove duplicates and filter out the primary from secondaries
   const secondaryLevelIds = Array.from(secondarySet).filter(id => id !== primary);
-  
+
   return {
     primaryLevelId: primary,
     secondaryLevelIds: secondaryLevelIds,
@@ -333,17 +350,17 @@ export function getPrimaryRoute(selectedEmotions: string[]): EmotionRoute {
  */
 export function fuzzyMatchEmotion(query: string): Array<{ label: string; levelId: string; clusterId: string; score: number }> {
   const normalizedQuery = query.toLowerCase().trim();
-  
+
   if (!normalizedQuery) {
     return [];
   }
-  
+
   const matches: Array<{ label: string; levelId: string; clusterId: string; score: number }> = [];
-  
+
   emotionClusters.forEach((cluster) => {
     cluster.emotions.forEach((emotion) => {
       const labelLower = emotion.label.toLowerCase();
-      
+
       // Exact match gets highest score
       if (labelLower === normalizedQuery) {
         matches.push({
@@ -371,11 +388,11 @@ export function fuzzyMatchEmotion(query: string): Array<{ label: string; levelId
           score: 60,
         });
       }
-      
+
       // Check synonyms
       emotion.synonyms.forEach((synonym) => {
         const synonymLower = synonym.toLowerCase();
-        
+
         if (synonymLower === normalizedQuery) {
           matches.push({
             label: emotion.label,
@@ -401,10 +418,10 @@ export function fuzzyMatchEmotion(query: string): Array<{ label: string; levelId
       });
     });
   });
-  
+
   // Sort by score (highest first) and remove duplicates
   const uniqueMatches = new Map<string, { label: string; levelId: string; clusterId: string; score: number }>();
-  
+
   matches.forEach((match) => {
     const key = `${match.label}-${match.levelId}`;
     const existing = uniqueMatches.get(key);
@@ -412,7 +429,7 @@ export function fuzzyMatchEmotion(query: string): Array<{ label: string; levelId
       uniqueMatches.set(key, match);
     }
   });
-  
+
   return Array.from(uniqueMatches.values())
     .sort((a, b) => b.score - a.score)
     .slice(0, 20); // Limit to top 20 matches

@@ -1,5 +1,5 @@
 import 'react-native-reanimated';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { View, StyleSheet, Platform, Text } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -51,32 +51,76 @@ function AppContent() {
   );
 }
 
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+import * as SplashScreen from 'expo-splash-screen';
+
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync().catch(() => {
+  /* reloading the app might cause some errors here, safe to ignore */
+});
+
 export default function App() {
-  const [skiaLoaded, setSkiaLoaded] = useState(Platform.OS !== 'web');
+  const [appIsReady, setAppIsReady] = useState(false);
 
   useEffect(() => {
-    loadSkia().finally(() => {
-      setSkiaLoaded(true);
-    });
+    async function prepare() {
+      try {
+        // Pre-load fonts, make any API calls you need to do here
+        await loadSkia();
+
+        // Safety timeout: forced splash hide after 5 seconds no matter what
+        const timeoutId = setTimeout(() => {
+          setAppIsReady(true);
+        }, 5000);
+
+        // Artificially delay for a moment to ensure everything is ready
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        clearTimeout(timeoutId);
+      } catch (e) {
+        console.warn(e);
+      } finally {
+        // Tell the application to render
+        setAppIsReady(true);
+      }
+    }
+
+    prepare();
   }, []);
 
-  if (!skiaLoaded) {
-    return (
-      <View style={{ flex: 1, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center' }}>
-        <StatusBar style="light" />
-      </View>
-    );
+  // More robust splash screen hiding
+  useEffect(() => {
+    if (appIsReady) {
+      const hideSplash = async () => {
+        try {
+          await SplashScreen.hideAsync();
+        } catch (e) {
+          console.warn("Failed to hide splash screen:", e);
+        }
+      };
+
+      // Small delay after app is ready to ensure the first mount is painted
+      const timer = setTimeout(hideSplash, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [appIsReady]);
+
+  if (!appIsReady) {
+    return null; // Return null while waiting for splash screen
   }
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <UserProgressProvider>
-          <ContentEditProvider>
-            <AppContent />
-          </ContentEditProvider>
-        </UserProgressProvider>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <UserProgressProvider>
+            <ContentEditProvider>
+              <AppContent />
+            </ContentEditProvider>
+          </UserProgressProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

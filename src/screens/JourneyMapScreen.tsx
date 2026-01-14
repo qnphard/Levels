@@ -59,21 +59,18 @@ const { width } = Dimensions.get('window');
 const canBlur = Platform.OS !== 'web';
 const CARD_HEIGHT = Platform.OS === 'android' ? 320 : 300; // Increased height to accommodate more text
 
-const categoryIcons: Record<
-  CategoryKey,
-  keyof typeof Ionicons.glyphMap
-> = {
-  healing: 'heart-outline',
-  empowerment: 'flash-outline',
-  spiritual: 'planet-outline',
-  enlightenment: 'infinite-outline',
+const zoneIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
+  'Heavy Weather': 'cloud-outline',
+  'Stuckness': 'thunderstorm-outline',
+  'Stabilization': 'sunny-outline',
+  'Openness': 'infinite-outline',
 };
 
-const categoryDescriptions: Record<CategoryKey, string> = {
-  healing: 'Transmute dense emotions into courage and steadiness.',
-  empowerment: 'Step into truthful power and aligned action. The Transitional Pathway To Love',
-  spiritual: 'Live from compassion, devotion, and openhearted presence.',
-  enlightenment: 'Rest in non-dual awareness and effortless being.',
+const zoneDescriptions: Record<string, string> = {
+  'Heavy Weather': 'Transmute dense emotions into courage and steadiness.',
+  'Stuckness': 'Break through the energy blocks keeping you in stagnation.',
+  'Stabilization': 'Build a solid foundation of power and resilience.',
+  'Openness': 'Rest in expansion, love, and non-dual awareness.',
 };
 
 export default function JourneyMapScreen() {
@@ -140,12 +137,12 @@ export default function JourneyMapScreen() {
   const [showDisclaimer, setShowDisclaimer] = useState(false);
   const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
   const [expandedSections, setExpandedSections] = useState<
-    Record<CategoryKey, boolean>
+    Record<string, boolean>
   >({
-    healing: true,
-    empowerment: true,
-    spiritual: true,
-    enlightenment: true,
+    'Heavy Weather': true,
+    'Stuckness': true,
+    'Stabilization': true,
+    'Openness': true,
   });
 
   const [transcendingExpanded, setTranscendingExpanded] = useState(false);
@@ -167,31 +164,9 @@ export default function JourneyMapScreen() {
   const seenExplanations = useOnboardingStore((s) => s.seenExplanations);
   const markExplanationAsSeen = useOnboardingStore((s) => s.markExplanationAsSeen);
 
-  const sortedCategoryOrder = useMemo(() => {
-    const defaultOrder: CategoryKey[] = ['healing', 'empowerment', 'spiritual', 'enlightenment'];
-    if (!lastCheckInZone) return defaultOrder;
-
-    switch (lastCheckInZone) {
-      case Zone.Shame:
-      case Zone.Guilt:
-      case Zone.Apathy:
-      case Zone.Grief:
-      case Zone.Fear:
-        return ['healing', 'empowerment', 'spiritual', 'enlightenment'];
-      case Zone.Desire:
-      case Zone.Anger:
-      case Zone.Pride:
-        return ['empowerment', 'healing', 'spiritual', 'enlightenment'];
-      case Zone.Pivot:
-        return ['empowerment', 'spiritual', 'healing', 'enlightenment'];
-      case Zone.Flow:
-        return ['spiritual', 'enlightenment', 'empowerment', 'healing'];
-      case Zone.Source:
-        return ['enlightenment', 'spiritual', 'empowerment', 'healing'];
-      default:
-        return defaultOrder;
-    }
-  }, [lastCheckInZone]);
+  const sortedZones = useMemo(() => {
+    return ['Heavy Weather', 'Stuckness', 'Stabilization', 'Openness'];
+  }, []);
 
   useEffect(() => {
     if (!hasShownOverlay) {
@@ -264,47 +239,34 @@ export default function JourneyMapScreen() {
     return pick(theme.gradients.horizonDay);
   }, [theme]);
 
-  const categoryVisuals = useMemo(() => {
-    const isDark = theme.mode === 'dark';
-    const blend = (
-      base: string,
-      accent: string
-    ): readonly [string, string] => {
-      const baseShift = isDark ? -24 : 28;
-      const accentShift = isDark ? -16 : 10;
-      return [
-        adjustColor(base, baseShift),
-        adjustColor(accent, accentShift),
-      ] as const;
-    };
-
+  const zoneVisuals = useMemo(() => {
     return {
-      healing: {
-        title: 'Healing - Moving Toward Courage',
+      'Heavy Weather': {
+        title: 'Heavy Weather',
         gradient: theme.mode === 'dark'
-          ? ['#8B5CF6', '#A78BFA'] as const // Deep violet to bright violet
-          : ['#C4B5FD', '#E9D5FF'] as const, // Light lavender to very light lavender
+          ? ['#4B1D3F', '#8B5CF6'] as const
+          : ['#E9D5FF', '#F3E8FF'] as const,
       },
-      empowerment: {
-        title: 'Transcending The Lower Power-Based Levels',
+      'Stuckness': {
+        title: 'Stuckness',
         gradient: theme.mode === 'dark'
-          ? ['#7C3AED', '#8B5CF6'] as const // Deep purple to violet
-          : ['#DDD6FE', '#F3E8FF'] as const, // Light purple to very light purple
+          ? ['#7C3AED', '#A78BFA'] as const
+          : ['#DDD6FE', '#F3E8FF'] as const,
       },
-      spiritual: {
-        title: 'Spiritual - Heart-Centered Reality',
+      'Stabilization': {
+        title: 'Stabilization',
         gradient: theme.mode === 'dark'
-          ? ['#A78BFA', '#C4B5FD'] as const // Bright violet to lavender
-          : ['#EDE9FE', '#F5F3FF'] as const, // Very light purple to near white purple
+          ? ['#059669', '#34D399'] as const
+          : ['#D1FAE5', '#F0FDF4'] as const,
       },
-      enlightenment: {
-        title: 'Enlightenment - Non-Dual Awareness',
+      'Openness': {
+        title: 'Openness',
         gradient: theme.mode === 'dark'
-          ? ['#C4B5FD', '#DDD6FE'] as const // Lavender to light purple
-          : ['#F5F3FF', '#FAF5FF'] as const, // Near white purple to almost white
+          ? ['#2563EB', '#60A5FA'] as const
+          : ['#E0F2FE', '#F0F9FF'] as const,
       },
     } as Record<
-      CategoryKey,
+      string,
       { title: string; gradient: readonly [string, string] }
     >;
   }, [theme]);
@@ -318,24 +280,15 @@ export default function JourneyMapScreen() {
       : ['#E9D5FF', '#F3E8FF'] as const, // Light purple to very light purple
   }), [theme]);
 
-  const levelsByCategory: Record<CategoryKey, ConsciousnessLevel[]> = {
-    healing: [],
-    empowerment: [],
-    spiritual: [],
-    enlightenment: [],
+  const levelsByZone: Record<string, ConsciousnessLevel[]> = {
+    'Heavy Weather': [],
+    'Stuckness': [],
+    'Stabilization': [],
+    'Openness': [],
   };
 
-  // Separate transcending levels (below 200) from healing category
-  const transcendingLevels: ConsciousnessLevel[] = [];
-
   consciousnessLevels.forEach((level) => {
-    if (level.level < 200) {
-      // Levels below 200 go to "Transcending Levels" section
-      transcendingLevels.push(level);
-    } else {
-      // Levels 200+ go to their original categories
-      levelsByCategory[level.category].push(level);
-    }
+    levelsByZone[level.zone].push(level);
   });
 
   const openChapter = (level: ConsciousnessLevel, view: ChapterView) => {
@@ -349,27 +302,20 @@ export default function JourneyMapScreen() {
     openChapter(level, 'overview');
   };
 
-  const toggleSection = (category: CategoryKey) => {
+  const toggleSection = (zone: string) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setExpandedSections((prev) => ({
       ...prev,
-      [category]: !prev[category],
+      [zone]: !prev[zone],
     }));
   };
 
   const handleDismissDisclaimer = () => setShowDisclaimer(false);
 
   const renderLevelCard = (level: ConsciousnessLevel, index: number) => {
-    const isExplored = progress?.exploredLevels.includes(level.id) ?? false;
     const isCurrent = progress?.currentLevel === level.id;
     const isCourage = level.isThreshold;
 
-    const journeyEntry = progress?.journeyPath.find(
-      (entry) => entry.levelId === level.id
-    );
-    const completedCount = journeyEntry?.practicesCompleted ?? 0;
-
-    // Use level-specific colors for gradients
     const baseGradient = level.gradient
       ? level.gradient
       : ([
@@ -380,11 +326,9 @@ export default function JourneyMapScreen() {
     const gradientColors =
       theme.mode === 'dark' ? darkGradient : baseGradient;
 
-    // Use level-specific colors for glow effects
     const glowBase = level.glowDark ?? gradientColors[0];
     const glowTint =
       theme.mode === 'dark' ? glowBase : adjustColor(gradientColors[0], -12);
-    // Removed the old float/bobbing animation to keep cards stable
 
     return (
       <View
@@ -396,32 +340,22 @@ export default function JourneyMapScreen() {
             : null,
         ]}
       >
-        {theme.mode === 'light' && (
-          <View
-            pointerEvents="none"
-            style={styles.lightLiftShadow}
-          />
-        )}
         <Pressable
-          onPress={() => handleLevelPress(level)}
+          onPress={() => navigation.navigate('LevelRoom', { levelId: level.id })}
           style={({ pressed }) => [
             styles.levelCard,
-            // Apply "current" and "courage" base tweaks first
             isCurrent && styles.levelCardCurrent,
             isCourage && styles.levelCardCourage,
-            // Then apply theme + glow so it wins for shadow/border
             theme.mode === 'dark'
               ? (glowEnabled
                 ? {
                   borderWidth: 2,
                   borderColor: toRgba(glowTint, 0.8),
                   backgroundColor: 'rgba(9, 19, 28, 0.75)',
-                  // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
                   shadowColor: glowTint,
                   shadowOpacity: 0.34,
                   shadowRadius: 25,
                   shadowOffset: { width: 0, height: 0 },
-                  elevation: 0, // Override base elevation for glow
                   boxShadow: [
                     `0 0 30px ${toRgba(glowTint, 0.53)}`,
                     `0 0 60px ${toRgba(glowTint, 0.27)}`,
@@ -438,13 +372,10 @@ export default function JourneyMapScreen() {
                   borderWidth: 2,
                   borderColor: toRgba(glowTint, 0.6),
                   backgroundColor: theme.cardBackground,
-                  transform: pressed ? [{ translateY: -2 }] : [],
-                  // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
                   shadowColor: glowTint,
                   shadowOpacity: 0.25,
                   shadowRadius: 20,
                   shadowOffset: { width: 0, height: 0 },
-                  elevation: 0, // Override base elevation for glow
                   boxShadow: [
                     `0 0 25px ${toRgba(glowTint, 0.4)}`,
                     `0 0 50px ${toRgba(glowTint, 0.2)}`,
@@ -455,312 +386,72 @@ export default function JourneyMapScreen() {
                   borderWidth: 1,
                   borderColor: toRgba(gradientColors[0], 0.25),
                   backgroundColor: theme.cardBackground,
-                  transform: pressed ? [{ translateY: -2 }] : [],
                 }),
+            pressed && { transform: [{ scale: 0.98 }] },
           ]}
         >
-          <LinearGradient
-            key={`${theme.mode}-${glowEnabled ? 1 : 0}-${level.id}`}
-            colors={gradientColors}
-            style={[styles.levelGradient, { width: '100%', height: '100%' }]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            {canBlur ? (
-              <SafeBlurView
-                intensity={theme.mode === 'dark' ? 45 : 20} // Less blur in light mode
-                tint={theme.mode === 'dark' ? 'dark' : 'light'}
-                style={styles.levelBlur}
+          <View style={styles.portalContent}>
+            <View style={styles.portalIconContainer}>
+              <Ionicons
+                name={zoneIcons[level.zone]}
+                size={24}
+                color={theme.mode === 'dark' ? glowTint : gradientColors[0]}
               />
-            ) : (
-              <View
-                style={[
-                  styles.levelBlurFallback,
-                  {
-                    backgroundColor:
-                      theme.mode === 'dark'
-                        ? 'rgba(8, 18, 26, 0.78)'
-                        : 'transparent', // Fully transparent in light mode to show gradient
-                  },
-                ]}
-              />
-            )}
-            {/* Inner glow layer for additional depth (optional - main glow is on container) */}
-            {glowEnabled && Platform.OS === 'web' && (
-              theme.mode === 'dark' ? (
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.levelGlow,
-                    {
-                      backgroundColor: toRgba(glowTint, 0.1),
-                      shadowColor: glowTint,
-                      shadowOpacity: 0.3,
-                      shadowRadius: 30,
-                      shadowOffset: { width: 0, height: 0 },
-                      elevation: 0,
-                    },
-                  ]}
-                />
-              ) : (
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.lightHalo,
-                    {
-                      backgroundColor: toRgba(glowTint, 0.08),
-                      shadowColor: glowTint,
-                      shadowOpacity: 0.25,
-                      shadowRadius: 25,
-                      shadowOffset: { width: 0, height: 0 },
-                      elevation: 0,
-                    },
-                  ]}
-                />
-              )
-            )}
-            <View style={styles.textOverlay}>
-              <View style={styles.levelContent}>
-                <View style={styles.levelHeader}>
-                  <View style={styles.levelTitleContainer}>
-                    <EditableText
-                      screen="journey"
-                      section={level.id}
-                      id="title"
-                      originalContent={level.level < 200
-                        ? `Transcending ${String(level.name || '')}`
-                        : String(level.name || '')}
-                      textStyle={[
-                        styles.levelTitle,
-                        theme.mode === 'dark' && {
-                          textShadowColor: toRgba(glowTint, 0.5),
-                          textShadowOffset: { width: 0, height: 1 },
-                          textShadowRadius: 8,
-                        },
-                      ]}
-                      type="title"
-                    />
-                  </View>
-                </View>
-
-                <View style={styles.antithesisContainer}>
-                  <Ionicons
-                    name="arrow-forward"
-                    size={14}
-                    color={
-                      theme.mode === 'dark'
-                        ? toRgba(glowTint, 0.68) // Further reduced opacity (0.85 * 0.8 = 0.68)
-                        : theme.primary
-                    }
-                    style={styles.antithesisIcon}
-                  />
-                  <EditableText
-                    screen="journey"
-                    section={level.id}
-                    id="antithesis"
-                    originalContent={level.level < 200
-                      ? `Through ${String(level.antithesis || '')}`
-                      : String(level.antithesis || '')}
-                    textStyle={[
-                      styles.antithesisText,
-                      {
-                        color: theme.mode === 'dark'
-                          ? toRgba(glowTint, 0.85)
-                          : theme.primary,
-                      },
-                    ]}
-                    type="subtitle"
-                  />
-                </View>
-
-                <EditableText
-                  screen="journey"
-                  section={level.id}
-                  id="description"
-                  originalContent={String(level.description || '')}
-                  textStyle={[
-                    styles.levelDescription,
-                    theme.mode === 'dark' && {
-                      color: toRgba('#E9F1F6', 0.82),
-                    },
-                  ]}
-                  type="description"
-                />
-
-                <View style={styles.levelActions}>
-                  <Pressable
-                    style={[
-                      styles.primaryAction,
-                      {
-                        backgroundColor: theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.64) // Further reduced opacity (0.8 * 0.8 = 0.64)
-                          : gradientColors[0],
-                        borderColor: theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.38) // Further reduced opacity (0.48 * 0.8 = 0.38)
-                          : toRgba(gradientColors[0], 0.4),
-                      },
-                    ]}
-                    onPress={(event: GestureResponderEvent) => {
-                      event.stopPropagation?.();
-                      openChapter(level, 'meditations');
-                    }}
-                  >
-                    <Ionicons
-                      name="headset-outline"
-                      size={16}
-                      color={theme.white}
-                    />
-                    <Text style={[styles.primaryActionText, { color: theme.white }]}>Meditations</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[
-                      styles.secondaryAction,
-                      theme.mode === 'dark' && {
-                        backgroundColor: toRgba(glowBase, 0.144), // Further reduced opacity (0.18 * 0.8 = 0.144)
-                        borderColor: toRgba(glowBase, 0.336), // Further reduced opacity (0.42 * 0.8 = 0.336)
-                      },
-                      theme.mode === 'light' && {
-                        backgroundColor: toRgba(gradientColors[0], 0.15),
-                        borderColor: toRgba(gradientColors[0], 0.4),
-                      },
-                    ]}
-                    onPress={(event: GestureResponderEvent) => {
-                      event.stopPropagation?.();
-                      openChapter(level, 'articles');
-                    }}
-                  >
-                    <Ionicons
-                      name="book-outline"
-                      size={16}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.92)
-                          : gradientColors[0]
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.secondaryActionText,
-                        theme.mode === 'dark' && {
-                          color: toRgba('#F8FAFC', 0.88),
-                        },
-                        theme.mode === 'light' && {
-                          color: gradientColors[0],
-                        },
-                      ]}
-                    >
-                      Articles
-                    </Text>
-                  </Pressable>
-                </View>
-
-                <Pressable
-                  style={styles.chapterLink}
-                  onPress={(event: GestureResponderEvent) => {
-                    event.stopPropagation?.();
-                    openChapter(level, 'overview');
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.chapterLinkText,
-                      {
-                        color:
-                          theme.mode === 'dark'
-                            ? toRgba(glowBase, 0.69) // Further reduced opacity (0.86 * 0.8 = 0.69)
-                            : theme.accentTeal,
-                      },
-                    ]}
-                  >
-                    Chapter overview
-                  </Text>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={
-                      theme.mode === 'dark'
-                        ? toRgba(glowBase, 0.64) // Further reduced opacity (0.8 * 0.8 = 0.64)
-                        : theme.textSecondary
-                    }
-                  />
-                </Pressable>
-
-                {isExplored && (
-                  <View style={styles.exploredIndicator}>
-                    <Ionicons
-                      name="checkmark-circle"
-                      size={16}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.72) // Further reduced opacity (0.9 * 0.8 = 0.72)
-                          : theme.accentTeal
-                      }
-                    />
-                    <Text
-                      style={[
-                        styles.exploredText,
-                        theme.mode === 'dark' && {
-                          color: toRgba('#E8F4F4', 0.82),
-                        },
-                      ]}
-                    >
-                      Explored - {String(completedCount)} practice
-                      {completedCount !== 1 ? 's' : ''}
-                    </Text>
-                  </View>
-                )}
-
-                {isCourage && (
-                  <View style={styles.thresholdBadge}>
-                    <Ionicons
-                      name="star"
-                      size={14}
-                      color={
-                        theme.mode === 'dark'
-                          ? toRgba(glowBase, 0.75) // Further reduced opacity (0.94 * 0.8 = 0.75)
-                          : theme.accentGold
-                      }
-                    />
-                    <Text
-                      style={styles.thresholdText}
-                      textBreakStrategy="highQuality"
-                      numberOfLines={2}
-                    >
-                      Threshold - Where Power Begins
-                    </Text>
-                  </View>
-                )}
-              </View>
             </View>
-          </LinearGradient>
+
+            <View style={styles.portalTextContainer}>
+              <Text style={[styles.portalTitle, { color: theme.textPrimary }]}>
+                {level.name}
+              </Text>
+              <Text style={[styles.portalFeltSense, { color: theme.textSecondary }]}>
+                {level.feltSense}
+              </Text>
+            </View>
+
+            <View style={styles.portalActions}>
+              <Pressable
+                style={[styles.portalPrimaryBtn, { backgroundColor: theme.primary }]}
+                onPress={() => navigation.navigate('LevelRoom', { levelId: level.id })}
+              >
+                <Text style={styles.portalPrimaryBtnText}>Enter Space</Text>
+                <Ionicons name="arrow-forward" size={14} color={theme.white} />
+              </Pressable>
+
+              <Pressable
+                style={styles.portalSecondaryBtn}
+                onPress={() => openChapter(level, 'meditations')}
+              >
+                <Ionicons name="headset-outline" size={16} color={theme.primary} />
+                <Text style={[styles.portalSecondaryBtnText, { color: theme.primary }]}>Practices</Text>
+              </Pressable>
+            </View>
+          </View>
         </Pressable>
       </View>
     );
   };
 
-  const renderCategorySection = (
-    category: CategoryKey,
+  const renderZoneSection = (
+    zone: string,
     levels: ConsciousnessLevel[]
   ) => {
-    const meta = categoryVisuals[category];
-    if (!meta) return null; // Safety check for undefined meta
-    const expanded = expandedSections[category];
+    const meta = zoneVisuals[zone];
+    if (!meta) return null;
+    const expanded = expandedSections[zone];
     const heroGradient = meta.gradient;
 
     return (
-      <View key={category} style={styles.categorySection}>
+      <View key={zone} style={styles.categorySection}>
         <Pressable
-          onPress={() => toggleSection(category)}
+          onPress={() => toggleSection(zone)}
           style={({ pressed }) => [
             styles.categoryHero,
             pressed && styles.categoryHeroPressed,
-            // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
             glowEnabled && theme.mode === 'dark' && {
               shadowColor: theme.primary,
               shadowOpacity: 0.34,
               shadowRadius: 20,
               shadowOffset: { width: 0, height: 0 },
-              elevation: 0, // Override base elevation for glow
               boxShadow: [
                 `0 0 30px ${toRgba(theme.primary, 0.53)}`,
                 `0 0 60px ${toRgba(theme.primary, 0.27)}`,
@@ -772,7 +463,6 @@ export default function JourneyMapScreen() {
               shadowOpacity: 0.25,
               shadowRadius: 18,
               shadowOffset: { width: 0, height: 0 },
-              elevation: 0, // Override base elevation for glow
               boxShadow: [
                 `0 0 25px ${toRgba(theme.primary, 0.4)}`,
                 `0 0 50px ${toRgba(theme.primary, 0.2)}`,
@@ -782,7 +472,7 @@ export default function JourneyMapScreen() {
           ]}
         >
           <LinearGradient
-            key={`hero-${category}-${theme.mode}-${glowEnabled ? 1 : 0}`}
+            key={`hero-${zone}-${theme.mode}-${glowEnabled ? 1 : 0}`}
             colors={heroGradient}
             style={styles.categoryHeroGradient}
             start={{ x: 0, y: 0 }}
@@ -796,28 +486,14 @@ export default function JourneyMapScreen() {
             <View style={styles.categoryHeroContent}>
               <View style={styles.categoryIconWrap}>
                 <Ionicons
-                  name={categoryIcons[category]}
+                  name={zoneIcons[zone]}
                   size={22}
                   color={theme.textPrimary}
                 />
               </View>
               <View style={styles.categoryTextWrap}>
-                <EditableText
-                  screen="journey-map"
-                  section="categories"
-                  id={`${category}-title`}
-                  originalContent={String(meta?.title || '')}
-                  textStyle={styles.categoryTitle}
-                  type="title"
-                />
-                <EditableText
-                  screen="journey-map"
-                  section="categories"
-                  id={`${category}-description`}
-                  originalContent={categoryDescriptions[category] || ''}
-                  textStyle={styles.categoryDescription}
-                  type="description"
-                />
+                <Text style={styles.categoryTitle}>{meta.title}</Text>
+                <Text style={styles.categoryDescription}>{zoneDescriptions[zone]}</Text>
               </View>
               <View style={styles.categoryToggle}>
                 <Ionicons
@@ -966,106 +642,12 @@ export default function JourneyMapScreen() {
           </View>
 
           {/* Transcending Levels Section */}
-          {transcendingLevels.length > 0 && (
-            <View style={styles.categorySection}>
-              <Pressable
-                onPress={() => {
-                  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-                  setTranscendingExpanded(!transcendingExpanded);
-                }}
-                style={({ pressed }) => [
-                  styles.categoryHero,
-                  pressed && styles.categoryHeroPressed,
-                  // Apply glow shadow directly to Pressable (like FeelingsExplainedCard)
-                  glowEnabled && theme.mode === 'dark' && {
-                    shadowColor: theme.primary,
-                    shadowOpacity: 0.34,
-                    shadowRadius: 20,
-                    shadowOffset: { width: 0, height: 0 },
-                    elevation: 0, // Override base elevation for glow
-                    boxShadow: [
-                      `0 0 30px ${toRgba(theme.primary, 0.53)}`,
-                      `0 0 60px ${toRgba(theme.primary, 0.27)}`,
-                      `inset 0 0 20px ${toRgba(theme.primary, 0.13)}`,
-                    ].join(', '),
-                  },
-                  glowEnabled && theme.mode === 'light' && {
-                    shadowColor: theme.primary,
-                    shadowOpacity: 0.25,
-                    shadowRadius: 18,
-                    shadowOffset: { width: 0, height: 0 },
-                    elevation: 0, // Override base elevation for glow
-                    boxShadow: [
-                      `0 0 25px ${toRgba(theme.primary, 0.4)}`,
-                      `0 0 50px ${toRgba(theme.primary, 0.2)}`,
-                      `inset 0 0 15px ${toRgba(theme.primary, 0.1)}`,
-                    ].join(', '),
-                  },
-                ]}
-              >
-                <LinearGradient
-                  key={`hero-transcending-${theme.mode}-${glowEnabled ? 1 : 0}`}
-                  colors={transcendingVisuals.gradient}
-                  style={styles.categoryHeroGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                >
-                  <SafeBlurView
-                    intensity={50}
-                    tint={theme.mode === 'dark' ? 'dark' : 'light'}
-                    style={styles.categoryHeroBlur}
-                  />
-                  <View style={styles.categoryHeroContent}>
-                    <View style={styles.categoryIconWrap}>
-                      <Ionicons
-                        name="arrow-up-circle-outline"
-                        size={22}
-                        color={theme.textPrimary}
-                      />
-                    </View>
-                    <View style={styles.categoryTextWrap}>
-                      <EditableText
-                        screen="journey-map"
-                        section="transcending-levels"
-                        id="title"
-                        originalContent={transcendingVisuals.title}
-                        textStyle={styles.categoryTitle}
-                        type="title"
-                      />
-                      <EditableText
-                        screen="journey-map"
-                        section="transcending-levels"
-                        id="description"
-                        originalContent={transcendingVisuals.description}
-                        textStyle={styles.categoryDescription}
-                        type="description"
-                      />
-                    </View>
-                    <View style={styles.categoryToggle}>
-                      <Ionicons
-                        name={transcendingExpanded ? 'chevron-up' : 'chevron-down'}
-                        size={20}
-                        color={theme.textPrimary}
-                      />
-                    </View>
-                  </View>
-                </LinearGradient>
-              </Pressable>
+          {/* Climate Zones Section */}
 
-              {transcendingExpanded && (
-                <View style={styles.levelsGrid}>
-                  {transcendingLevels.map((level, index) =>
-                    renderLevelCard(level, index)
-                  )}
-                </View>
-              )}
-            </View>
-          )}
-
-          {sortedCategoryOrder.map((category) => {
-            const levels = levelsByCategory[category as CategoryKey];
+          {sortedZones.map((zone) => {
+            const levels = levelsByZone[zone];
             return levels.length
-              ? renderCategorySection(category as CategoryKey, levels)
+              ? renderZoneSection(zone, levels)
               : null;
           })}
 
@@ -1431,173 +1013,63 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
         : null),
       zIndex: 3,
     },
-    levelContent: {
+    portalContent: {
       flex: 1,
-      gap: Platform.OS === 'android' ? spacing.xs : spacing.sm, // Consistent spacing
-      justifyContent: 'flex-start', // Changed to allow content to flow naturally
-      minWidth: 0, // Allow flexbox to properly shrink children
-      paddingBottom: spacing.xs, // Add bottom padding for breathing room
+      padding: spacing.lg,
+      justifyContent: 'space-between',
     },
-    levelHeader: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: spacing.sm,
+    portalIconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: spacing.md,
+    },
+    portalTextContainer: {
+      flex: 1,
+      marginBottom: spacing.md,
+    },
+    portalTitle: {
+      fontSize: typography.h3,
+      fontWeight: typography.bold,
       marginBottom: spacing.xs,
     },
-    levelTitleContainer: {
-      flex: 1,
-      minWidth: 0, // Allows text to wrap properly
-    },
-    levelTitle: {
-      fontSize: Platform.OS === 'android' ? typography.h4 : typography.h3, // Smaller on Android for 2-card layout
-      fontWeight: typography.semibold, // semibold for better readability
-      color: theme.mode === 'dark' ? theme.textPrimary : '#0F172A', // slate-900 for light mode
-      letterSpacing: Platform.OS === 'android' ? -0.2 : -0.5,
-      lineHeight: Platform.OS === 'android' ? 22 : 26,
-      textShadowColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : undefined,
-      textShadowOffset: theme.mode === 'dark' ? { width: 0, height: 1 } : undefined,
-      textShadowRadius: theme.mode === 'dark' ? 2 : undefined,
-      flexShrink: 1,
-      flexWrap: 'wrap',
-    },
-    currentBadge: {
-      backgroundColor: theme.accentTeal,
-      paddingHorizontal: spacing.sm,
-      paddingVertical: 2,
-      borderRadius: borderRadius.sm,
-      flexShrink: 0, // Prevent badge from shrinking
-      marginTop: 2, // Slight alignment adjustment
-    },
-    currentBadgeText: {
-      fontSize: typography.tiny,
-      fontWeight: typography.semibold,
-      color: theme.white,
-      textTransform: 'uppercase',
-    },
-    antithesisContainer: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: spacing.xs,
-      marginTop: spacing.xs,
-      marginBottom: spacing.xs,
-      flexWrap: 'wrap',
-    },
-    antithesisIcon: {
-      marginTop: 2, // Align icon with first line of text
-      flexShrink: 0,
-    },
-    antithesisText: {
-      fontSize: Platform.OS === 'android' ? typography.small : typography.body, // Smaller on Android
-      color: theme.mode === 'dark' ? theme.textPrimary : '#475569', // slate-600 for light mode
-      fontWeight: typography.medium,
+    portalFeltSense: {
+      fontSize: typography.body,
       fontStyle: 'italic',
-      lineHeight: Platform.OS === 'android' ? 18 : 20,
-      flex: 1,
-      flexShrink: 1,
-      minWidth: 0, // Allow text to wrap
+      lineHeight: 20,
     },
-    levelDescription: {
-      fontSize: Platform.OS === 'android' ? typography.small : typography.body, // Smaller on Android
-      color: theme.mode === 'dark' ? theme.textPrimary : '#475569', // slate-600 for light mode
-      lineHeight: Platform.OS === 'android' ? 18 : 20,
-      letterSpacing: 0.1,
-      flexShrink: 1,
-      marginTop: spacing.xs,
-      marginBottom: spacing.sm, // Increased bottom margin for better spacing
-      flex: 1, // Allow description to take available space
-      minHeight: Platform.OS === 'android' ? 90 : 60, // Ensure minimum height for text
+    portalActions: {
+      gap: spacing.sm,
     },
-    levelActions: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: Platform.OS === 'android' ? spacing.xs : spacing.sm, // Tighter gap on Android
-      marginTop: 'auto', // Push actions to bottom
-      paddingTop: spacing.xs, // Add padding above actions
-    },
-    primaryAction: {
+    portalPrimaryBtn: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: spacing.xs,
-      paddingHorizontal: Platform.OS === 'android' ? spacing.sm : spacing.md,
-      paddingVertical: Platform.OS === 'android' ? spacing.xs : spacing.sm,
-      borderRadius: borderRadius.roundedChip,
-      backgroundColor: theme.buttons.primary.background,
-      shadowColor: theme.buttons.primary.shadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.18,
-      shadowRadius: 10,
-      elevation: 2,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.md,
     },
-    primaryActionText: {
-      color: theme.buttons.primary.text,
-      fontSize: Platform.OS === 'android' ? typography.tiny : typography.small, // Smaller on Android
-      fontWeight: typography.semibold,
-      letterSpacing: Platform.OS === 'android' ? 0.1 : 0.2,
+    portalPrimaryBtnText: {
+      color: 'white',
+      fontWeight: typography.bold,
+      fontSize: typography.small,
     },
-    secondaryAction: {
+    portalSecondaryBtn: {
       flexDirection: 'row',
       alignItems: 'center',
+      justifyContent: 'center',
       gap: spacing.xs,
-      paddingHorizontal: Platform.OS === 'android' ? spacing.sm : spacing.md,
-      paddingVertical: Platform.OS === 'android' ? spacing.xs : spacing.sm,
-      borderRadius: borderRadius.roundedChip,
-      backgroundColor:
-        theme.mode === 'dark'
-          ? 'rgba(255,255,255,0.08)'
-          : theme.cardBackground,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? 'rgba(255,255,255,0.18)'
-          : theme.border,
-    },
-    secondaryActionText: {
-      color: theme.textPrimary,
-      fontSize: Platform.OS === 'android' ? typography.tiny : typography.small, // Smaller on Android
-      fontWeight: typography.medium,
-    },
-    chapterLink: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-      marginTop: spacing.sm,
-    },
-    chapterLinkText: {
-      fontSize: Platform.OS === 'android' ? typography.tiny : typography.small, // Smaller on Android
-      color: theme.mode === 'dark' ? theme.white : theme.accentTeal,
-      fontWeight: typography.semibold,
-      letterSpacing: Platform.OS === 'android' ? 0.2 : 0.3,
-    },
-    exploredIndicator: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-      marginTop: spacing.xs,
-    },
-    exploredText: {
-      fontSize: typography.tiny,
-      color: theme.textPrimary,
-      fontWeight: typography.medium,
-    },
-    thresholdBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-      backgroundColor: 'rgba(230, 207, 168, 0.28)',
-      paddingHorizontal: spacing.sm,
       paddingVertical: spacing.xs,
-      borderRadius: borderRadius.sm,
-      marginTop: spacing.xs,
-      flexShrink: 1,
-      minWidth: 0, // Allow flexbox to shrink below content size
-      maxWidth: '100%', // Ensure it doesn't exceed container
     },
-    thresholdText: {
+    portalSecondaryBtnText: {
       fontSize: typography.tiny,
-      color: theme.accentGold,
       fontWeight: typography.semibold,
-      flexShrink: 1,
-      flex: 1,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
     },
     feelingsSection: {
       marginTop: spacing.xl,
@@ -1608,15 +1080,14 @@ const getStyles = (theme: ThemeColors, cardWidth: number, glowEnabled: boolean) 
       alignItems: 'center',
       gap: spacing.md,
       backgroundColor: theme.mode === 'dark'
-        ? 'rgba(139, 92, 246, 0.25)' // Opaque purple, less bright than before
+        ? 'rgba(139, 92, 246, 0.25)'
         : theme.primarySubtle,
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
       borderWidth: 1,
       borderColor: theme.mode === 'dark'
-        ? 'rgba(139, 92, 246, 0.5)' // Opaque border, less bright
+        ? 'rgba(139, 92, 246, 0.5)'
         : theme.primary,
-      // Removed shadow properties that were causing the square border effect
       elevation: 0,
     },
     reminderText: {

@@ -22,10 +22,10 @@ const WelcomeScreen = () => {
     const buttonOpacity = useSharedValue(0);
 
     useEffect(() => {
-        // Faster timing: message visible within ~1 second instead of ~2+ seconds
-        line1Opacity.value = withDelay(100, withTiming(1, { duration: 800, easing: Easing.ease }));
-        line2Opacity.value = withDelay(1000, withTiming(1, { duration: 800, easing: Easing.ease }));
-        buttonOpacity.value = withDelay(2000, withTiming(1, { duration: 600, easing: Easing.ease }));
+        // Significantly snappier timing: full message and button visible within ~1.3 seconds
+        line1Opacity.value = withTiming(1, { duration: 600, easing: Easing.ease });
+        line2Opacity.value = withDelay(400, withTiming(1, { duration: 600, easing: Easing.ease }));
+        buttonOpacity.value = withDelay(800, withTiming(1, { duration: 500, easing: Easing.ease }));
     }, []);
 
     const line1Style = useAnimatedStyle(() => ({ opacity: line1Opacity.value }));

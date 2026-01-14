@@ -1,0 +1,7 @@
+TTS>=0.22.0
+torch<2.6
+torchaudio<2.6
+scipy
+gradio
+numpy<2.0
+transformers<4.44

@@ -24,52 +24,90 @@ export const geminiService = {
 
             const structuralBlueprints: Record<MeditationVibe, string> = {
                 mindfulness: `
-          1. Arrival & Posture (0:45): Finding comfort.
-          2. Breath Anchor (2:00): Noticing sensations.
-          3. Body Scan (3:00): Softening regions.
-          4. Open Monitoring (Duration%): Noticing thoughts, labeling ("thinking", "hearing").
-          5. Compassion phrases (1:00): Metta phrases.
-          6. Close (0:45): Carrying quality forward.
-        `,
-                clinical_hypnosis: `
-          1. Pre-talk (0:30): Goal and safety reassurance.
-          2. Induction (3:00): Eye-fixation or progressive relaxation.
-          3. Deepener (2:00): Counting down 10 to 1.
-          4. Therapeutic Suggestions (Duration%): Direct, sensory-rich, present-tense.
-          5. Post-hypnotic anchor (0:30): Physical cue (e.g. thumb to finger).
-          6. Re-orientation (1:30): Counting 1 to 5 to wake up (UNLESS SLEEP).
+          - Arrival and orientation
+          - Gentle attention anchoring
+          - Open monitoring
+          - Periodic permission to do nothing
+          - Soft, non-closing ending
         `,
                 ericksonian: `
-          1. Pacing & Leading: Start by describing current reality, then drift.
-          2. Artful Vagueness: Use "You may find," "Perhaps," "It's okay to."
-          3. Metaphors: Use storytelling (e.g. clouds, rivers, dimming skies).
-          4. Unconscious Engagement: Speak to the "part of you that knows how to heal."
+          - Natural pacing and mirroring
+          - Optional metaphors (weather, space, movement)
+          - Permissive phrasing ("you may notice", "perhaps")
+          - No induction, no suggestion, no unconscious directives
         `,
                 performance: `
-          1. Intention (0:30): Clarity and focus.
-          2. Breath + Count (2:00): Box breathing or 4-2-6 ratio.
-          3. Guided Rehearsal (Duration%): Vivid first-person mental practice of success.
-          4. Integration (2:00): Selecting a micro-cue for this state.
+          - Present-moment grounding
+          - Orientation toward steadiness and clarity
+          - Reduction of internal friction
+          - Integration without outcome visualization
         `,
             };
 
             const prompt = `
         You are a world-class professional meditation guide and clinical hypnotherapist.
-        Write a high-quality script for:
-        - PURPOSE: ${options.purpose}
-        - STYLE/VIBE: ${options.vibe}
-        - DURATION: ${options.durationMinutes} minutes
+        Your role is not to instruct, persuade, or induce change, but to gently orient attention
+        and create conditions in which natural settling, clarity, or rest may occur.
 
-        STRUCTURE BLUEPRINT FOR THIS VIBE:
-        ${structuralBlueprints[options.vibe]}
+        Write a high-quality spoken script based on the following inputs:
+        - PURPOSE: \${options.purpose}
+        - STYLE/VIBE: \${options.vibe}
+        - DURATION: \${options.durationMinutes} minutes
 
-        CRITICAL WRITING RULES:
-        1. Reading Speed: 130 words per minute. Total words: ~${options.durationMinutes * 130}.
-        2. Tone: Calm, premium, expert, and compassionate.
-        3. NO stage directions, brackets, or speaker names. Output ONLY the spoken text.
-        4. If purpose is 'sleep', NEVER include a wake-up/re-orientation at the end. End with drifting.
-        5. Use positive suggestions only (what to DO, not what to stop doing).
-        6. For '${options.vibe}', use its specific techniques discovered in research (e.g. labeling for mindfulness, anchors for hypnosis).
+        ────────────────────────
+        GLOBAL INTEGRITY RULES (OVERRIDE ALL OTHERS):
+
+        1. Non-coercion
+           - Do not attempt to cause, induce, or guarantee outcomes.
+           - Do not imply that change comes from the guide or the script.
+           - The user remains autonomous at all times.
+
+        2. Subtractive orientation
+           - Frame change as allowing, noticing, or ceasing interference.
+           - Avoid effort-based, achievement-based, or improvement language.
+
+        3. No identity assignment
+           - Do not define who the user is.
+           - Do not imply progress, levels, advancement, or deficiency.
+
+        4. Experiential language only
+           - Describe sensations, perceptions, and awareness.
+           - Invite recognition, not belief or compliance.
+
+        5. Impermanence
+           - States arise and pass naturally.
+           - Nothing is owned, fixed, or achieved.
+
+        ────────────────────────
+        STYLE BLUEPRINTS:
+        \${structuralBlueprints[options.vibe]}
+
+        ────────────────────────
+        CRITICAL CONSTRAINTS:
+
+        1. Reading speed: 130 words per minute.
+           - Calculate total word count accordingly.
+
+        2. Tone:
+           - Calm, grounded, neutral, human.
+           - No expert signaling, no spiritual authority.
+
+        3. Output:
+           - Spoken text only.
+           - No labels, explanations, or stage directions.
+
+        4. Sleep rule:
+           - If PURPOSE is 'sleep', do not include re-orientation or wake-up language.
+           - End with open-ended drifting.
+
+        5. Language:
+           - Avoid commands ("relax", "focus", "let go").
+           - Use gentle, permissive phrasing only.
+
+        ────────────────────────
+        GOAL:
+        Produce a script that feels like a steady, non-intrusive presence,
+        supporting natural settling without effort, pressure, or expectation.
       `;
 
             const result = await model.generateContent(prompt);

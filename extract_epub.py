@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import sys
 import os
 
-def extract_epub_text(epub_path, output_path=None, max_chars=50000):
+def extract_epub_text(epub_path, output_path=None, max_chars=5000000):
     """Extract text from epub file"""
     try:
         book = epub.read_epub(epub_path)

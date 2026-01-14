@@ -3,27 +3,22 @@
  * Generate custom meditations using F5-TTS with binaural beats (cloud-based)
  */
 
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     TouchableOpacity,
     ScrollView,
-    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import { Audio } from 'expo-av';
-import { useTTS } from '../hooks/useTTS';
-import { geminiService } from '../services/geminiService';
-import { AI_CONFIG } from '../config/aiConfig';
+import { useNavigation } from '@react-navigation/native';
+import { useMeditationGenerationStore } from '../store/meditationGenerationStore';
 import * as voiceService from '../services/voiceTTSService';
 import {
-    generateMeditationScript,
-    sectionsToText,
     MeditationPurpose,
     MeditationDuration,
     MeditationVibe,
@@ -33,146 +28,74 @@ import {
     VIBE_DESCRIPTIONS,
 } from '../data/meditationScripts';
 
-const PURPOSES: MeditationPurpose[] = [
-    'sleep',
-    'calm',
-    'focus',
-    'morning',
-    'stress_relief',
-    'self_compassion',
-];
-
-const DURATIONS: MeditationDuration[] = [5, 10, 15, 20];
-const VIBES: MeditationVibe[] = ['mindfulness', 'clinical_hypnosis', 'ericksonian', 'performance'];
-
-const PURPOSE_ICONS: Record<MeditationPurpose, string> = {
-    sleep: 'moon',
-    calm: 'leaf',
-    focus: 'eye',
-    morning: 'sunny',
-    stress_relief: 'heart',
-    self_compassion: 'flower',
-};
-
-const BRAINWAVE_ICONS: Record<string, string> = {
-    none: 'remove-circle-outline',
-    delta: 'moon',
-    theta: 'cloudy-night',
-    alpha: 'leaf',
-    beta: 'flash',
-};
-
 export default function MeditationGeneratorScreen() {
     const insets = useSafeAreaInsets();
-    const systemTTS = useTTS();
-    const soundRef = useRef<Audio.Sound | null>(null);
+    // System TTS removed or used via store? Store handles it.
+    // We'll keep local UI state here.
 
+    const PURPOSES: MeditationPurpose[] = [
+        'sleep',
+        'calm',
+        'focus',
+        'morning',
+        'stress_relief',
+        'self_compassion',
+    ];
+
+    const DURATIONS: MeditationDuration[] = [5, 10, 15, 20];
+    const VIBES: MeditationVibe[] = ['mindfulness', 'ericksonian', 'performance'];
+
+    const PURPOSE_ICONS: Record<MeditationPurpose, string> = {
+        sleep: 'moon',
+        calm: 'leaf',
+        focus: 'eye',
+        morning: 'sunny',
+        stress_relief: 'heart',
+        self_compassion: 'flower',
+    };
+
+    const BRAINWAVE_ICONS: Record<string, string> = {
+        none: 'remove-circle-outline',
+        delta: 'moon',
+        theta: 'cloudy-night',
+        alpha: 'leaf',
+        beta: 'flash',
+    };
+
+    const navigation = useNavigation();
+    const { startGeneration, isGenerating } = useMeditationGenerationStore();
+
+    // Local UI state
     const [purpose, setPurpose] = useState<MeditationPurpose>('calm');
     const [duration, setDuration] = useState<MeditationDuration>(10);
     const [vibe, setVibe] = useState<MeditationVibe>('mindfulness');
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [isBrewingAI, setIsBrewingAI] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    const [generatedScript, setGeneratedScript] = useState<string>('');
-    const [generationError, setGenerationError] = useState<string | null>(null);
 
-    // Voice settings
     // Voice settings
     const [speed, setSpeed] = useState(1.0);
-
-    // Binaural beat settings
     const [selectedBrainwave, setSelectedBrainwave] = useState('theta');
     const [binauralVolume, setBinauralVolume] = useState(0.15);
-
-    // Ambient sound settings
     const [selectedAmbient, setSelectedAmbient] = useState('none');
     const [ambientVolume, setAmbientVolume] = useState(0.1);
-
-    // Use cloud TTS (F5-TTS) vs system TTS
     const [usePremiumVoice, setUsePremiumVoice] = useState(true);
 
-    const handleGenerate = useCallback(async () => {
-        setIsGenerating(true);
-        setGenerationError(null);
+    const handleGenerate = useCallback(() => {
+        // Start background generation
+        startGeneration({
+            purpose,
+            duration,
+            vibe,
+            speed,
+            brainwave: selectedBrainwave,
+            binauralVolume,
+            ambient: selectedAmbient,
+            ambientVolume,
+            usePremiumVoice,
+        });
 
-        let script = '';
+        // We rely on the global toast to inform the user.
+        // Staying on the screen allows them to generate another or leave manually.
+    }, [purpose, duration, vibe, usePremiumVoice, speed, selectedBrainwave, binauralVolume, selectedAmbient, ambientVolume, startGeneration, navigation]);
 
-        // Generate the script via Gemini if API key is present
-        if (AI_CONFIG.GEMINI_API_KEY) {
-            try {
-                setIsBrewingAI(true);
-                script = await geminiService.generateScript({
-                    purpose,
-                    durationMinutes: duration,
-                    vibe,
-                });
-                setIsBrewingAI(false);
-            } catch (err: any) {
-                console.warn('Gemini generation failed, falling back to templates:', err);
-                setIsBrewingAI(false);
-                const sections = generateMeditationScript(purpose, duration);
-                script = sectionsToText(sections);
-            }
-        } else {
-            const sections = generateMeditationScript(purpose, duration);
-            script = sectionsToText(sections);
-        }
-
-        setGeneratedScript(script);
-
-        // Use premium cloud TTS with binaural beats
-        if (usePremiumVoice) {
-            try {
-                const sound = await voiceService.synthesizeAndPlay({
-                    text: script,
-                    speed,
-                    brainwave: selectedBrainwave,
-                    binauralVolume,
-                    ambient: selectedAmbient,
-                    ambientVolume,
-                });
-                soundRef.current = sound;
-                setIsPlaying(true);
-
-                // Listen for playback completion
-                sound.setOnPlaybackStatusUpdate((status) => {
-                    if (status.isLoaded && status.didJustFinish) {
-                        setIsPlaying(false);
-                        setIsGenerating(false);
-                    }
-                });
-            } catch (err: any) {
-                console.error('Voice TTS error:', err);
-                setGenerationError(err.message || 'Failed to generate audio');
-                setIsGenerating(false);
-            }
-        } else {
-            // Fallback to system TTS (no binaural beats)
-            systemTTS.speak(script, {
-                rate: 0.8,
-                onDone: () => {
-                    setIsPlaying(false);
-                    setIsGenerating(false);
-                },
-                onError: (error) => {
-                    console.error('System TTS Error:', error);
-                    setIsGenerating(false);
-                },
-            });
-            setIsPlaying(true);
-        }
-    }, [purpose, duration, vibe, usePremiumVoice, speed, selectedBrainwave, binauralVolume, selectedAmbient, ambientVolume, systemTTS]);
-
-    const handleStop = useCallback(async () => {
-        if (soundRef.current) {
-            await soundRef.current.stopAsync();
-            await soundRef.current.unloadAsync();
-            soundRef.current = null;
-        }
-        systemTTS.stop();
-        setIsPlaying(false);
-        setIsGenerating(false);
-    }, [systemTTS]);
 
     return (
         <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -182,18 +105,7 @@ export default function MeditationGeneratorScreen() {
             />
 
             {/* AI Brewing Overlay */}
-            {isBrewingAI && (
-                <View style={styles.brewingOverlay}>
-                    <View style={styles.brewingCard}>
-                        <Ionicons name="sparkles" size={48} color="#6366f1" />
-                        <Text style={styles.brewingTitle}>Brewing Your Meditation</Text>
-                        <Text style={styles.brewingSubtitle}>Gemini is composing a unique session for you...</Text>
-                        <View style={styles.loadingBar}>
-                            <View style={styles.loadingBarFill} />
-                        </View>
-                    </View>
-                </View>
-            )}
+
 
             <ScrollView
                 style={styles.scrollView}
@@ -449,47 +361,20 @@ export default function MeditationGeneratorScreen() {
                 </View>
 
                 {/* Error display */}
-                {generationError && (
-                    <View style={styles.errorContainer}>
-                        <Ionicons name="warning" size={20} color="#ef4444" />
-                        <Text style={styles.errorText}>{generationError}</Text>
-                    </View>
-                )}
+
 
                 {/* Generate Button */}
                 <TouchableOpacity
-                    style={[
-                        styles.generateButton,
-                        isPlaying && styles.generateButtonActive,
-                    ]}
-                    onPress={isPlaying ? handleStop : handleGenerate}
+                    style={styles.generateButton}
+                    onPress={handleGenerate}
                     activeOpacity={0.8}
-                    disabled={isGenerating && !isPlaying}
+                    disabled={isGenerating}
                 >
-                    {isGenerating && !isPlaying ? (
-                        <ActivityIndicator color="#ffffff" />
-                    ) : isPlaying ? (
-                        <>
-                            <Ionicons name="stop" size={24} color="#ffffff" />
-                            <Text style={styles.generateButtonText}>Stop</Text>
-                        </>
-                    ) : (
-                        <>
-                            <Ionicons name="play" size={24} color="#ffffff" />
-                            <Text style={styles.generateButtonText}>Generate & Play</Text>
-                        </>
-                    )}
+                    <Ionicons name="sparkles" size={24} color="#ffffff" />
+                    <Text style={styles.generateButtonText}>
+                        {isGenerating ? 'Generating...' : 'Generate & Play'}
+                    </Text>
                 </TouchableOpacity>
-
-                {/* Preview */}
-                {generatedScript !== '' && (
-                    <View style={styles.previewSection}>
-                        <Text style={styles.sectionTitle}>Generated Script</Text>
-                        <View style={styles.previewCard}>
-                            <Text style={styles.previewText}>{generatedScript}</Text>
-                        </View>
-                    </View>
-                )}
 
                 <View style={{ height: 40 }} />
             </ScrollView>

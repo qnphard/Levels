@@ -40,6 +40,13 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#BAABB0', '#D7BBC8'] as const,
     gradientDark: ['#3B1120', '#8E3E63'] as const,
     glowDark: '#F472B6',
+    feltSense: 'Shrinking, hiding, self-targeting.',
+    zone: 'Heavy Weather',
+    layers: {
+      far: require('../assets/images/levels/shame/bg_far.png'),
+      mid: require('../assets/images/levels/shame/mid.png'),
+      fg: require('../assets/images/levels/shame/fg.png'),
+    },
   },
   {
     id: 'guilt',
@@ -68,6 +75,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#BCB1A9', '#E4CCB0'] as const,
     gradientDark: ['#40220A', '#B26E1F'] as const,
     glowDark: '#FBBF24',
+    feltSense: 'Heavy responsibility, self-blame, regret.',
+    zone: 'Heavy Weather',
   },
   {
     id: 'apathy',
@@ -96,6 +105,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#AAB5BB', '#ACC8D0'] as const,
     gradientDark: ['#0D2C3F', '#14627A'] as const,
     glowDark: '#38BDF8',
+    feltSense: 'Numbness, hopeless, zero-energy.',
+    zone: 'Heavy Weather',
   },
   {
     id: 'grief',
@@ -124,6 +135,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#ACBABB', '#B0CCCE'] as const,
     gradientDark: ['#143A3D', '#1E7075'] as const,
     glowDark: '#5EEAD4',
+    feltSense: 'Sadness, longing, heavy waves.',
+    zone: 'Heavy Weather',
   },
   {
     id: 'fear',
@@ -152,6 +165,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#BAB8A8', '#DDD6B0'] as const,
     gradientDark: ['#3A3509', '#A08B1E'] as const,
     glowDark: '#FACC15',
+    feltSense: 'Anxiety, scanning for danger, worry.',
+    zone: 'Heavy Weather',
   },
   {
     id: 'desire',
@@ -180,6 +195,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#BCB1A9', '#E0C6B1'] as const,
     gradientDark: ['#4B2A00', '#9A5B0F'] as const,
     glowDark: '#FB923C',
+    feltSense: "Grasping, craving, 'never enough'.",
+    zone: 'Stuckness',
   },
   {
     id: 'anger',
@@ -208,6 +225,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#BEAEAE', '#DCB5B5'] as const,
     gradientDark: ['#4C1F1F', '#8B2C2C'] as const,
     glowDark: '#F87171',
+    feltSense: "Heat, frustration, 'not fair'.",
+    zone: 'Stuckness',
   },
   {
     id: 'pride',
@@ -236,6 +255,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#B5B2BD', '#C6C0D0'] as const,
     gradientDark: ['#2F2244', '#5B4A7E'] as const,
     glowDark: '#A78BFA',
+    feltSense: 'Defensive, superior, brittle image.',
+    zone: 'Stuckness',
   },
 
   // EMPOWERMENT CATEGORY (200-399 - Power, not force)
@@ -266,6 +287,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#A8BDB7', '#B0D6CA'] as const,
     gradientDark: ['#094532', '#1E8A6A'] as const,
     glowDark: '#34D399',
+    feltSense: "Steady, honest, 'I can face this'.",
+    zone: 'Stabilization',
     isThreshold: true, // CRITICAL: This is the 200 threshold
   },
   {
@@ -295,6 +318,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#B0B4BA', '#BABFC6'] as const,
     gradientDark: ['#1E293B', '#3C4A5E'] as const,
     glowDark: '#94A3B8',
+    feltSense: 'Flexible, safe, inner okay-ness.',
+    zone: 'Stabilization',
   },
   {
     id: 'willingness',
@@ -323,6 +348,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#ABC3BB', '#B2DDCB'] as const,
     gradientDark: ['#11563E', '#25A06C'] as const,
     glowDark: '#4ADE80',
+    feltSense: 'Helpful, open, eager to learn.',
+    zone: 'Stabilization',
   },
   {
     id: 'acceptance',
@@ -351,6 +378,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#BBB5C2', '#D0C5DF'] as const,
     gradientDark: ['#3F2E53', '#7A5BA5'] as const,
     glowDark: '#C084FC',
+    feltSense: 'Harmonious, settled, deep balance.',
+    zone: 'Stabilization',
   },
   {
     id: 'reason',
@@ -379,6 +408,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#B0B7C7', '#BEC9E3'] as const,
     gradientDark: ['#1F3360', '#4666B0'] as const,
     glowDark: '#60A5FA',
+    feltSense: 'Clear, logical, objective clarity.',
+    zone: 'Openness',
   },
 
   // SPIRITUAL CATEGORY (500-599 - Heart-centered reality)
@@ -409,6 +440,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#C4AFB8', '#E5C0CB'] as const,
     gradientDark: ['#5B1F3E', '#A23F6F'] as const,
     glowDark: '#F472B6',
+    feltSense: 'Compassion, devotion, radiating heart.',
+    zone: 'Openness',
   },
   {
     id: 'joy',
@@ -437,6 +470,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#C5BAA5', '#EBD9AC'] as const,
     gradientDark: ['#5C3A00', '#C38A12'] as const,
     glowDark: '#FACC15',
+    feltSense: 'Luminous, innocent, causeless bliss.',
+    zone: 'Openness',
   },
 
   // ENLIGHTENMENT CATEGORY (600 - Non-dual awareness)
@@ -467,6 +502,8 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradient: ['#AAB1BA', '#B5C1CC'] as const,
     gradientDark: ['#0F2742', '#2E496C'] as const,
     glowDark: '#93C5FD',
+    feltSense: 'Infinite stillness, non-dual rest.',
+    zone: 'Openness',
   },
 ];
 

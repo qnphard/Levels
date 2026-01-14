@@ -89,6 +89,13 @@ export interface ConsciousnessLevel {
   gradientDark?: readonly [string, string];
   glowDark?: string;
   isThreshold?: boolean; // True for level 200 (Courage)
+  feltSense: string; // 1-line felt sense description
+  zone: 'Heavy Weather' | 'Stuckness' | 'Stabilization' | 'Openness';
+  layers?: {
+    far: any;
+    mid: any;
+    fg: any;
+  };
 }
 
 // User's journey through consciousness levels
@@ -125,4 +132,39 @@ export interface ChapterProgress {
   lastSection?: string; // H2/H3 anchor name
   readProgress: number; // 0-1, percentage read
   lastReadAt: Date;
+}
+
+// --- Dossier & Hierarchical Content ---
+
+export interface DossierSection {
+  title: string;
+  importance: 'core' | 'nuance' | 'practical';
+  defaultExpanded: boolean;
+  body: string;
+}
+
+export interface DossierLink {
+  label: string;
+  targetRoom: string; // e.g., 'Exit', 'Practice', or another Hotspot name
+  hotspot?: string;
+}
+
+export interface DossierArticle {
+  title: string;
+  spineBody: string; // The "always visible" intro / orienting text
+  sections: DossierSection[];
+  nextDoors?: DossierLink[];
+}
+
+export interface CategoryArticles {
+  purpose: DossierArticle;
+  traps: {
+    body: string; // Short overview
+    chips: (DossierArticle & { label: string })[]; // Each "chip" is now a full article
+  };
+  exits: {
+    body: string;
+    chips: (DossierArticle & { label: string })[];
+  };
+  feltSense?: DossierArticle;
 }

@@ -17,82 +17,82 @@ export interface LevelExplanation {
 
 export const levelExplanations: Record<string, LevelExplanation> = {
   shame: {
-    reservoir: 'Past experiences where you felt exposed, rejected, or criticized get activated by current triggers. Shame isn\'t about what happened now—it\'s about old wounds that haven\'t fully healed.',
+    reservoir: 'Past experiences of humiliation, rejection, or being seen as "small" are stored as a reservoir. Shame isn\'t about "making a mistake"—it\'s the deeper belief that "I am a mistake."',
     copingTraps: {
-      default: 'Hiding or isolating reinforces the shame cycle. When you believe you\'re fundamentally flawed, withdrawing seems safer, but it actually strengthens the shame identity.',
-      venting: 'Venting about shame often rehearses the "I\'m broken" story. Talking about how defective you feel can actually reinforce the shame pattern rather than release it.',
-      escape: 'Trying to escape shame through distraction or numbing only postpones it. The feeling will return, often stronger, because the underlying belief hasn\'t been addressed.',
-      overthinking: 'Ruminating on "what\'s wrong with me" keeps you stuck in shame. Overthinking shame strengthens the identity that you ARE the shame, rather than someone experiencing it.',
+      default: 'Hiding or isolating (the "process of elimination") reinforces the shame cycle. Withdrawing seems safer, but it strengthens the belief that you are inherently unlovable.',
+      venting: 'Venting about shame usually rehearses the "broken" story. Talking about how defective you feel can lock you into the identity rather than releasing the energy.',
+      escape: 'Trying to escape shame through distraction only postpones the pain. The feeling remains because the underlying ontological sense of "defect" hasn\'t been addressed.',
+      overthinking: 'Ruminating on "what is wrong with me" is the ego\'s way of keeping shame alive. Overthinking reinforces the identity of being a "non-person."',
     },
-    thirdAngle: 'Shame = "I am bad." Guilt = "I did something bad." Shame attacks your identity; guilt addresses your actions. Understanding this distinction is the first step to self-compassion.',
+    thirdAngle: 'Shame (20) attacks who you *are*; Guilt (30) attacks what you *did*. Moving from "I am bad" to "I did something bad" is actually a step up in energy toward healing.',
   },
   guilt: {
-    reservoir: 'Old actions, choices, or behaviors that violated your values get triggered by current situations. Guilt pulls up stored remorse that hasn\'t been fully processed or forgiven.',
+    reservoir: 'Stored remorse and the belief that error demands punishment. Guilt pulls up past "sins" that haven\'t been forgiven, projecting a world of "evil" and a vindictive God-view.',
     copingTraps: {
-      default: 'Over-apologizing or self-punishment keeps guilt alive. Constantly beating yourself up doesn\'t resolve guilt—it creates a loop of suffering that prevents genuine atonement.',
-      venting: 'Venting guilt can rehearse the "I\'m a bad person" narrative. Expressing guilt outwardly might feel like accountability, but it often strengthens the guilt identity.',
-      escape: 'Avoiding guilt through distraction only delays the reckoning. The unresolved guilt will resurface, often manifesting as self-sabotage or relationship patterns.',
-      overthinking: 'Ruminating on "what I should have done" traps you in guilt. Overthinking keeps you stuck in the past, preventing you from making amends or moving forward.',
+      default: 'Self-punishment and masochism keep guilt alive. The ego believes that suffering "atones" for error, but it actually just strengthens the cycle of self-attack.',
+      venting: 'Venting guilt can be a subtle way to manipulate others or God for sympathy. It rehearses the "I\'m a bad person" narrative instead of correcting the error.',
+      escape: 'Avoiding guilt through distraction delays the reckoning. Unresolved guilt often surfaces through "accidents," illness, or self-sabotage.',
+      overthinking: 'Ruminating on "I should have known better" is a fantasy. You acted based on your limited perception at the time; guilt is the ego inflating the hero of its own tragedy.',
     },
-    thirdAngle: 'Guilt serves a purpose: it shows you your values. When guilt is examined with compassion, it becomes a guidepost for alignment, not a weapon against yourself.',
+    thirdAngle: 'Guilt serves as a guidepost: it shows you your values. When recontextualized as "learning error" rather than "metaphysical evil," it can be surrendered in favor of correction.',
   },
   fear: {
-    reservoir: 'Past fears, traumas, or anxieties get triggered by present uncertainty. The feelings you\'re experiencing aren\'t just about what\'s happening now—they\'re connected to stored fear energy from the past.',
+    reservoir: 'A vast reservoir of past fear energy activated by present uncertainty. Fear sees "danger" everywhere because its primary goal is physical and emotional survival.',
     copingTraps: {
-      default: 'Suppressing or avoiding fear creates inner pressure. This constant mental effort to control or escape fear exhausts you, and the fear tends to resurface when pressure is off.',
-      venting: 'Expressing fear outwardly can actually amplify it. Venting about fear rehearses the anxious state, strengthening the neural pathways of worry and catastrophizing.',
-      escape: 'Trying to escape fear through distraction only postpones it. The fear will return, often stronger, because the underlying threat perception hasn\'t been addressed.',
-      overthinking: 'Ruminating on worst-case scenarios keeps fear alive. Overthinking fear strengthens the pattern of catastrophic thinking, making the fear feel more real.',
+      default: 'Suppressing fear creates intense inner pressure. This constant vigilance exhausts the nervous system, leading to the very "overwhelm" the ego tries to avoid.',
+      venting: 'Expressing fear outwardly often amplifies it. Venting about what "might" happen rehearses the anxious state and strengthens the neural pathways of worry.',
+      escape: 'Escape through distraction ignores the "threat" but doesn\'t dissolve the fear energy. The fear will return because the underlying perception of danger is unchanged.',
+      overthinking: 'Catastrophizing is the ego\'s attempt to "prepare" via worst-case scenarios. Overthinking fear makes the imaginary threat feel more real and imminent.',
     },
-    thirdAngle: 'Stress is fear of the future. When fear dissolves, stress does too. Most of what we call "stress" is actually unexamined fear energy, temporarily stirred by circumstances.',
+    thirdAngle: 'Stress is simply "fear of the future." When the demand for security is surrendered, the energy of fear dissolves, and the "stress" disappears with it.',
   },
   anger: {
-    reservoir: 'Stored anger from past injustices, boundaries being crossed, or needs not being met gets activated by current triggers. The intensity isn\'t just from what\'s happening now—it\'s fueled by accumulated resentment.',
+    reservoir: 'Stored anger from past injustices or unmet needs gets activated. The intensity results from accumulated resentment, not just the current trigger.',
     copingTraps: {
-      default: 'Suppressing anger creates explosive pressure. Trying to "be nice" while anger simmers builds inner tension that eventually erupts, often disproportionately.',
-      venting: 'Venting anger rehearses the state. Expressing anger outwardly might feel like release, but it actually strengthens the anger pattern and keeps you stuck in reactivity.',
-      escape: 'Trying to escape anger through distraction only delays it. The unresolved anger will resurface, often manifesting as passive-aggressive behavior or sudden outbursts.',
-      conflict: 'Engaging in conflict while angry often escalates situations. Reacting from anger creates more anger, both in yourself and others, perpetuating the cycle.',
+      default: 'Suppressing anger builds explosive pressure. Trying to "be nice" while resentment simmers creates inner tension that eventually erupts disproportionately.',
+      venting: 'Venting anger rehearses the state of reactivity. While it feels like "release," it actually strengthens the habit of using force to get what you want.',
+      escape: 'Avoiding anger only delays the eruption. The unresolved energy manifests as passive-aggression or sudden, "unexplained" outbursts.',
+      conflict: 'Engaging from anger usually escalates the situation. Reacting from "I\'ll show you" creates more resistance in others, perpetuating the conflict.',
     },
-    thirdAngle: 'Anger shows you where your boundaries are. Underneath anger is often a need: for respect, safety, or validation. Anger is information—it points to what matters to you.',
+    thirdAngle: 'Anger shows you where your boundaries are. Underneath every anger is an unmet need (respect, safety, etc.) and a hidden fear. It is information, not a directive.',
   },
   desire: {
-    reservoir: 'Past experiences of lack, scarcity, or unmet needs get triggered by current wants. The craving isn\'t just about the object—it\'s connected to deeper needs for fulfillment or safety.',
+    reservoir: 'A reservoir of past lack and the belief that fulfillment is "out there." Desire is the state of craving, which by definition is a state of "not having."',
     copingTraps: {
-      default: 'Chasing desires without examining them creates a cycle. Giving in to every urge strengthens the craving pattern, making it harder to find genuine satisfaction.',
-      venting: 'Expressing desires outwardly can amplify cravings. Talking about what you want can actually increase the intensity of the desire rather than reduce it.',
-      escape: 'Using substances or behaviors to escape desire only creates dependency. What starts as temporary relief becomes a pattern that requires more and more to satisfy.',
-      overthinking: 'Ruminating on what you want keeps desire alive. Overthinking cravings strengthens the fixation, making the object of desire feel more necessary.',
+      default: 'Chasing desires reinforces the "not-enough" program. Getting what you want provides temporary relief, but the *state* of craving remains insatiable.',
+      venting: 'Talking constantly about what you lack or want can amplify the intensity of the craving. It keeps the mind fixated on the "hole" in your experience.',
+      escape: 'Using substances or shopping to "fill the hole" creates dependency. You become addicted to the temporary high that masks the underlying sense of lack.',
+      overthinking: 'Obsessing over the object of desire makes it feel necessary for your survival. The ego magnifies the object until it becomes a "god" you must serve.',
     },
-    thirdAngle: 'Desire shows you where you\'re looking for fulfillment outside yourself. When examined, desire points to deeper needs: for connection, meaning, or inner peace that can\'t be satisfied by external objects.',
+    thirdAngle: 'Desire points to a deeper need for inner peace. When you surrender the *demand* for the object, you discover that the feeling of "completeness" is already within you.',
   },
   grief: {
-    reservoir: 'Past losses, endings, or disappointments get activated by current situations that remind you of what\'s missing. The sadness isn\'t just about now—it\'s connected to stored grief that hasn\'t fully moved through you.',
+    reservoir: 'Accumulated past losses and disappointments. Grief is the painful feeling of "I can\'t go on" because the source of happiness is perceived to be lost forever.',
     copingTraps: {
-      default: 'Suppressing grief creates numbness or delayed processing. Trying to "stay strong" or avoid sadness only postpones the healing, and grief tends to resurface when you\'re ready.',
-      venting: 'Getting stuck in expressing grief can keep you in the pain. While healthy expression is important, rehearsing grief without movement can become a pattern.',
-      escape: 'Trying to escape grief through distraction prevents healing. Grief needs to be felt and moved through—avoiding it creates a heavy burden that weighs you down.',
-      overthinking: 'Ruminating on what\'s lost keeps grief alive. Overthinking grief can trap you in the past, preventing you from processing the loss and finding meaning.',
+      default: 'Suppressing grief leads to "apathy" or delayed processing. Trying to "be strong" prevents the energy from moving through you, leaving a heavy burden.',
+      venting: 'Getting stuck in the "story" of loss can keep you in the pain. Healthy expression moves the energy; rehearsing the story locks it in.',
+      escape: 'Distraction prevents the necessary "letting go" that grief demands. Avoidance creates a stagnation that prevents new life from entering.',
+      overthinking: 'Ruminating on "if only I had..." is a trap. It keeps you oriented to a past that no longer exists, preventing you from accepting what is.',
     },
-    thirdAngle: 'Grief is the price of love. The depth of your grief reflects the depth of your connection. Allowing grief to move through you honors what was lost and creates space for what remains.',
+    thirdAngle: 'Grief is the cost of attachment, but also the indicator of love. Allowing it to move through you honors the connection while releasing the demand to control change.',
   },
   apathy: {
-    reservoir: 'Past overwhelm, exhaustion, or repeated disappointment leads to shutdown. The numbness isn\'t about now—it\'s a protective response to accumulated stress that hasn\'t been processed.',
+    reservoir: 'A reservoir of past overwhelm where the nervous system "played dead" to survive. Apathy is the state of hopelessness where "I can\'t" is the dominant belief.',
     copingTraps: {
-      default: 'Staying in apathy becomes its own trap. The numbness feels safer than feeling, but it also prevents movement, growth, and reconnection with life.',
-      escape: 'Using apathy as an escape from feeling eventually creates more numbness. The more you disconnect from feeling, the harder it becomes to reconnect.',
-      overthinking: 'Ruminating on "why bother" keeps you in apathy. Overthinking reinforces the belief that nothing matters, strengthening the numb state.',
+      default: 'Staying in apathy feels "safe" because it avoids all other feelings, but it is a "living death." It blocks growth and keeps you in a state of chronic lack.',
+      escape: 'Escaping into "veg-out" modes (TV, scrolling) reinforces the numbness. Small, gentle movements of energy are needed to break the freeze response.',
+      overthinking: 'Ruminating on "why bother" or "it doesn\'t matter" is the ego\'s way of justifying the shutdown. It protects you from the effort (and risk) of feeling.',
     },
-    thirdAngle: 'Apathy isn\'t failure—it\'s a tired nervous system. Your body and mind are protecting you from overwhelm. Apathy shows you where you need rest, boundaries, and gentle reconnection.',
+    thirdAngle: 'Apathy isn\'t failure; it\'s a tired nervous system. It shows you where you need rest, healthy boundaries, and a very gentle reconnection with your own "Will."',
   },
   pride: {
-    reservoir: 'Past experiences of being wrong, criticized, or vulnerable get activated by current challenges to your position. The defensiveness isn\'t just about now—it\'s protecting old wounds around being seen as flawed.',
+    reservoir: 'Past experiences of being criticized or feeling small. Pride is the ego\'s "armor," a superior positionality used to defend against vulnerability.',
     copingTraps: {
-      default: 'Maintaining a superior position creates isolation. Pride prevents genuine connection because it requires others to be "less than" for you to feel secure.',
-      conflict: 'Engaging in conflict from pride escalates defensiveness. Reacting from "I\'m right" creates more rigidity and prevents understanding or resolution.',
-      venting: 'Expressing superiority outwardly strengthens the pride pattern. Venting about how right you are actually reinforces the defensive identity.',
+      default: 'Defensiveness and "I\'m right" create isolation. Pride prevents genuine connection because you cannot be "wrong" or "vulnerable" and still be safe.',
+      conflict: 'Reacting from pride escalates conflict into a "battle of wills." Rigidity prevents resolution because the ego sees compromise as a loss of self.',
+      venting: 'Venting about how "wrong" others are strengthens your superior identity. It keeps you stuck in judgment and prevents compassion.',
     },
-    thirdAngle: 'Pride protects vulnerability. Underneath pride is often fear of being wrong, exposed, or judged. Pride shows you where you\'re defending against feeling small or flawed.',
+    thirdAngle: 'Pride is "Fear in a top hat." It protects a fragile core. Underneath the "better than" is usually a fear of being "not enough." Surrendering pride allows for true self-worth.',
   },
 };
 
@@ -105,7 +105,7 @@ export function getCopingTrapText(
 ): string {
   const explanation = levelExplanations[levelId];
   if (!explanation) {
-    return explanation?.copingTraps.default || 'Suppressing or avoiding emotions creates inner pressure. This constant mental effort exhausts you and the feelings tend to resurface when pressure is off.';
+    return 'Suppressing or avoiding emotions creates inner pressure. This constant mental effort exhausts you and the feelings tend to resurface when pressure is off.';
   }
 
   // Check situations in priority order
