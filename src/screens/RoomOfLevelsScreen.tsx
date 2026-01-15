@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import { useThemeColors, spacing, typography } from '../theme/colors';
 import { RoomBackground } from '../components/RoomBackground';
 import { AtmosphereProvider, useAtmosphere } from '../context/AtmosphereContext';
@@ -27,31 +27,54 @@ function RoomOfLevelsContent() {
     const navigation = useNavigation<NavigationProp>();
     const theme = useThemeColors();
     const { zoomLevel, vignetteIntensity, lightingOpacity } = useAtmosphere();
+    const scrollY = useRef(new Animated.Value(0)).current;
 
-    const hubOpacity = useRef(new Animated.Value(1)).current;
+    const HEAVY_WEATHER_LEVELS = [
+        { id: 'shame', label: 'Shame' },
+        { id: 'guilt', label: 'Guilt' },
+        { id: 'apathy', label: 'Apathy' },
+        { id: 'grief', label: 'Grief' },
+        { id: 'fear', label: 'Fear' },
+        { id: 'desire', label: 'Desire' },
+        { id: 'anger', label: 'Anger' },
+        { id: 'pride', label: 'Pride' },
+    ];
 
-    const renderHotspot = (levelId: string, icon: keyof typeof Ionicons.glyphMap, top: number, align: 'left' | 'right' | 'center', label: string) => {
-        const positionStyle: any = { top: `${top}%` };
+    const renderLevelNode = (item: { id: string, label: string }, index: number) => {
+        const itemY = index * 200 + 100; // Vertical spacing
 
-        if (align === 'center') {
-            positionStyle.left = '50%';
-            positionStyle.transform = [{ translateX: -30 }];
-        } else if (align === 'left') {
-            positionStyle.left = '18%';
-        } else if (align === 'right') {
-            positionStyle.right = '18%';
-        }
+        // Distance Scaling: Farther nodes are smaller and more transparent
+        const scale = scrollY.interpolate({
+            inputRange: [itemY - 400, itemY, itemY + 400],
+            outputRange: [0.6, 1.1, 0.6],
+            extrapolate: 'clamp'
+        });
+
+        const opacity = scrollY.interpolate({
+            inputRange: [itemY - 400, itemY, itemY + 400],
+            outputRange: [0.3, 1, 0.3],
+            extrapolate: 'clamp'
+        });
+
+        const blur = scrollY.interpolate({
+            inputRange: [itemY - 200, itemY, itemY + 200],
+            outputRange: [5, 0, 5],
+            extrapolate: 'clamp'
+        });
 
         return (
             <Pressable
-                key={levelId}
-                onPress={() => navigation.navigate('LevelRoom', { levelId })}
-                style={[styles.hotspot, positionStyle]}
+                key={item.id}
+                onPress={() => navigation.navigate('LevelRoom', { levelId: item.id })}
+                style={styles.nodeContainer}
             >
-                <View style={styles.hotspotIconWrap}>
-                    <Ionicons name={icon} size={28} color="white" />
-                </View>
-                <Text style={styles.hotspotLabel}>{label}</Text>
+                <Animated.View style={[styles.hotspot, { transform: [{ scale }], opacity }]}>
+                    <View style={styles.hotspotIconWrap}>
+                        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'white', opacity: 0.1, borderRadius: 30 }]} />
+                        <Ionicons name="cloud-outline" size={32} color="white" />
+                    </View>
+                    <Text style={styles.hotspotLabel}>{item.label}</Text>
+                </Animated.View>
             </Pressable>
         );
     };
@@ -60,15 +83,15 @@ function RoomOfLevelsContent() {
         <View style={styles.container}>
             <StatusBar hidden />
 
-            {/* Background */}
+            {/* Background Driven by Scroll */}
             <View style={StyleSheet.absoluteFill}>
                 <RoomBackground
                     layers={{
-                        far: require('../assets/images/default/far.png'),
-                        mid: require('../assets/images/default/mid.png'),
-                        fg: undefined as any,
+                        far: require('../assets/images/default/light/far.png'),
+                        mid: require('../assets/images/default/light/mid.png'),
                     }}
                     zoomLevel={zoomLevel}
+                    scrollOffset={scrollY}
                 />
             </View>
 
@@ -78,32 +101,35 @@ function RoomOfLevelsContent() {
                 opacity: vignetteIntensity
             }]} pointerEvents="none" />
 
-            <Animated.View style={[StyleSheet.absoluteFill, { opacity: Animated.multiply(lightingOpacity, 0.4) }]} pointerEvents="none">
-                <LinearGradient
-                    colors={['rgba(75, 29, 63, 0.4)', 'transparent']}
-                    style={StyleSheet.absoluteFill}
-                />
-            </Animated.View>
-
-            {/* Hub Overlay */}
-            <Animated.View style={[styles.layerContainer, { opacity: hubOpacity }]}>
+            <Animated.ScrollView
+                style={StyleSheet.absoluteFill}
+                contentContainerStyle={styles.scrollContent}
+                onScroll={Animated.event(
+                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                    { useNativeDriver: true }
+                )}
+                scrollEventThrottle={16}
+                showsVerticalScrollIndicator={false}
+            >
                 <View style={styles.header}>
                     <Text style={styles.roomTitle}>The Room of Levels</Text>
                     <Text style={styles.roomSubtitle}>Transmute dense energy into power</Text>
                 </View>
 
-                <View style={styles.hotspotsLayer}>
-                    {renderHotspot('shame', 'cloud-outline', 25, 'center', 'Shame')}
-                    {renderHotspot('guilt', 'cloud-outline', 45, 'left', 'Guilt')}
-                    {renderHotspot('apathy', 'cloud-outline', 45, 'right', 'Apathy')}
-                    {renderHotspot('grief', 'cloud-outline', 65, 'center', 'Grief')}
+                <View style={styles.journeyPath}>
+                    {/* Vertical Connecting Line */}
+                    <View style={styles.pathLine} />
+
+                    {HEAVY_WEATHER_LEVELS.map((level, index) => renderLevelNode(level, index))}
                 </View>
 
-                {/* Return Button */}
-                <Pressable onPress={() => navigation.goBack()} style={styles.closeBtn}>
-                    <Ionicons name="close" size={28} color="white" />
-                </Pressable>
-            </Animated.View>
+                <View style={{ height: 300 }} /> {/* End spacing */}
+            </Animated.ScrollView>
+
+            {/* Return Button */}
+            <Pressable onPress={() => navigation.goBack()} style={styles.closeBtn}>
+                <Ionicons name="close" size={28} color="white" />
+            </Pressable>
         </View>
     );
 }
@@ -118,11 +144,11 @@ export default function RoomOfLevelsScreen() {
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: 'black' },
-    layerContainer: { ...StyleSheet.absoluteFillObject },
+    scrollContent: { paddingTop: 120 },
     header: {
-        marginTop: 80,
         alignItems: 'center',
         paddingHorizontal: spacing.xl,
+        marginBottom: 80,
     },
     roomTitle: {
         color: 'white',
@@ -139,24 +165,45 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontWeight: '300',
     },
-    hotspotsLayer: { flex: 1 },
-    hotspot: { position: 'absolute', alignItems: 'center', gap: spacing.xs, width: 60 },
+    journeyPath: {
+        alignItems: 'center',
+        position: 'relative',
+    },
+    pathLine: {
+        position: 'absolute',
+        width: 2,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        top: 0,
+        bottom: 0,
+        left: '50%',
+        marginLeft: -1,
+    },
+    nodeContainer: {
+        height: 200,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    hotspot: { alignItems: 'center', gap: spacing.sm },
     hotspotIconWrap: {
-        width: 56,
-        height: 56,
-        borderRadius: 28,
+        width: 70,
+        height: 70,
+        borderRadius: 35,
         alignItems: 'center',
         justifyContent: 'center',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.3)',
-        backgroundColor: 'rgba(0,0,0,0.4)'
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.4)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        shadowColor: '#fff',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
     },
     hotspotLabel: {
         color: 'white',
-        fontSize: 10,
+        fontSize: 12,
         fontWeight: '700',
         textTransform: 'uppercase',
-        letterSpacing: 1.5,
+        letterSpacing: 2,
         textAlign: 'center',
         textShadowColor: 'black',
         textShadowRadius: 6
