@@ -1,8 +1,8 @@
 /**
- * Voice TTS Service - Calls self-hosted XTTS-v2 API on Hugging Face
+ * Voice TTS Service - Calls self-hosted OpenVoice V2 API on Hugging Face
  * 
- * Provides zero-shot voice cloning for meditation audio with binaural beats
- * and ambient background sounds. XTTS-v2 is ~10x faster than F5-TTS.
+ * Provides fast, zero-shot voice cloning for meditation audio with binaural beats.
+ * OpenVoice V2 is significantly faster than XTTS-v2 or F5-TTS on CPU.
  */
 
 import { Audio } from 'expo-av';
@@ -69,10 +69,10 @@ export async function checkAvailability(): Promise<boolean> {
 }
 
 /**
- * Synthesize text to audio using XTTS-v2 voice cloning
+ * Synthesize text to audio using OpenVoice V2 voice cloning
  * Returns the audio URI that can be played with expo-av
  * 
- * Note: XTTS-v2 is much faster than F5-TTS (~30-60s on CPU, <1s on GPU).
+ * Note: OpenVoice V2 is optimized for speed (~20s for 1m on CPU).
  */
 export async function synthesize(options: SynthesizeOptions): Promise<string> {
     const {
@@ -215,7 +215,7 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
         await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
-    throw new Error('Generation timed out after 10 minutes. XTTS-v2 on free CPU hardware is very slow. Try a shorter script or upgraded hardware.');
+    throw new Error('Generation timed out. OpenVoice V2 should be fast. check Hugging Face Space logs.');
 }
 
 /**
