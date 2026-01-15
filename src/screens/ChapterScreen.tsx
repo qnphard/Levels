@@ -23,7 +23,7 @@ import {
 import { getChapterById, feelingsChapters } from '../data/feelingsChapters';
 import { useMarkdownChapter, ParsedSection } from '../hooks/useMarkdownChapter';
 import { useChapterProgress } from '../hooks/useChapterProgress';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import EditableText from '../components/EditableText';
 import EditModeIndicator from '../components/EditModeIndicator';
 import EditableMarkdown from '../components/EditableMarkdown';

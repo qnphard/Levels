@@ -19,7 +19,7 @@ import {
   borderRadius,
   ThemeColors,
 } from '../theme/colors';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import { essentialItems, getFoundationItems } from '../data/essentials';
 import EditableText from '../components/EditableText';
 import EditModeIndicator from '../components/EditModeIndicator';

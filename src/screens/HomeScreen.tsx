@@ -13,7 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { sampleMeditations } from '../data/meditations';
 import { featuredArticles } from '../data/articles';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import MeditationCard from '../components/MeditationCard';
 import ArticleCard from '../components/ArticleCard';
 import PrimaryButton from '../components/PrimaryButton';
@@ -160,6 +160,33 @@ export default function HomeScreen() {
               </LinearGradient>
             </TouchableOpacity>
           )}
+        </View>
+
+        {/* Room of Levels Entrance */}
+        <View style={styles.roomModule}>
+          <TouchableOpacity
+            style={styles.roomCard}
+            onPress={() => navigation.navigate('RoomOfLevels')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={['#1e1b4b', '#312e81']} // Deep indigo/stormy colors
+              style={styles.roomGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.roomContent}>
+                <View style={styles.roomTextSection}>
+                  <Text style={styles.roomLabel}>Portal</Text>
+                  <Text style={styles.roomTitle}>The Room of Levels</Text>
+                  <Text style={styles.roomSubtitle}>Transform dense emotions into clarity</Text>
+                </View>
+                <View style={styles.roomIconContainer}>
+                  <Ionicons name="cloud-outline" size={32} color="#FFFFFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
         </View>
         {/* Today's Practice Card */}
         {todaysPractice && (
@@ -547,6 +574,58 @@ const createStyles = (theme: ThemeColors) =>
       height: 50,
       borderRadius: 25,
       backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    roomModule: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.lg,
+    },
+    roomCard: {
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      elevation: 6,
+      shadowColor: '#1e1b4b',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 10,
+    },
+    roomGradient: {
+      padding: spacing.lg,
+    },
+    roomContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    roomTextSection: {
+      flex: 1,
+      marginRight: spacing.md,
+    },
+    roomLabel: {
+      fontSize: 10,
+      color: 'rgba(255, 255, 255, 0.9)',
+      fontWeight: typography.bold,
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+      marginBottom: 2,
+    },
+    roomTitle: {
+      fontSize: 20,
+      color: '#FFFFFF',
+      fontWeight: typography.bold,
+      marginBottom: 2,
+    },
+    roomSubtitle: {
+      fontSize: 12,
+      color: 'rgba(255, 255, 255, 0.8)',
+      fontStyle: 'italic',
+    },
+    roomIconContainer: {
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
       alignItems: 'center',
       justifyContent: 'center',
     },

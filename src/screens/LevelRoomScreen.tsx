@@ -10,13 +10,14 @@ import {
     StatusBar,
     BackHandler,
     ScrollView,
+    Easing,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { getLevelById } from '../data/levels';
 import { useThemeColors, typography, spacing, borderRadius } from '../theme/colors';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LEVEL_DOSSIER_DATA } from '../data/dossierData';
 import { RoomBackground } from '../components/RoomBackground';
@@ -25,8 +26,20 @@ import { DossierArticle, CategoryArticles } from '../types';
 
 const { width, height } = Dimensions.get('window');
 
+import { useAtmosphereDepth } from '../context/AtmosphereDepthContext';
+import BreadcrumbBar from '../components/BreadcrumbBar';
+import GlassCard from '../components/GlassCard';
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type HotspotType = 'felt-sense' | 'purpose' | 'traps' | 'exits' | 'practices';
+
+const ORBIT_RADIUS = 120;
+const DOOR_CONFIG: { type: HotspotType; label: string; angle: number; icon: keyof typeof Ionicons.glyphMap }[] = [
+    { type: 'felt-sense', label: 'Felt Sense', angle: -Math.PI / 2, icon: 'heart-outline' },
+    { type: 'purpose', label: 'Purpose', angle: 0, icon: 'compass-outline' },
+    { type: 'traps', label: 'Traps', angle: Math.PI / 2, icon: 'warning-outline' },
+    { type: 'exits', label: 'Exits', angle: Math.PI, icon: 'exit-outline' },
+];
 
 // --- Sub-Components for Depth Layers ---
 
@@ -35,56 +48,150 @@ const HubView: React.FC<{
     isActive: boolean;
     onOpenHotspot: (type: HotspotType) => void;
     opacity: Animated.Value;
-}> = ({ isActive, onOpenHotspot, opacity }) => {
+    levelId: string;
+    unlockedHotspots: HotspotType[];
+    mode: 'explore' | 'guided';
+    onToggleMode: () => void;
+    zoomLevel: Animated.Value;
+    cameraShift: Animated.ValueXY;
+}> = ({ isActive, onOpenHotspot, opacity, levelId, unlockedHotspots, mode, onToggleMode, zoomLevel, cameraShift }) => {
     const theme = useThemeColors();
+    const breatheValue = useRef(new Animated.Value(0)).current;
 
-    const renderHotspot = (type: HotspotType, icon: keyof typeof Ionicons.glyphMap, top: number, align: 'left' | 'right' | 'center', label: string) => {
-        const positionStyle: any = { top: `${top}%` };
+    // Breathing Animation for centerpiece
+    useEffect(() => {
+        Animated.loop(
+            Animated.timing(breatheValue, {
+                toValue: 1,
+                duration: 4000,
+                easing: Easing.inOut(Easing.ease),
+                useNativeDriver: true
+            })
+        ).start();
+    }, []);
 
-        if (align === 'center') {
-            positionStyle.left = '50%';
-            positionStyle.transform = [{ translateX: -30 }]; // Half of width (60)
-        } else if (align === 'left') {
-            positionStyle.left = '18%';
-        } else if (align === 'right') {
-            positionStyle.right = '18%';
-        }
+    const renderDoor = (config: typeof DOOR_CONFIG[0]) => {
+        const { type, label, angle, icon } = config;
+        const isUnlocked = mode === 'explore' || unlockedHotspots.includes(type);
+        const x = Math.cos(angle) * ORBIT_RADIUS;
+        const y = Math.sin(angle) * ORBIT_RADIUS;
 
         return (
-            <Pressable
+            <Animated.View
                 key={type}
-                onPress={() => onOpenHotspot(type)}
-                style={[styles.hotspot, positionStyle]}
+                style={[
+                    styles.orbitDoor,
+                    {
+                        left: width / 2 - 40 + x,
+                        top: height / 2 - 85 + y,
+                    }
+                ]}
             >
-                <View style={[styles.hotspotIconWrap, {
-                    backgroundColor: 'rgba(255,255,255,0.15)',
-                    borderColor: 'rgba(255,255,255,0.35)'
-                }]}>
-                    <Ionicons name={icon} size={28} color="white" />
-                </View>
-                <Text style={[styles.hotspotLabel, { color: 'white' }]}>{label}</Text>
-            </Pressable>
+                <Pressable
+                    onPress={() => isUnlocked && onOpenHotspot(type)}
+                    disabled={!isActive}
+                >
+                    {/* Glass Door with Gradient */}
+                    <LinearGradient
+                        colors={isUnlocked
+                            ? ['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)']
+                            : ['rgba(80,80,80,0.3)', 'rgba(40,40,40,0.2)']
+                        }
+                        style={styles.glassDoor}
+                    >
+                        <Ionicons
+                            name={isUnlocked ? icon : 'lock-closed'}
+                            size={26}
+                            color={isUnlocked ? 'white' : 'rgba(255,255,255,0.25)'}
+                        />
+                    </LinearGradient>
+
+                    <Text style={[
+                        styles.doorLabel,
+                        !isUnlocked && { color: 'rgba(255,255,255,0.25)' }
+                    ]}>
+                        {label}
+                    </Text>
+                </Pressable>
+            </Animated.View>
         );
     };
 
-    const zIndex = isActive ? 10 : 1;
+    // Centerpiece based on level
+    let centerIcon: keyof typeof Ionicons.glyphMap = 'help-circle-outline';
+    let centerLabel = 'Reflect';
+    const levelIdLower = levelId.toLowerCase();
+    if (levelIdLower === 'shame') { centerIcon = 'rainy-outline'; centerLabel = 'Mirror'; }
+    else if (levelIdLower === 'fear') { centerIcon = 'eye-outline'; centerLabel = 'Observer'; }
+    else if (levelIdLower === 'anger') { centerIcon = 'flame-outline'; centerLabel = 'Ember'; }
+    else if (levelIdLower === 'guilt') { centerIcon = 'water-outline'; centerLabel = 'Well'; }
+    else if (levelIdLower === 'grief') { centerIcon = 'leaf-outline'; centerLabel = 'Garden'; }
+    else if (levelIdLower === 'apathy') { centerIcon = 'snow-outline'; centerLabel = 'Frost'; }
+
+    const breatheScale = breatheValue.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [1, 1.06, 1]
+    });
+
+    // Content Opacity fades as we zoom past
+    const contentOpacity = zoomLevel.interpolate({
+        inputRange: [1, 1.5],
+        outputRange: [1, 0],
+        extrapolate: 'clamp'
+    });
 
     return (
         <Animated.View
-            style={[styles.layerContainer, { opacity, zIndex }]}
+            style={[styles.layerContainer, {
+                opacity: Animated.multiply(opacity, contentOpacity),
+                zIndex: isActive ? 10 : 1,
+                transform: [
+                    { scale: zoomLevel },
+                    { translateX: cameraShift.x },
+                    { translateY: cameraShift.y }
+                ]
+            }]}
             pointerEvents={isActive ? 'box-none' : 'none'}
         >
-            <View style={styles.hotspotsLayer}>
-                {/* Diamond/Cross Constellation Layout */}
-                {renderHotspot('exits', 'exit-outline', 22, 'center', 'Exits')}
-
-                {renderHotspot('purpose', 'shield-outline', 42, 'left', 'Purpose')}
-                {renderHotspot('felt-sense', 'body-outline', 42, 'right', 'Felt Sense')}
-
-                {renderHotspot('traps', 'warning-outline', 62, 'center', 'Traps')}
-
-                {renderHotspot('practices', 'headset-outline', 85, 'center', 'Practices')}
+            {/* Centered Centerpiece */}
+            <View style={styles.centerpieceContainer}>
+                <Animated.View style={[styles.centerOrb, { transform: [{ scale: breatheScale }] }]}>
+                    <Ionicons name={centerIcon} size={40} color="white" />
+                </Animated.View>
+                <Text style={styles.centerLabel}>{centerLabel}</Text>
             </View>
+
+            {/* Orbiting Doors */}
+            {DOOR_CONFIG.map(renderDoor)}
+
+            {/* Practice Button at Bottom - Premium */}
+            <Pressable
+                onPress={() => onOpenHotspot('practices')}
+                style={styles.practiceButton}
+                disabled={!isActive}
+            >
+                <LinearGradient
+                    colors={['rgba(139,92,246,0.5)', 'rgba(139,92,246,0.25)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.practiceGradient}
+                >
+                    <Ionicons name="headset-outline" size={22} color="white" />
+                    <Text style={styles.practiceLabel}>Enter Meditation</Text>
+                </LinearGradient>
+            </Pressable>
+
+            {/* Mode Toggle at Top Right */}
+            <Pressable onPress={onToggleMode} style={styles.modeToggle} disabled={!isActive}>
+                <Text style={styles.modeToggleText}>
+                    {mode === 'explore' ? 'Explore' : 'Guided'}
+                </Text>
+                <Ionicons
+                    name={mode === 'explore' ? 'infinite' : 'trail-sign-outline'}
+                    size={12}
+                    color="rgba(255,255,255,0.6)"
+                />
+            </Pressable>
         </Animated.View>
     );
 };
@@ -109,32 +216,35 @@ const RealmView: React.FC<{
                 justifyContent: 'center',
                 padding: spacing.xl,
                 zIndex,
-                backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.6)'
             }]}
             pointerEvents={isActive ? 'box-none' : 'none'}
         >
-            <Pressable onPress={onBack} style={styles.backButtonRelative}>
-                <Ionicons name="arrow-back" size={24} color={theme.mode === 'dark' ? "white" : theme.primary} />
-                <Text style={[styles.backText, { color: theme.mode === 'dark' ? "white" : theme.textPrimary }]}>Back to Room</Text>
-            </Pressable>
+            <GlassCard>
+                <Pressable onPress={onBack} style={styles.backButtonRelative}>
+                    <Ionicons name="arrow-back" size={24} color={theme.mode === 'dark' ? "white" : theme.primary} />
+                    <Text style={[styles.backText, { color: theme.mode === 'dark' ? "white" : theme.textPrimary }]}>Back to Room</Text>
+                </Pressable>
 
-            <Text style={[styles.realmTitle, { color: theme.mode === 'dark' ? theme.white : theme.textPrimary }]}>{data.title}</Text>
-            <Text style={[styles.realmBody, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.8)' : theme.textSecondary }]}>{data.body}</Text>
+                <Text style={[styles.realmTitle, { color: theme.mode === 'dark' ? theme.white : theme.textPrimary, marginTop: 10 }]}>{data.title || ''}</Text>
+                {data.body ? (
+                    <Text style={[styles.realmBody, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.8)' : theme.textSecondary }]}>{data.body}</Text>
+                ) : null}
 
-            <View style={styles.artifactGrid}>
-                {data.chips?.map((chip: any, i: number) => (
-                    <Pressable
-                        key={i}
-                        onPress={() => onSelectChip(chip)}
-                        style={[styles.artifactOrb, {
-                            borderColor: theme.primary,
-                            backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.8)'
-                        }]}
-                    >
-                        <Text style={[styles.artifactLabel, { color: theme.mode === 'dark' ? theme.white : theme.textPrimary }]}>{chip.label}</Text>
-                    </Pressable>
-                ))}
-            </View>
+                <View style={styles.artifactGrid}>
+                    {data.chips?.map((chip: any, i: number) => (
+                        <Pressable
+                            key={i}
+                            onPress={() => onSelectChip(chip)}
+                            style={[styles.artifactOrb, {
+                                borderColor: theme.primary,
+                                backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.8)'
+                            }]}
+                        >
+                            <Text style={[styles.artifactLabel, { color: theme.mode === 'dark' ? theme.white : theme.textPrimary }]}>{chip.label}</Text>
+                        </Pressable>
+                    ))}
+                </View>
+            </GlassCard>
         </Animated.View>
     );
 };
@@ -172,7 +282,6 @@ const InsightView: React.FC<{
                 opacity,
                 paddingHorizontal: spacing.xl,
                 zIndex,
-                backgroundColor: theme.mode === 'dark' ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.9)'
             }]}
             pointerEvents={isActive ? 'box-none' : 'none'}
         >
@@ -181,77 +290,80 @@ const InsightView: React.FC<{
                 contentContainerStyle={{ paddingTop: 80, paddingBottom: 100 }}
                 showsVerticalScrollIndicator={false}
             >
-                <Pressable onPress={onBack} style={styles.backButtonRelative}>
-                    <Ionicons name="arrow-back" size={24} color={theme.mode === 'dark' ? "white" : theme.primary} />
-                    <Text style={[styles.backText, { color: theme.mode === 'dark' ? "white" : theme.textPrimary }]}>Return</Text>
-                </Pressable>
+                <GlassCard intensity={0.7}>
+                    <Pressable onPress={onBack} style={styles.backButtonRelative}>
+                        <Ionicons name="arrow-back" size={24} color={theme.mode === 'dark' ? "white" : theme.primary} />
+                        <Text style={[styles.backText, { color: theme.mode === 'dark' ? "white" : theme.textPrimary }]}>Return</Text>
+                    </Pressable>
 
-                <Text style={[styles.insightTitle, { color: theme.primary, textAlign: 'left' }]}>{article.title}</Text>
-                <Text style={[styles.insightSpine, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.9)' : theme.textPrimary }]}>{article.spineBody}</Text>
+                    <Text style={[styles.insightTitle, { color: theme.primary, textAlign: 'left' }]}>{article.title}</Text>
+                    <Text style={[styles.insightSpine, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.9)' : theme.textPrimary }]}>{article.spineBody}</Text>
 
-                <View style={styles.chamberList}>
-                    {article.sections.map((section, i) => {
-                        const isExpanded = expandedSections.includes(i);
+                    <View style={styles.chamberList}>
+                        {article.sections.map((section, i) => {
+                            const isExpanded = expandedSections.includes(i);
 
-                        // Basic markdown-ish formatter for bolding
-                        const renderFormattedBody = (text: string) => {
-                            // First, replace literal \n strings with real newlines just in case they are in the data
-                            const processedText = text.replace(/\\n/g, '\n');
-                            const parts = processedText.split(/(\*\*.*?\*\*)/g);
-                            return parts.map((part, index) => {
-                                if (part.startsWith('**') && part.endsWith('**')) {
-                                    return (
-                                        <Text key={index} style={{ fontWeight: '800', color: theme.white }}>
-                                            {part.slice(2, -2)}
+                            // Basic markdown-ish formatter for bolding
+                            const renderFormattedBody = (text?: string) => {
+                                if (!text) return null;
+                                // First, replace literal \n strings with real newlines just in case they are in the data
+                                const processedText = text.replace(/\\n/g, '\n');
+                                const parts = processedText.split(/(\*\*.*?\*\*)/g);
+                                return parts.map((part, index) => {
+                                    if (part.startsWith('**') && part.endsWith('**')) {
+                                        return (
+                                            <Text key={index} style={{ fontWeight: '800', color: theme.white }}>
+                                                {part.slice(2, -2)}
+                                            </Text>
+                                        );
+                                    }
+                                    return part || null;
+                                }).filter(p => p !== null);
+                            };
+
+                            return (
+                                <View key={i} style={[styles.chamberCard, { borderColor: isExpanded ? theme.primary : 'rgba(255,255,255,0.1)' }]}>
+                                    <Pressable onPress={() => toggleSection(i)} style={styles.chamberHeader}>
+                                        <Text style={[styles.chamberTitle, { color: isExpanded ? theme.primary : (theme.mode === 'dark' ? theme.white : theme.textPrimary) }]}>
+                                            {section.title}
                                         </Text>
-                                    );
-                                }
-                                return part;
-                            });
-                        };
-
-                        return (
-                            <View key={i} style={[styles.chamberCard, { borderColor: isExpanded ? theme.primary : 'rgba(255,255,255,0.1)' }]}>
-                                <Pressable onPress={() => toggleSection(i)} style={styles.chamberHeader}>
-                                    <Text style={[styles.chamberTitle, { color: isExpanded ? theme.primary : (theme.mode === 'dark' ? theme.white : theme.textPrimary) }]}>
-                                        {section.title}
-                                    </Text>
-                                    <Ionicons
-                                        name={isExpanded ? "chevron-up" : "chevron-down"}
-                                        size={20}
-                                        color={isExpanded ? theme.primary : (theme.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)')}
-                                    />
-                                </Pressable>
-                                {isExpanded && (
-                                    <View style={[styles.chamberBody, { borderTopColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}>
-                                        <Text style={[styles.chamberText, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.8)' : theme.textSecondary }]}>
-                                            {renderFormattedBody(section.body)}
-                                        </Text>
-                                    </View>
-                                )}
-                            </View>
-                        );
-                    })}
-                </View>
-
-                {article.nextDoors && article.nextDoors.length > 0 && (
-                    <View style={styles.nextDoorsContainer}>
-                        <Text style={styles.nextDoorsLabel}>Go Deeper</Text>
-                        {article.nextDoors.map((door, i) => (
-                            <Pressable
-                                key={i}
-                                onPress={() => onTravel(door.targetRoom, door.hotspot as HotspotType)}
-                                style={[styles.doorButton, {
-                                    borderColor: theme.primary,
-                                    backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
-                                }]}
-                            >
-                                <Text style={[styles.doorText, { color: theme.mode === 'dark' ? theme.white : theme.textPrimary }]}>{door.label}</Text>
-                                <Ionicons name="arrow-forward" size={18} color={theme.primary} />
-                            </Pressable>
-                        ))}
+                                        <Ionicons
+                                            name={isExpanded ? "chevron-up" : "chevron-down"}
+                                            size={20}
+                                            color={isExpanded ? theme.primary : (theme.mode === 'dark' ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.3)')}
+                                        />
+                                    </Pressable>
+                                    {isExpanded && (
+                                        <View style={[styles.chamberBody, { borderTopColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}>
+                                            <Text style={[styles.chamberText, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.8)' : theme.textSecondary }]}>
+                                                {renderFormattedBody(section.body)}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
+                            );
+                        })}
                     </View>
-                )}
+
+                    {article.nextDoors && article.nextDoors.length > 0 && (
+                        <View style={styles.nextDoorsContainer}>
+                            <Text style={styles.nextDoorsLabel}>Go Deeper</Text>
+                            {article.nextDoors.map((door, i) => (
+                                <Pressable
+                                    key={i}
+                                    onPress={() => onTravel(door.targetRoom, door.hotspot as HotspotType)}
+                                    style={[styles.doorButton, {
+                                        borderColor: theme.primary,
+                                        backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'
+                                    }]}
+                                >
+                                    <Text style={[styles.doorText, { color: theme.mode === 'dark' ? theme.white : theme.textPrimary }]}>{door.label}</Text>
+                                    <Ionicons name="arrow-forward" size={18} color={theme.primary} />
+                                </Pressable>
+                            ))}
+                        </View>
+                    )}
+                </GlassCard>
             </ScrollView>
         </Animated.View>
     );
@@ -271,24 +383,77 @@ function RoomContent() {
         setDepth,
         zoomLevel,
         vignetteIntensity,
-        tintColor,
+        setRecipeByLevel,
         lightingOpacity
     } = useAtmosphere();
 
-    const { levelId } = route.params;
-    const level = useMemo(() => getLevelById(levelId), [levelId]);
+    const { pushDepth, popDepth, depthStack } = useAtmosphereDepth();
     const theme = useThemeColors();
+
+    const params = route.params || {};
+    const { levelId } = params;
+    const level = useMemo(() => getLevelById(levelId), [levelId]);
+
+    // Entry Sequence State
+    const [isEntering, setIsEntering] = useState(true);
+    const entryOpacity = useRef(new Animated.Value(1)).current;
 
     // Local Data State
     const [activeHotspot, setActiveHotspot] = useState<HotspotType | null>(null);
     const [selectedArticle, setSelectedArticle] = useState<DossierArticle | null>(null);
+    const [unlockedHotspots, setUnlockedHotspots] = useState<HotspotType[]>(['felt-sense', 'traps', 'exits', 'purpose']);
+    const [mode, setMode] = useState<'explore' | 'guided'>('guided');
 
     // Layer Opacity Animations
     const hubOpacity = useRef(new Animated.Value(1)).current;
     const realmOpacity = useRef(new Animated.Value(0)).current;
     const insightOpacity = useRef(new Animated.Value(0)).current;
 
-    // Orchestrate Transitions based on Depth
+    // Portal Zoom / Camera Shift
+    const cameraShift = useRef(new Animated.ValueXY({ x: 0, y: 0 })).current;
+
+    const handleToggleMode = () => setMode(prev => prev === 'explore' ? 'guided' : 'explore');
+
+    // SYNC DEPTH STACK
+    useEffect(() => {
+        if (level) {
+            pushDepth(level.name);
+        }
+        return () => {
+            popDepth();
+        };
+    }, [level]);
+
+    useEffect(() => {
+        if (depth === 'REALM' && activeHotspot) {
+            const label = activeHotspot.charAt(0).toUpperCase() + activeHotspot.slice(1).replace('-', ' ');
+            pushDepth(label);
+        } else if (depth === 'HUB' && depthStack.length > 1) {
+            popDepth();
+        }
+    }, [depth, activeHotspot]);
+
+    // Initialize Atmosphere
+    useEffect(() => {
+        if (levelId) {
+            setRecipeByLevel(levelId);
+        }
+
+        // Ritual Entry Sequence
+        Animated.sequence([
+            Animated.delay(500),
+            Animated.timing(entryOpacity, {
+                toValue: 0,
+                duration: 2500,
+                useNativeDriver: true
+            })
+        ]).start(() => setIsEntering(false));
+
+        setDepth('HUB');
+        setAtmosphere('neutral');
+    }, [levelId]);
+
+    // Orchestrate Transitions based on Depth (runs regardless of level)
     useEffect(() => {
         let toHub = 0, toRealm = 0, toInsight = 0;
 
@@ -312,7 +477,7 @@ function RoomContent() {
 
     }, [depth]);
 
-    // Handle Back Press
+    // Handle Back Press (runs regardless of level)
     useEffect(() => {
         const onBack = () => {
             if (depth === 'INSIGHT') {
@@ -330,9 +495,9 @@ function RoomContent() {
 
         const subscription = BackHandler.addEventListener('hardwareBackPress', onBack);
         return () => subscription.remove();
-    }, [depth, activeHotspot, selectedArticle, navigation]);
+    }, [depth, navigation]);
 
-    // Force animation state sync if somehow desynced
+    // Force animation state sync if somehow desynced (runs regardless of level)
     useEffect(() => {
         if (depth === 'HUB') {
             hubOpacity.setValue(1);
@@ -341,11 +506,32 @@ function RoomContent() {
         }
     }, [depth]);
 
+    // Early return AFTER all hooks are declared
+    if (!level) {
+        return (
+            <View style={{ flex: 1, backgroundColor: 'black', alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ color: 'white' }}>Loading...</Text>
+            </View>
+        );
+    }
 
-    if (!level) return null;
 
     // --- Actions ---
     const handleOpenHotspot = (type: HotspotType) => {
+        // Find hotspot config for focal zoom
+        const config = DOOR_CONFIG.find((d: any) => d.type === type);
+        if (config) {
+            const tx = -Math.cos(config.angle) * ORBIT_RADIUS * 1.5;
+            const ty = -Math.sin(config.angle) * ORBIT_RADIUS * 1.5;
+
+            Animated.timing(cameraShift, {
+                toValue: { x: tx, y: ty },
+                duration: 1200,
+                easing: Easing.bezier(0.25, 0.1, 0.25, 1),
+                useNativeDriver: true
+            }).start();
+        }
+
         const dossier = LEVEL_DOSSIER_DATA[level.id.toLowerCase()];
 
         // Custom flow: Felt Sense and Purpose go directly to Insight if they are articles
@@ -356,6 +542,11 @@ function RoomContent() {
                 setSelectedArticle(item as DossierArticle);
                 setDepth('INSIGHT');
                 setAtmosphere(type as AtmosphereState);
+
+                // Unlock progression even on direct insight travel
+                if (!unlockedHotspots.includes(type)) {
+                    setUnlockedHotspots(prev => [...prev, type]);
+                }
                 return;
             }
         }
@@ -363,6 +554,11 @@ function RoomContent() {
         setActiveHotspot(type);
         setAtmosphere(type as AtmosphereState);
         setDepth('REALM');
+
+        // Unlock progression
+        if (!unlockedHotspots.includes(type)) {
+            setUnlockedHotspots(prev => [...prev, type]);
+        }
     };
 
     const handleSelectArticle = (article: DossierArticle) => {
@@ -393,39 +589,28 @@ function RoomContent() {
 
     const handleTravel = (target: string, hotspot?: HotspotType) => {
         if (target === 'HUB') {
-            // Immediate state shifts
             setDepth('HUB');
             setAtmosphere('neutral');
             setActiveHotspot(null);
-
-            // If we are NOT going to a specific hotspot, clear the article after fade
             if (!hotspot) {
-                setTimeout(() => {
-                    setSelectedArticle(null);
-                }, 800);
+                setTimeout(() => setSelectedArticle(null), 800);
             } else {
-                // If we ARE going to a hotspot, clear current article IMMEDIATELY 
-                // to avoid the clearing timeout fighting with the new content
                 setSelectedArticle(null);
-
-                // Then open the new hotspot after a significant delay (let zoom out finish)
-                setTimeout(() => {
-                    handleOpenHotspot(hotspot);
-                }, 1000);
+                setTimeout(() => handleOpenHotspot(hotspot), 1000);
             }
         }
     };
 
-    // --- Data Helpers ---
     const getRealmData = () => {
         if (!activeHotspot) return null;
         const dossier = LEVEL_DOSSIER_DATA[level.id.toLowerCase()];
         if (!dossier) return null;
 
         switch (activeHotspot) {
-            case 'purpose': return { ...dossier.purpose, body: 'The deep "why" of this state.' };
-            case 'traps': return { title: 'The Ego Trap', body: dossier.traps.body, chips: dossier.traps.chips };
-            case 'exits': return { title: 'The Way Through', body: dossier.exits.body, chips: dossier.exits.chips };
+            case 'felt-sense': return dossier.feltSense || null;
+            case 'purpose': return dossier.purpose || null;
+            case 'traps': return { title: 'The Ego Trap', body: dossier.traps?.body || '', chips: dossier.traps?.chips || [] };
+            case 'exits': return { title: 'The Way Through', body: dossier.exits?.body || '', chips: dossier.exits?.chips || [] };
             case 'practices': return {
                 title: 'Practices', body: 'Direct somatic exercises.', chips: [
                     { label: 'Body Scan', title: 'Body Scan', spineBody: 'A simple scan.', sections: [{ title: 'Core', body: 'Scan.', importance: 'core', defaultExpanded: true }] }
@@ -434,56 +619,52 @@ function RoomContent() {
             default: return null;
         }
     };
-    const realmData = getRealmData();
 
+    const handleTapBackground = () => {
+        // Subtle light ripple
+        Animated.sequence([
+            Animated.timing(lightingOpacity, { toValue: 0.6, duration: 150, useNativeDriver: true }),
+            Animated.timing(lightingOpacity, { toValue: 0.4, duration: 600, useNativeDriver: true })
+        ]).start();
+    };
+
+    const realmData = getRealmData();
 
     return (
         <View style={styles.container}>
             <StatusBar hidden />
 
-            {/* Background with Zoom */}
-            <View style={StyleSheet.absoluteFill}>
-                {level?.layers ? (
-                    <RoomBackground layers={level.layers} zoomLevel={zoomLevel} />
-                ) : (
-                    <RoomBackground
-                        layers={level.level >= 200 ? {
-                            far: require('../assets/images/default/light/far.png'),
-                            mid: require('../assets/images/default/light/mid.png'),
-                            fg: undefined as any,
-                        } : {
-                            far: require('../assets/images/default/far.png'),
-                            mid: require('../assets/images/default/mid.png'),
-                            fg: undefined as any,
-                        }}
-                        zoomLevel={zoomLevel}
-                    />
-                )}
-            </View>
+            {/* Background with Ripple Support */}
+            <Pressable onPress={handleTapBackground} style={StyleSheet.absoluteFill}>
+                <RoomBackground
+                    layers={{
+                        far: require('../assets/images/default/light/far.png'),
+                        mid: require('../assets/images/default/light/mid.png'),
+                    }}
+                    zoomLevel={zoomLevel}
+                    cameraShift={cameraShift}
+                />
+            </Pressable>
 
             {/* Atmosphere Effects */}
-            <Animated.View style={[StyleSheet.absoluteFill, {
-                backgroundColor: '#000',
-                opacity: vignetteIntensity
-            }]} pointerEvents="none" />
+            <Animated.View
+                style={[StyleSheet.absoluteFill, { backgroundColor: '#000', opacity: vignetteIntensity }]}
+                pointerEvents="none"
+            />
 
-            {/* Programmatic Atmosphere Overlay for levels without FG */}
-            {!level?.layers?.fg && (
-                <Animated.View style={[StyleSheet.absoluteFill, { opacity: Animated.multiply(lightingOpacity, 0.4) }]} pointerEvents="none">
-                    <LinearGradient
-                        colors={[level.color + '22', 'transparent']}
-                        style={StyleSheet.absoluteFill}
-                    />
-                </Animated.View>
-            )}
-
-            {/* 3 Layers Stacked */}
             <HubView
                 isActive={depth === 'HUB'}
                 onOpenHotspot={handleOpenHotspot}
                 opacity={hubOpacity}
+                levelId={level.id}
+                unlockedHotspots={unlockedHotspots}
+                mode={mode}
+                onToggleMode={handleToggleMode}
+                zoomLevel={zoomLevel}
+                cameraShift={cameraShift}
             />
 
+            {/* Realm Layer */}
             <RealmView
                 isActive={depth === 'REALM'}
                 data={realmData}
@@ -492,6 +673,7 @@ function RoomContent() {
                 onBack={handleBack}
             />
 
+            {/* Insight Layer */}
             {selectedArticle && (
                 <InsightView
                     isActive={depth === 'INSIGHT'}
@@ -502,12 +684,20 @@ function RoomContent() {
                 />
             )}
 
-            {/* Close Button (Only visible in Hub) */}
-            {depth === 'HUB' && (
-                <Pressable onPress={() => navigation.goBack()} style={styles.closeBtn}>
-                    <Ionicons name="close" size={28} color="white" />
-                </Pressable>
+            {/* Ritual Entry Overlay */}
+            {isEntering && (
+                <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'black', opacity: entryOpacity, zIndex: 1000, alignItems: 'center', justifyContent: 'center' }]}>
+                    <Animated.View style={{ opacity: entryOpacity.interpolate({ inputRange: [0.5, 1], outputRange: [0, 1] }) }}>
+                        <Text style={[styles.ritualTitle, { color: 'white' }]}>{level.name}</Text>
+                        <Text style={styles.ritualSubtitle}>Prepare to enter the space...</Text>
+                    </Animated.View>
+                </Animated.View>
             )}
+
+            {/* Close Button */}
+            <Pressable onPress={() => navigation.goBack()} style={styles.closeBtn}>
+                <Ionicons name="close" size={28} color="white" />
+            </Pressable>
         </View>
     );
 }
@@ -558,4 +748,155 @@ const styles = StyleSheet.create({
     closeBtn: { position: 'absolute', top: 50, left: 20, zIndex: 100 },
     backButtonRelative: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
     backText: { color: 'white', marginLeft: spacing.xs, fontWeight: typography.bold },
+
+    // Orbit & Spatial Styles
+    orbitNode: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+    glyphDoor: { alignItems: 'center', gap: 8 },
+    glyphCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.3)',
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    glyphLabel: { color: 'white', fontSize: 10, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
+
+    centerpiece: { alignItems: 'center', justifyContent: 'center' },
+    centerOrb: {
+        width: 100,
+        height: 100,
+        borderRadius: 60,
+        borderWidth: 2,
+        borderColor: 'rgba(255,255,255,0.35)',
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: '#fff',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.4,
+        shadowRadius: 25,
+        elevation: 8,
+    },
+    centerLabel: {
+        color: 'white',
+        fontSize: 16,
+        fontWeight: '300',
+        marginTop: 16,
+        letterSpacing: 6,
+        textTransform: 'uppercase',
+        textShadowColor: 'rgba(0,0,0,0.6)',
+        textShadowRadius: 4,
+    },
+
+    // Centered Centerpiece Container
+    centerpieceContainer: {
+        position: 'absolute',
+        left: width / 2 - 60,
+        top: height / 2 - 140,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+
+    // Orbital Door - Premium Glassmorphism
+    orbitDoor: {
+        position: 'absolute',
+        alignItems: 'center',
+        width: 80,
+    },
+    glassDoor: {
+        width: 56,
+        height: 56,
+        borderRadius: 28,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.25)',
+        shadowColor: '#fff',
+        shadowOffset: { width: 0, height: 0 },
+        shadowOpacity: 0.15,
+        shadowRadius: 12,
+        elevation: 4,
+    },
+    doorLabel: {
+        color: 'rgba(255,255,255,0.85)',
+        fontSize: 11,
+        fontWeight: '600',
+        textTransform: 'uppercase',
+        letterSpacing: 1.5,
+        marginTop: 10,
+        textAlign: 'center',
+        textShadowColor: 'rgba(0,0,0,0.8)',
+        textShadowRadius: 4,
+    },
+
+    // Practice Button - Premium
+    practiceButton: {
+        position: 'absolute',
+        bottom: 100,
+        left: width / 2 - 100,
+        overflow: 'hidden',
+        borderRadius: 30,
+    },
+    practiceGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        paddingVertical: 16,
+        paddingHorizontal: 28,
+        borderRadius: 30,
+        borderWidth: 1,
+        borderColor: 'rgba(139,92,246,0.4)',
+    },
+
+    practiceDoor: {
+        position: 'absolute',
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        borderRadius: 30,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    practiceLabel: { color: 'white', fontWeight: '600', letterSpacing: 1, fontSize: 14 },
+
+    // Ritual Entry
+    ritualTitle: { fontSize: 42, fontWeight: '800', textAlign: 'center', letterSpacing: 8, textTransform: 'uppercase', marginBottom: 10 },
+    ritualSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center', letterSpacing: 2, fontWeight: '300' },
+
+    // Whispers
+    whisperBubble: {
+        position: 'absolute',
+        top: -60,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        width: 200,
+        alignItems: 'center',
+    },
+    whisperText: { color: 'white', fontSize: 12, fontStyle: 'italic', textAlign: 'center' },
+
+    modeToggle: {
+        position: 'absolute',
+        top: 60,
+        right: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    modeToggleText: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
 });

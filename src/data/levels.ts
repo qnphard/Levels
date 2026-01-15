@@ -196,7 +196,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradientDark: ['#4B2A00', '#9A5B0F'] as const,
     glowDark: '#FB923C',
     feltSense: "Grasping, craving, 'never enough'.",
-    zone: 'Stuckness',
+    zone: 'Heavy Weather',
   },
   {
     id: 'anger',
@@ -226,7 +226,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradientDark: ['#4C1F1F', '#8B2C2C'] as const,
     glowDark: '#F87171',
     feltSense: "Heat, frustration, 'not fair'.",
-    zone: 'Stuckness',
+    zone: 'Heavy Weather',
   },
   {
     id: 'pride',
@@ -256,7 +256,7 @@ export const consciousnessLevels: ConsciousnessLevel[] = [
     gradientDark: ['#2F2244', '#5B4A7E'] as const,
     glowDark: '#A78BFA',
     feltSense: 'Defensive, superior, brittle image.',
-    zone: 'Stuckness',
+    zone: 'Heavy Weather',
   },
 
   // EMPOWERMENT CATEGORY (200-399 - Power, not force)

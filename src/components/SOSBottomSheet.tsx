@@ -22,7 +22,7 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import { useThemeColors, spacing, typography, borderRadius, ThemeColors } from '../theme/colors';
 import { mediumTap, selectionChange } from '../utils/haptics';
 

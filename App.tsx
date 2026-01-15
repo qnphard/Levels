@@ -12,6 +12,7 @@ import { ThemeProvider, useThemeColors, useThemeMode } from './src/theme/colors'
 import { loadSkia } from './src/utils/skiaLoader';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CelebrationProvider from './src/components/CelebrationProvider';
+import { AtmosphereOverlay } from './src/components/AtmosphereOverlay';
 
 function AppContent() {
   const theme = useThemeColors();
@@ -28,23 +29,11 @@ function AppContent() {
 
   return (
     <View style={styles.container}>
-      <LinearGradient
-        colors={theme.appBackgroundGradient}
-        style={StyleSheet.absoluteFillObject}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        pointerEvents="none"
-      />
-      <View
-        pointerEvents="none"
-        style={[
-          StyleSheet.absoluteFillObject,
-          { backgroundColor: theme.canvasOverlay },
-        ]}
-      />
-      <CelebrationProvider>
-        <AppNavigator />
-      </CelebrationProvider>
+      <AtmosphereOverlay>
+        <CelebrationProvider>
+          <AppNavigator />
+        </CelebrationProvider>
+      </AtmosphereOverlay>
       <TutorialPopup visible={showTutorial} onDismiss={dismissTutorial} />
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
     </View>

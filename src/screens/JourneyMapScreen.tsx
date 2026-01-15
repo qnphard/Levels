@@ -26,7 +26,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { consciousnessLevels } from '../data/levels';
 import { ConsciousnessLevel } from '../types';
 import { Zone } from '../store/onboardingStore';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import {
   useThemeColors,
   typography,
@@ -61,7 +61,6 @@ const CARD_HEIGHT = Platform.OS === 'android' ? 320 : 300; // Increased height t
 
 const zoneIcons: Record<string, keyof typeof Ionicons.glyphMap> = {
   'Heavy Weather': 'cloud-outline',
-  'Stuckness': 'thunderstorm-outline',
   'Stabilization': 'sunny-outline',
   'Openness': 'infinite-outline',
 };
@@ -512,7 +511,7 @@ export default function JourneyMapScreen() {
           </LinearGradient>
         </Pressable>
 
-        {expanded && (
+        {expanded && zone !== 'Heavy Weather' && (
           <View style={styles.levelsGrid}>
             {levels.map((level, index) =>
               renderLevelCard(level, index)

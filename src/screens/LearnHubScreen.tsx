@@ -23,7 +23,7 @@ import { feelingsChapters, getChaptersByCategory } from '../data/feelingsChapter
 import { FeelingChapterCategory } from '../types';
 import ChapterCard from '../components/ChapterCard';
 import { useChapterProgress } from '../hooks/useChapterProgress';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import RelatedNextCard from '../components/RelatedNextCard';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'LearnHub'>;

@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ViewStyle } from 'react-nativ
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Article } from '../types';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import {
   useThemeColors,
   spacing,
@@ -35,14 +35,14 @@ export default function ArticleCard({ article, onPress, style }: ArticleCardProp
       navigation.navigate('Chapter', { chapterId });
       return;
     }
-    
+
     // Handle screen:// URLs for navigation to specific screens
     if (article.url && article.url.startsWith('screen://')) {
       const screenName = article.url.replace('screen://', '') as keyof RootStackParamList;
       navigation.navigate(screenName as never);
       return;
     }
-    
+
     if (onPress) {
       onPress(article);
     }

@@ -7,26 +7,29 @@ interface RoomBackgroundProps {
     layers: {
         far: ImageSourcePropType;
         mid: ImageSourcePropType;
-        fg: ImageSourcePropType;
+        fg?: ImageSourcePropType;
     };
     zoomLevel?: Animated.Value;
+    cameraShift?: Animated.ValueXY;
+    scrollOffset?: Animated.Value; // Support driving parallax from scroll
 }
 
-export const RoomBackground: React.FC<RoomBackgroundProps> = ({ layers, zoomLevel }) => {
+export const RoomBackground: React.FC<RoomBackgroundProps> = ({ layers, zoomLevel, cameraShift, scrollOffset }) => {
     // Parallax Animated Values
     const panX = useRef(new Animated.Value(0)).current;
 
     // Default zoom if not provided (fallback to 1.0)
     const activeZoom = zoomLevel || useRef(new Animated.Value(1.0)).current;
 
+    // Driven by either manual pan or external scroll
+    const driveValue = scrollOffset || panX;
+
     const panResponder = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gestureState) => {
-                // Only capture horizontal drags
-                return Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
+                return !scrollOffset && Math.abs(gestureState.dx) > Math.abs(gestureState.dy);
             },
             onPanResponderMove: (_, gestureState) => {
-                // Clamp the movement to avoid seeing edges
                 const sensitivity = 0.5;
                 panX.setValue(gestureState.dx * sensitivity);
             },
@@ -41,61 +44,86 @@ export const RoomBackground: React.FC<RoomBackgroundProps> = ({ layers, zoomLeve
         })
     ).current;
 
-    // Base Scale (1.1 to cover edges) * Zoom Level
-    const finalScale = Animated.multiply(activeZoom, 1.1);
+    // Base Scale (1.2 to cover edges during pan) * Zoom Level
+    const finalScale = Animated.multiply(activeZoom, 1.2);
 
-    // Interpolations for Parallax Depth
-    const farTranslate = panX.interpolate({
-        inputRange: [-width, width],
-        outputRange: [10, -10],
+    const shiftX = cameraShift?.x || new Animated.Value(0);
+    const shiftY = cameraShift?.y || new Animated.Value(0);
+
+    // Dynamic Interpolations for Deep Parallax
+    const farTranslate = driveValue.interpolate({
+        inputRange: [-width, 0, width],
+        outputRange: [15, 0, -15],
         extrapolate: 'clamp'
     });
 
-    const midTranslate = panX.interpolate({
-        inputRange: [-width, width],
-        outputRange: [25, -25],
+    const midTranslate = driveValue.interpolate({
+        inputRange: [-width, 0, width],
+        outputRange: [40, 0, -40],
         extrapolate: 'clamp'
     });
 
-    const fgTranslate = panX.interpolate({
-        inputRange: [-width, width],
-        outputRange: [40, -40],
+    const fgTranslate = driveValue.interpolate({
+        inputRange: [-width, 0, width],
+        outputRange: [70, 0, -70],
         extrapolate: 'clamp'
     });
 
     return (
         <View style={styles.container} {...panResponder.panHandlers}>
-            {/* Far Layer */}
+            {/* 1. FAR LAYER (Deep spatial texture) */}
             <Animated.Image
                 source={layers.far}
                 style={[
                     styles.layer,
-                    { transform: [{ translateX: farTranslate }, { scale: finalScale }] }
+                    {
+                        transform: [
+                            { scale: finalScale },
+                            { translateX: farTranslate },
+                            { translateX: Animated.multiply(shiftX, 0.4) },
+                            { translateY: Animated.multiply(shiftY, 0.4) }
+                        ]
+                    }
                 ]}
                 resizeMode="cover"
             />
 
-            {/* Mid Layer */}
+            {/* 2. MID LAYER (Fog, dust, drifting elements) */}
             <Animated.Image
                 source={layers.mid}
                 style={[
                     styles.layer,
-                    { transform: [{ translateX: midTranslate }, { scale: finalScale }] }
+                    {
+                        transform: [
+                            { scale: finalScale },
+                            { translateX: midTranslate },
+                            { translateX: Animated.multiply(shiftX, 0.7) },
+                            { translateY: Animated.multiply(shiftY, 0.7) }
+                        ],
+                        opacity: 0.8 // Allow far to peek through
+                    }
                 ]}
                 resizeMode="cover"
             />
 
-            {/* Foreground Layer */}
-            {layers.fg && (
+            {/* 3. FOREGROUND LAYER (Floating particles, close vignettes) */}
+            {layers.fg ? (
                 <Animated.Image
                     source={layers.fg}
                     style={[
                         styles.layer,
-                        { transform: [{ translateX: fgTranslate }, { scale: finalScale }] }
+                        {
+                            transform: [
+                                { scale: Animated.multiply(finalScale, 1.1) },
+                                { translateX: fgTranslate },
+                                { translateX: shiftX },
+                                { translateY: shiftY }
+                            ]
+                        }
                     ]}
                     resizeMode="cover"
                 />
-            )}
+            ) : null}
         </View>
     );
 };

@@ -91,12 +91,25 @@ jobs:
               -dname "CN=Android Debug,O=Android,C=US"
           fi
 
+      - name: Disable PNG crunching to avoid AAPT errors
+        run: |
+          # Add aaptOptions to disable PNG crunching for large assets
+          if [ -f "android/app/build.gradle" ]; then
+            # Check if aaptOptions already exists
+            if ! grep -q "aaptOptions" android/app/build.gradle; then
+              # Insert aaptOptions into the android block
+              sed -i '/android {/a\    aaptOptions {\n        cruncherEnabled = false\n    }' android/app/build.gradle
+            fi
+          fi
+          echo "=== Modified build.gradle ==="
+          head -50 android/app/build.gradle
+
       - name: Build Universal APK
         run: |
           cd android
           ./gradlew clean
-          # Build universal APK (includes all architectures)
-          ./gradlew assembleRelease -x lint -x test
+          # Build universal APK with PNG crunching disabled
+          ./gradlew assembleRelease -x lint -x test --no-daemon
           # Also try to build bundle and convert to universal APK if needed
         env:
           ANDROID_HOME: ${{ env.ANDROID_HOME }}

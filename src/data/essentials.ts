@@ -3,7 +3,7 @@ export interface EssentialItem {
   title: string;
   description: string;
   route: {
-    screen: 'Chapter' | 'LearnHub' | 'WhatYouReallyAre' | 'Tension' | 'Mantras' | 'NaturalHappiness' | 'PowerVsForce' | 'LevelsOfTruth' | 'Intention' | 'MusicAsTool' | 'FatigueVsEnergy' | 'FulfillmentVsSatisfaction' | 'PositiveReprogramming' | 'Effort' | 'ShadowWork' | 'NonReactivity' | 'Relaxing' | 'Knowledge' | 'Addiction' | 'CommonTraps' | 'LossAndAbandonment';
+    screen: 'Chapter' | 'LearnHub' | 'WhatYouReallyAre' | 'Tension' | 'Mantras' | 'NaturalHappiness' | 'PowerVsForce' | 'LevelsOfTruth' | 'Intention' | 'MusicAsTool' | 'FatigueVsEnergy' | 'FulfillmentVsSatisfaction' | 'PositiveReprogramming' | 'Effort' | 'ShadowWork' | 'NonReactivity' | 'Relaxing' | 'Knowledge' | 'Addiction' | 'CommonTraps' | 'LossAndAbandonment' | 'RoomOfLevels';
     params?: { chapterId?: string; tab?: string };
   };
   icon?: keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
@@ -262,5 +262,20 @@ export const essentialItems: EssentialItem[] = [
     },
     icon: 'heart-dislike-outline',
     related: ['feelings-explained', 'letting-go', 'natural-happiness'],
+  },
+  {
+    id: 'room-of-levels',
+    title: 'The Room of Levels',
+    description: 'A dedicated space for the densest emotions (Shame, Guilt, Apathy, Grief).',
+    route: {
+      screen: 'RoomOfLevels',
+    },
+    icon: 'cloud-outline',
+    related: ['feelings-explained', 'shadow-work', 'letting-go'],
+    takeaways: [
+      'Transmuting dense energy into power',
+      'The relationship between lower levels and your worth',
+      'Direct navigation to localized healing spaces',
+    ],
   },
 ];
