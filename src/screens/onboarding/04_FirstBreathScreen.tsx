@@ -228,7 +228,7 @@ const FirstBreathScreen = () => {
             { scale: circleScale.value },
             { translateX: translateX.value },
             { translateY: translateY.value }
-        ],
+        ] as any,
     }));
 
     if (!selectedPractice) {

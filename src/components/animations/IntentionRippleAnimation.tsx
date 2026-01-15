@@ -81,7 +81,6 @@ export default function IntentionRippleAnimation({ autoPlay = true }: { autoPlay
             cx={CENTER_X}
             cy={CENTER_Y}
             r={w.interpolate({ inputRange: [0, 1], outputRange: [10, 140] })}
-            fill="none"
             stroke="url(#rippleGrad)"
             strokeWidth={w.interpolate({ inputRange: [0, 1], outputRange: [2, 0] })}
             fillOpacity={w.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.4, 0.1, 0] })}

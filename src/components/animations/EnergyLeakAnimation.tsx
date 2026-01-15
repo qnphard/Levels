@@ -124,9 +124,9 @@ export default function EnergyLeakAnimation({ autoPlay = true }: { autoPlay?: bo
         <Defs>
           <LinearGradient id="glassGrad" x1="0%" y1="0%" x2="100%" y2="0%">
             <Stop offset="0%" stopColor="#374151" stopOpacity="0.4" />
-            <Stop offset="20%" stopColor="#9CA3AF" stopOpacity="0.1" /> /* Highlight */
+            <Stop offset="20%" stopColor="#9CA3AF" stopOpacity="0.1" />
             <Stop offset="50%" stopColor="#374151" stopOpacity="0.05" />
-            <Stop offset="80%" stopColor="#9CA3AF" stopOpacity="0.1" /> /* Highlight */
+            <Stop offset="80%" stopColor="#9CA3AF" stopOpacity="0.1" />
             <Stop offset="100%" stopColor="#374151" stopOpacity="0.4" />
           </LinearGradient>
 

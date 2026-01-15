@@ -46,7 +46,7 @@ export default function DraggableCard({
 
   const startLongPress = useCallback(() => {
     if (!enabled) return;
-    
+
     longPressTimer.current = setTimeout(() => {
       setIsLongPressing(true);
       setIsDragging(true);
@@ -97,13 +97,13 @@ export default function DraggableCard({
         hasMoved.current = false;
         startLongPress();
         pan.setOffset({
-          x: pan.x._value,
-          y: pan.y._value,
+          x: (pan.x as any)._value,
+          y: (pan.y as any)._value,
         });
       },
       onPanResponderMove: (evt, gestureState) => {
         if (!enabled) return;
-        
+
         if (isDragging) {
           // We're dragging
           hasMoved.current = true;
@@ -111,12 +111,12 @@ export default function DraggableCard({
             x: gestureState.dx,
             y: gestureState.dy,
           });
-          
+
           // Calculate which index we're over based on vertical movement
           // Approximate card height with spacing
           const cardHeight = 140; // Card height + margin
           const newIndex = Math.max(0, Math.round(gestureState.dy / cardHeight) + index);
-          
+
           if (newIndex !== currentIndex.current) {
             currentIndex.current = newIndex;
             if (onPositionChange) {
@@ -130,14 +130,14 @@ export default function DraggableCard({
       },
       onPanResponderRelease: (evt, gestureState) => {
         cancelLongPress();
-        
+
         if (isDraggingRef.current && hasMoved.current) {
           const finalIndex = currentIndex.current;
-          
+
           if (onDragEnd && finalIndex !== index) {
             onDragEnd(index, finalIndex);
           }
-          
+
           pan.flattenOffset();
           resetPosition();
         } else {

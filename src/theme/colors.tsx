@@ -473,4 +473,5 @@ export const borderRadius = {
   xxl: 32,
   roundedChip: 24,
   round: 999,
+  full: 999,
 };

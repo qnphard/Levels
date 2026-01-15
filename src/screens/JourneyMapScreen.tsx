@@ -443,7 +443,13 @@ export default function JourneyMapScreen() {
     return (
       <View key={zone} style={styles.categorySection}>
         <Pressable
-          onPress={() => toggleSection(zone)}
+          onPress={() => {
+            if (zone === 'Heavy Weather') {
+              navigation.navigate('RoomOfLevels');
+            } else {
+              toggleSection(zone);
+            }
+          }}
           style={({ pressed }) => [
             styles.categoryHero,
             pressed && styles.categoryHeroPressed,
@@ -497,7 +503,7 @@ export default function JourneyMapScreen() {
               </View>
               <View style={styles.categoryToggle}>
                 <Ionicons
-                  name={expanded ? 'chevron-up' : 'chevron-down'}
+                  name={zone === 'Heavy Weather' ? 'arrow-forward' : (expanded ? 'chevron-up' : 'chevron-down')}
                   size={20}
                   color={theme.textPrimary}
                 />

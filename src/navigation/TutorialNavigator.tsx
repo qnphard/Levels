@@ -24,6 +24,7 @@ const Stack = createNativeStackNavigator<TutorialStackParamList>();
 const TutorialNavigator = () => {
     return (
         <Stack.Navigator
+            id={undefined}
             screenOptions={{
                 headerShown: false,
                 animation: 'slide_from_right',

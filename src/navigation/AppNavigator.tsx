@@ -80,6 +80,7 @@ export type RootStackParamList = {
   MeditationGenerator: undefined;
   Profile: undefined;
   LevelRoom: { levelId: string };
+  RoomOfLevels: undefined;
 };
 
 export type MainTabParamList = {
@@ -97,6 +98,7 @@ function MainTabs() {
 
   return (
     <Tab.Navigator
+      id={undefined}
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = 'home';
@@ -181,7 +183,7 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <GenerationStatusToast />
-      <Stack.Navigator>
+      <Stack.Navigator id={undefined}>
         {shouldShowOnboarding && (
           <Stack.Screen
             name="Onboarding"
@@ -349,6 +351,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="MeditationGenerator"
           component={MeditationGeneratorScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RoomOfLevels"
+          component={LevelRoomScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

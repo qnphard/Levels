@@ -9,6 +9,7 @@ import Svg, {
   G,
   Rect,
   Circle,
+  Ellipse,
   ClipPath
 } from 'react-native-svg';
 
@@ -19,6 +20,7 @@ const CENTER_Y = ANIMATION_SIZE / 2;
 const AnimatedPath = Animated.createAnimatedComponent(Path);
 const AnimatedG = Animated.createAnimatedComponent(G);
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
 const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 // Premium Palette
@@ -176,13 +178,13 @@ export default function FearGriefSpillAnimation({ autoPlay = true }: { autoPlay?
         </AnimatedG>
 
         {/* 2. The Spill Pool (Floor) */}
-        <AnimatedCircle
+        <AnimatedEllipse
           cx={CENTER_X + 40} // Spills to the right side
           cy={270}
-          rx={poolRadius}
-          ry={Animated.multiply(poolRadius, 0.3)} // Flattened perspective
+          rx={poolRadius as any}
+          ry={Animated.multiply(poolRadius, 0.3) as any} // Flattened perspective
           fill="url(#spillGrad)"
-          opacity={poolOpacity}
+          opacity={poolOpacity as any}
         />
 
         {/* 3. Falling Stream (The Spill) */}

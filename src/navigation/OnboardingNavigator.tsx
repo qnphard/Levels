@@ -17,6 +17,7 @@ const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 export const OnboardingNavigator = () => {
     return (
         <Stack.Navigator
+            id={undefined}
             screenOptions={{
                 headerShown: false,
                 gestureEnabled: false, // Force flow completion
