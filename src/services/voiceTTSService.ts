@@ -112,8 +112,8 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
         throw new Error('No event ID returned from API');
     }
 
-    // Poll for result with timeout (5 minutes max for CPU generation)
-    const maxWaitTime = 5 * 60 * 1000; // 5 minutes (XTTS is faster)
+    // Poll for result with timeout (10 minutes max for CPU generation)
+    const maxWaitTime = 10 * 60 * 1000;
     const pollInterval = 3000; // 3 seconds
     const startTime = Date.now();
 
@@ -123,6 +123,12 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
             const resultText = await resultResponse.text();
 
             // Parse SSE response to get audio URL
+            if (!resultText) {
+                // Connection closed without data, wait and retry
+                await new Promise(resolve => setTimeout(resolve, pollInterval));
+                continue;
+            }
+
             const lines = resultText.split('\n');
             let lastError = '';
 
@@ -131,8 +137,9 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
 
                 // Check for heartbeat (still processing)
                 if (line.startsWith('event: heartbeat')) {
-                    // Still processing, continue polling
-                    break;
+                    // Gradio sends heartbeats to keep connection alive.
+                    // If we see one, the server is still working.
+                    continue;
                 }
 
                 if (line.startsWith('event: error')) {
@@ -200,7 +207,7 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
             if (fetchError.message.includes('Gradio error') || fetchError.message.includes('API Error')) {
                 throw fetchError;
             }
-            // Network error, retry
+            // Network error or timeout, retry
             console.warn('Polling error, retrying:', fetchError.message);
         }
 
@@ -208,7 +215,7 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
         await new Promise(resolve => setTimeout(resolve, pollInterval));
     }
 
-    throw new Error('Generation timed out. XTTS-v2 on CPU can take 30-60 seconds. Please try again.');
+    throw new Error('Generation timed out after 10 minutes. XTTS-v2 on free CPU hardware is very slow. Try a shorter script or upgraded hardware.');
 }
 
 /**
