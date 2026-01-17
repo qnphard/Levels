@@ -29,13 +29,19 @@ import {
     useDerivedValue,
     withRepeat,
     withTiming,
+    withDecay,
+    withSpring,
     Easing,
     SharedValue,
     useAnimatedStyle,
     runOnJS
 } from 'react-native-reanimated';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 import Animated from 'react-native-reanimated';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { LEVELS, TOTAL_STEPS, LevelNode } from '../levelGraph';
 import { SpiralConfig, DEFAULT_SPIRAL, spiralPose } from '../mathSpiral';
@@ -393,8 +399,8 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
     const paint = useMemo(() => {
         const p = Skia.Paint();
-        p.setColor(Skia.Color('black'));
-        p.setStrokeWidth(5);
+        p.setColor(Skia.Color('white'));
+        p.setStrokeWidth(6); // Slightly thicker for white-on-dark
         p.setStrokeCap(StrokeCap.Round);
         p.setStrokeJoin(StrokeJoin.Round);
         p.setStyle(PaintStyle.Stroke);
@@ -414,100 +420,130 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
             {/* Head */}
             <Group transform={headTransform}>
-                <Circle cx={0} cy={0} r={11} color="black" />
+                <Circle cx={0} cy={0} r={11} color="white" />
             </Group>
         </Group>
     );
 };
 
 export const SkiaSpiralImpl = () => {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const scrollPos = useSharedValue(0);
     const isMoving = useSharedValue(false);
+    const scrollStart = useSharedValue(0);
+
+    // Vertical pan gesture for scrolling through levels
+    const panGesture = Gesture.Pan()
+        .onStart(() => {
+            scrollStart.value = scrollPos.value;
+        })
+        .onUpdate((e) => {
+            // Negative because dragging down should go to lower indices (ascend tower)
+            const sensitivity = 0.008; // Adjust for scroll speed
+            scrollPos.value = scrollStart.value - e.translationY * sensitivity;
+            // Clamp to valid range
+            scrollPos.value = Math.max(0, Math.min(LEVELS.length - 1, scrollPos.value));
+        })
+        .onEnd((e) => {
+            // Momentum scrolling with decay
+            const velocity = -e.velocityY * 0.008;
+            scrollPos.value = withDecay({
+                velocity: velocity,
+                clamp: [0, LEVELS.length - 1],
+                deceleration: 0.995,
+            });
+        });
 
     // Interaction Flow
     const handleLevelPress = (id: string, stepIndex: number) => {
-        // Animate to the selected level
+        // 1. Animate to the selected level
         isMoving.value = true;
 
         // Calculate duration based on distance
         const distance = Math.abs(stepIndex - scrollPos.value);
 
         // "Bigger discrepancy = bigger speed" logic:
-        // Use a base time + a sub-linear distance factor.
-        // Math.sqrt(distance) ensures that 16 steps don't take 16x time of 1 step.
-        // Example: 1 step = 500 + 150 = 650ms
-        // 16 steps = 500 + 4*150 = 1100ms (Much faster relative speed)
         const duration = 500 + Math.sqrt(distance) * 150;
 
         scrollPos.value = withTiming(stepIndex, {
             duration: duration,
-            // Exponential easing for snappy start/stop
             easing: Easing.out(Easing.exp),
         }, (finished) => {
             if (finished) {
                 isMoving.value = false;
+                // 2. Navigate after arrival
+                runOnJS(navigateToMenu)(id);
             }
         });
     };
 
+    const navigateToMenu = (id: string) => {
+        // Small delay for effect? No, immediate is better for responsiveness after move.
+        navigation.navigate('LevelContentMenu', { levelId: id });
+    };
+
     return (
-        <View style={{ flex: 1, backgroundColor: '#0a0a12' }}>
-            <Canvas style={{ flex: 1 }}>
-                <Group>
-                    {/* 0. Atmosphere Background */}
-                    <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-                        <RadialGradient
-                            c={vec(CENTER_X, CENTER_Y)}
-                            r={SCREEN_WIDTH * 0.8}
-                            colors={['#1a1520', '#000000']}
-                        />
-                    </Rect>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#0a0a12' }}>
+            <GestureDetector gesture={panGesture}>
+                <Animated.View style={{ flex: 1 }}>
+                    <Canvas style={{ flex: 1 }}>
+                        <Group>
+                            {/* 0. Atmosphere Background */}
+                            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
+                                <RadialGradient
+                                    c={vec(CENTER_X, CENTER_Y)}
+                                    r={SCREEN_WIDTH * 0.8}
+                                    colors={['#1a1520', '#000000']}
+                                />
+                            </Rect>
 
-                    {/* 1. Dust Particles (Static for now, can animate if needed) */}
-                    {/* Just a few soft circles to break the void */}
-                    <Group opacity={0.3}>
-                        <Circle cx={CENTER_X * 0.5} cy={CENTER_Y * 0.5} r={2} color="white" />
-                        <Circle cx={CENTER_X * 1.5} cy={CENTER_Y * 0.2} r={3} color="white" opacity={0.5} />
-                        <Circle cx={CENTER_X * 0.8} cy={CENTER_Y * 0.8} r={1} color="white" />
-                        <Circle cx={CENTER_X * 1.2} cy={CENTER_Y * 0.6} r={2} color="white" />
-                    </Group>
+                            {/* 1. Dust Particles (Static for now, can animate if needed) */}
+                            {/* Just a few soft circles to break the void */}
+                            <Group opacity={0.3}>
+                                <Circle cx={CENTER_X * 0.5} cy={CENTER_Y * 0.5} r={2} color="white" />
+                                <Circle cx={CENTER_X * 1.5} cy={CENTER_Y * 0.2} r={3} color="white" opacity={0.5} />
+                                <Circle cx={CENTER_X * 0.8} cy={CENTER_Y * 0.8} r={1} color="white" />
+                                <Circle cx={CENTER_X * 1.2} cy={CENTER_Y * 0.6} r={2} color="white" />
+                            </Group>
 
-                    {/* Draw Landings */}
-                    {/* We render ALL, but since they are 2D paths, order matters. */}
-                    {/* We want back steps first. */}
-                    {LEVELS.map((level, i) => (
-                        <LandingItem
-                            key={level.id}
-                            level={level}
-                            scrollPos={scrollPos}
-                            index={i}
-                        />
-                    ))}
+                            {/* Draw Landings */}
+                            {/* We render ALL, but since they are 2D paths, order matters. */}
+                            {/* We want back steps first. */}
+                            {LEVELS.map((level, i) => (
+                                <LandingItem
+                                    key={level.id}
+                                    level={level}
+                                    scrollPos={scrollPos}
+                                    index={i}
+                                />
+                            ))}
 
-                    {/* Stickman - Scaled up and black */}
-                    <Group transform={[{ scale: 1.5 }, { translateX: -CENTER_X * 0.5 }, { translateY: -CENTER_Y * 0.5 }]}>
-                        {/* Scale pivot is 0,0 default, so we need to adjust or just scale path logic? 
+                            {/* Stickman - Scaled up and black */}
+                            <Group transform={[{ scale: 1.5 }, { translateX: -CENTER_X * 0.5 }, { translateY: -CENTER_Y * 0.5 }]}>
+                                {/* Scale pivot is 0,0 default, so we need to adjust or just scale path logic? 
                              Easier to scale group but center is tricky. 
                              Actually, let's just adjust the stickman logic to draw bigger. 
                          */}
-                    </Group>
-                    {/* Retrying approach: Update SkiaStickman component internal logic instead of group transform for cleaner position */}
-                    <SkiaStickman isMoving={isMoving} />
-                </Group>
-            </Canvas>
+                            </Group>
+                            {/* Retrying approach: Update SkiaStickman component internal logic instead of group transform for cleaner position */}
+                            <SkiaStickman isMoving={isMoving} />
+                        </Group>
+                    </Canvas>
 
-            {/* Overlay Interactables */}
-            <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-                {LEVELS.map((level) => (
-                    <LevelOverlayItem
-                        key={level.id}
-                        level={level}
-                        scrollPos={scrollPos}
-                        onPress={handleLevelPress}
-                    />
-                ))}
-            </View>
-        </View>
+                    {/* Overlay Interactables */}
+                    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+                        {LEVELS.map((level) => (
+                            <LevelOverlayItem
+                                key={level.id}
+                                level={level}
+                                scrollPos={scrollPos}
+                                onPress={handleLevelPress}
+                            />
+                        ))}
+                    </View>
+                </Animated.View>
+            </GestureDetector>
+        </GestureHandlerRootView>
     );
 };
 

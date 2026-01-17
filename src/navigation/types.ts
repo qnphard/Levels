@@ -33,10 +33,11 @@ export type RootStackParamList = {
     LossAndAbandonment: { initialTab?: string } | undefined;
     MeditationGenerator: undefined;
     Profile: undefined;
-    LevelRoom: { levelId: string };
+    LevelRoom: { levelId: string; initialHotspot?: string };
     RoomOfLevels: undefined;
     RoomOfLevels3D: undefined;
     AnimationShowcase: undefined;
+    LevelContentMenu: { levelId: string };
 };
 
 export type MainTabParamList = {

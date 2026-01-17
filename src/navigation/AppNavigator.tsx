@@ -46,6 +46,7 @@ import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
 import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
 import RoomOfLevelsScreen from '../screens/RoomOfLevelsScreen';
 import AnimationShowcaseScreen from '../screens/AnimationShowcaseScreen';
+import LevelContentMenuScreen from '../screens/LevelContentMenuScreen';
 
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
@@ -326,6 +327,11 @@ export default function AppNavigator() {
           options={{ headerShown: false }}
         />
 
+        <Stack.Screen
+          name="LevelContentMenu"
+          component={LevelContentMenuScreen}
+          options={{ headerShown: false, animation: 'fade' }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
