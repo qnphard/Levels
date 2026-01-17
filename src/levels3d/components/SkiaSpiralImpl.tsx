@@ -493,6 +493,22 @@ export const SkiaSpiralImpl = () => {
                     </Group>
                     {/* Retrying approach: Update SkiaStickman component internal logic instead of group transform for cleaner position */}
                     <SkiaStickman isMoving={isMoving} />
+
+                    {/* Vignette Overlay - top and bottom fade to black */}
+                    <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.2}>
+                        <LinearGradient
+                            start={vec(0, 0)}
+                            end={vec(0, SCREEN_HEIGHT * 0.2)}
+                            colors={['rgba(0,0,0,0.5)', 'transparent']}
+                        />
+                    </Rect>
+                    <Rect x={0} y={SCREEN_HEIGHT * 0.8} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.2}>
+                        <LinearGradient
+                            start={vec(0, SCREEN_HEIGHT * 0.8)}
+                            end={vec(0, SCREEN_HEIGHT)}
+                            colors={['transparent', 'rgba(0,0,0,0.6)']}
+                        />
+                    </Rect>
                 </Group>
             </Canvas>
 
