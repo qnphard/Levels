@@ -35,6 +35,8 @@ export type RootStackParamList = {
     Profile: undefined;
     LevelRoom: { levelId: string };
     RoomOfLevels: undefined;
+    RoomOfLevels3D: undefined;
+    AnimationShowcase: undefined;
 };
 
 export type MainTabParamList = {

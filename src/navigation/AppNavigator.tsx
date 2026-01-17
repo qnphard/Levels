@@ -45,6 +45,8 @@ import AddictionScreen from '../screens/AddictionScreen';
 import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
 import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
 import RoomOfLevelsScreen from '../screens/RoomOfLevelsScreen';
+import AnimationShowcaseScreen from '../screens/AnimationShowcaseScreen';
+
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
@@ -318,6 +320,12 @@ export default function AppNavigator() {
           component={RoomOfLevelsScreen}
           options={{ headerShown: false }}
         />
+        <Stack.Screen
+          name="AnimationShowcase"
+          component={AnimationShowcaseScreen}
+          options={{ headerShown: false }}
+        />
+
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -12,11 +12,21 @@ import {
     ScrollView,
     Easing,
 } from 'react-native';
+import Reanimated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withRepeat,
+    withSequence,
+    interpolate as interpolateRe,
+    Easing as EasingRe,
+    runOnJS
+} from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { getLevelById } from '../data/levels';
-import { useThemeColors, typography, spacing, borderRadius } from '../theme/colors';
+import { useThemeColors, themes, typography, spacing, borderRadius } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LEVEL_DOSSIER_DATA } from '../data/dossierData';
@@ -41,7 +51,367 @@ const DOOR_CONFIG: { type: HotspotType; label: string; angle: number; icon: keyo
     { type: 'exits', label: 'Exits', angle: Math.PI, icon: 'exit-outline' },
 ];
 
-// --- Sub-Components for Depth Layers ---
+// --- Helper Components for Descent View ---
+
+const FormattedText: React.FC<{ text: string; style?: any }> = ({ text, style }) => {
+    const theme = themes.dark; // FORCE DARK THEME for this screen
+    if (!text) return null;
+    const processedText = text.replace(/\\n/g, '\n');
+    const parts = processedText.split(/(\*\*.*?\*\*)/g);
+    return (
+        <Text style={style}>
+            {parts.map((part, index) => {
+                if (!part) return null;
+                if (part.startsWith('**') && part.endsWith('**')) {
+                    return (
+                        <Text key={index} style={{ fontWeight: '800', color: theme.white }}>
+                            {part.slice(2, -2)}
+                        </Text>
+                    );
+                }
+                // Wrap non-bold text in a Text component to avoid render errors
+                return <Text key={index}>{part}</Text>;
+            })}
+        </Text>
+    );
+};
+
+const ArticleContent: React.FC<{ article: DossierArticle; onBack?: () => void }> = ({ article, onBack }) => {
+    const theme = themes.dark; // FORCE DARK THEME inside the room
+    const [expandedSections, setExpandedSections] = useState<number[]>([]);
+
+    useEffect(() => {
+        if (article?.sections) {
+            const defaultExpanded = article.sections
+                .map((s, i) => s.defaultExpanded ? i : -1)
+                .filter(i => i !== -1);
+            setExpandedSections(defaultExpanded);
+        }
+    }, [article]);
+
+    const toggleSection = (index: number) => {
+        setExpandedSections(prev =>
+            prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
+        );
+    };
+
+    if (!article) return null;
+
+    return (
+        <View style={{ flex: 1 }}>
+            {onBack && (
+                <Pressable onPress={onBack} style={styles.backButtonRelative}>
+                    <Ionicons name="arrow-back" size={24} color={theme.mode === 'dark' ? "white" : theme.primary} />
+                    <Text style={[styles.backText, { color: theme.mode === 'dark' ? "white" : theme.textPrimary }]}>Back</Text>
+                </Pressable>
+            )}
+
+            <Text style={[styles.insightTitle, { color: theme.primary, textAlign: 'left', fontSize: 28 }]}>{article.title}</Text>
+            <Text style={[styles.insightSpine, { color: theme.mode === 'dark' ? 'rgba(255,255,255,0.9)' : theme.textPrimary, fontSize: 16 }]}>{article.spineBody}</Text>
+
+            <View style={styles.chamberList}>
+                {article.sections?.map((section, i) => {
+                    const isExpanded = expandedSections.includes(i);
+                    return (
+                        <View key={i} style={[styles.chamberCard, { borderColor: isExpanded ? theme.primary : 'rgba(255,255,255,0.1)' }]}>
+                            <Pressable onPress={() => toggleSection(i)} style={styles.chamberHeader}>
+                                <Text style={[styles.chamberTitle, { color: isExpanded ? theme.primary : (theme.mode === 'dark' ? theme.white : theme.textPrimary) }]}>
+                                    {section.title}
+                                </Text>
+                                <Ionicons
+                                    name={isExpanded ? "chevron-up" : "chevron-down"}
+                                    size={20}
+                                    color={isExpanded ? theme.primary : 'rgba(255,255,255,0.5)'}
+                                />
+                            </Pressable>
+                            {isExpanded && (
+                                <View style={[styles.chamberBody, { borderTopColor: 'rgba(255,255,255,0.05)' }]}>
+                                    <FormattedText text={section.body} style={[styles.chamberText, { color: 'rgba(255,255,255,0.8)' }]} />
+                                </View>
+                            )}
+                        </View>
+                    );
+                })}
+            </View>
+        </View>
+    );
+};
+
+// --- 0. ATMOSPHERIC ROOM: The Continuous Space for levels < 200 ---
+
+const AtmosphericRoom: React.FC<{
+    level: any;
+    isActive: boolean;
+    opacity: Animated.Value;
+    onStartPractice: () => void;
+    vignetteIntensity: Animated.Value;
+    cameraShift: Animated.ValueXY;
+}> = ({ level, isActive, opacity, onStartPractice, vignetteIntensity, cameraShift }) => {
+    const theme = themes.dark; // FORCE DARK THEME inside the room
+    const { setAtmosphere } = useAtmosphere();
+    const [showOverlay, setShowOverlay] = useState(false);
+    const [selectedChip, setSelectedChip] = useState<DossierArticle | null>(null);
+
+    // ONE primary shared value to drive ALL environmental states
+    const roomIntensity = useSharedValue(0);
+    const clock = useSharedValue(0);
+
+    const dossier = useMemo(() => LEVEL_DOSSIER_DATA[level.id.toLowerCase()] || {}, [level.id]);
+
+    const STAGES = useMemo(() => [
+        {
+            id: 'arrival',
+            whisper: "The shadow is long, but it is not who you are.",
+            icon: 'finger-print-outline',
+            title: 'Presence',
+            body: `You have entered the frequency of ${level.name}. Breathe here.`,
+            atmosphere: 'neutral'
+        },
+        {
+            id: 'felt-sense',
+            whisper: "Feel the density without labeling it.",
+            icon: 'water-outline',
+            title: 'Felt Sense',
+            body: dossier.feltSense?.spineBody || "A physical weight in the core.",
+            atmosphere: 'felt-sense'
+        },
+        {
+            id: 'traps',
+            whisper: "See the pattern that keeps you bound.",
+            icon: 'warning-outline',
+            title: 'The Trap',
+            body: dossier.traps?.body || "A strategy of the ego to stay safe.",
+            atmosphere: 'traps'
+        },
+        {
+            id: 'exits',
+            whisper: "Look past the resistance to the opening.",
+            icon: 'exit-outline',
+            title: 'The Way Through',
+            body: dossier.exits?.body || "A simple shift of attention.",
+            atmosphere: 'exits'
+        },
+        {
+            id: 'practices',
+            whisper: "The door is open. Step through.",
+            icon: 'play-outline',
+            title: 'Continue',
+            body: "Ready to integrate this frequency into presence.",
+            atmosphere: 'practices'
+        },
+    ] as const, [level.name, dossier]);
+
+    const currentStageIndex = Math.floor(roomIntensity.value);
+    const stage = STAGES[Math.min(currentStageIndex, 4)];
+
+    useEffect(() => {
+        if (isActive) {
+            clock.value = withRepeat(
+                withTiming(Math.PI * 2, { duration: 10000, easing: EasingRe.linear }),
+                -1,
+                false
+            );
+        }
+    }, [isActive]);
+
+    // Derived Styles (The "Field" Logic)
+    const ambientStyle = useAnimatedStyle(() => ({
+        opacity: interpolateRe(roomIntensity.value, [0, 1, 2, 3, 4], [0.3, 0.1, 0.4, 0.2, 0.05]),
+        backgroundColor: interpolateRe(roomIntensity.value, [0, 2, 4], [0, 1, 0]) === 1 ? 'rgba(0,0,0,0.4)' : 'transparent',
+    }));
+
+    const depthStyle = useAnimatedStyle(() => ({
+        transform: [
+            { scale: 1 + Math.sin(clock.value) * 0.01 },
+            { translateX: Math.sin(clock.value * 0.5) * 5 },
+            { translateY: Math.cos(clock.value * 0.5) * 5 }
+        ],
+        opacity: interpolateRe(roomIntensity.value, [0, 4], [1, 0.7]),
+    }));
+
+    const focusStyle = useAnimatedStyle(() => {
+        const pulse = 1 + Math.sin(clock.value * 2) * 0.04;
+        const rotation = interpolateRe(clock.value, [0, Math.PI * 2], [0, 360]);
+        return {
+            transform: [
+                { scale: pulse },
+                { rotate: `${rotation}deg` }
+            ],
+            borderColor: stage.id === 'exits' ? 'rgba(139,92,246,0.6)' : 'rgba(255,255,255,0.3)',
+            shadowOpacity: interpolateRe(roomIntensity.value, [0, 4], [0.1, 0.8]),
+        };
+    });
+
+    const guidanceStyle = useAnimatedStyle(() => ({
+        opacity: withTiming(showOverlay ? 0 : 1, { duration: 500 }),
+        transform: [{ translateY: interpolateRe(roomIntensity.value, [0, 4], [0, -20]) }]
+    }));
+
+    const handleStageAdvance = () => {
+        setShowOverlay(false);
+        const nextIntensity = Math.min(roomIntensity.value + 1, 4);
+
+        // Sync Atmosphere Context
+        const nextStage = STAGES[Math.floor(nextIntensity)];
+        if (nextStage) {
+            setAtmosphere(nextStage.atmosphere as AtmosphereState);
+        }
+
+        roomIntensity.value = withTiming(nextIntensity, {
+            duration: 2000,
+            easing: EasingRe.bezier(0.4, 0, 0.2, 1)
+        });
+
+        // Spatial Movement: Slow zoom drift
+        Animated.timing(cameraShift.y, {
+            toValue: -50 * nextIntensity,
+            duration: 2000,
+            easing: Easing.bezier(0.4, 0, 0.2, 1),
+            useNativeDriver: true
+        }).start();
+
+        setSelectedChip(null);
+    };
+
+    const renderSacredContent = () => {
+        if (selectedChip) {
+            return <ArticleContent article={selectedChip} onBack={() => setSelectedChip(null)} />;
+        }
+
+        if (stage.id === 'felt-sense' && dossier.feltSense) {
+            return <ArticleContent article={dossier.feltSense} />;
+        }
+
+        if ((stage.id === 'traps' || stage.id === 'exits') && dossier[stage.id]) {
+            const data = dossier[stage.id];
+            return (
+                <View>
+                    <Text style={styles.overlayTitle}>{(data as any).title || stage.title}</Text>
+                    <Text style={styles.overlayBody}>{data.body}</Text>
+                    <View style={styles.artifactGrid}>
+                        {data.chips?.map((chip: any, i: number) => (
+                            <Pressable
+                                key={i}
+                                onPress={() => setSelectedChip(chip)}
+                                style={[styles.artifactOrb, {
+                                    borderColor: theme.primary,
+                                    backgroundColor: 'rgba(255,255,255,0.05)',
+                                    width: 80, height: 80
+                                }]}
+                            >
+                                <Text style={[styles.artifactLabel, { color: 'white', fontSize: 10 }]}>{chip.label}</Text>
+                            </Pressable>
+                        ))}
+                    </View>
+                </View>
+            );
+        }
+
+        return (
+            <View>
+                <Text style={styles.overlayTitle}>{stage.title}</Text>
+                <Text style={styles.overlayBody}>{stage.body}</Text>
+                <Pressable
+                    onPress={stage.id === 'practices' ? onStartPractice : handleStageAdvance}
+                    style={styles.overlayButton}
+                >
+                    <LinearGradient
+                        colors={['rgba(139,92,246,0.6)', 'rgba(139,92,246,0.3)']}
+                        style={styles.overlayButtonGradient}
+                    >
+                        <Text style={styles.overlayButtonText}>
+                            {stage.id === 'practices' ? "Enter Meditation" : "Go Deeper"}
+                        </Text>
+                        <Ionicons name="arrow-forward" size={20} color="white" />
+                    </LinearGradient>
+                </Pressable>
+            </View>
+        );
+    };
+
+    return (
+        <Animated.View style={[styles.layerContainer, { opacity, zIndex: 10 }]}>
+            {/* 1. AmbientLayer: Fog and Vignette */}
+            <Reanimated.View style={[StyleSheet.absoluteFill, ambientStyle]} pointerEvents="none" />
+
+            {/* 2. DepthLayer: Parallax/Drift */}
+            <Reanimated.View style={[StyleSheet.absoluteFill, depthStyle]} pointerEvents="none">
+                <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.2)' }]} />
+            </Reanimated.View>
+
+            {/* 3. FocusLayer: The Attractor */}
+            <View style={styles.focusContainer}>
+                <Pressable
+                    onPress={() => {
+                        if (stage.id === 'arrival') {
+                            handleStageAdvance();
+                        } else if (stage.id === 'practices') {
+                            onStartPractice();
+                        } else {
+                            setShowOverlay(true);
+                        }
+                    }}
+                    style={styles.attractorTouchable}
+                >
+                    <Reanimated.View style={[styles.portalCircle, focusStyle]}>
+                        <LinearGradient
+                            colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.01)']}
+                            style={styles.portalGradient}
+                        >
+                            <Ionicons name={stage.icon as any} size={48} color="white" />
+                        </LinearGradient>
+                        <View style={[styles.portalRing, { transform: [{ scale: 1.2 }] }]} />
+                    </Reanimated.View>
+                </Pressable>
+            </View>
+
+            {/* 4. GuidanceLayer: Whispers */}
+            <Reanimated.View style={[styles.whisperContainer, guidanceStyle]} pointerEvents="none">
+                {stage.id === 'arrival' ? (
+                    <View style={{ alignItems: 'center' }}>
+                        <Text style={[styles.overlayTitle, { fontSize: 32, marginBottom: 8, textShadowColor: 'rgba(0,0,0,0.5)', textShadowRadius: 10 }]}>{stage.title}</Text>
+                        <Text style={[styles.descentWhisperText, { fontSize: 18, color: 'rgba(255,255,255,0.9)' }]}>{stage.body}</Text>
+                    </View>
+                ) : (
+                    <Text style={styles.descentWhisperText}>{stage.whisper}</Text>
+                )}
+            </Reanimated.View>
+
+            {/* 5. ActionLayer: Sacred Content */}
+            {showOverlay && (
+                <View style={[StyleSheet.absoluteFill, styles.overlayBackdrop]}>
+                    <View style={styles.overlayInner}>
+                        <GlassCard intensity={0.95}>
+                            <ScrollView
+                                style={{ maxHeight: height * 0.7 }}
+                                contentContainerStyle={{ paddingBottom: 20 }}
+                                showsVerticalScrollIndicator={false}
+                            >
+                                {renderSacredContent()}
+                            </ScrollView>
+
+                            {!selectedChip && stage.id !== 'practices' && stage.id !== 'arrival' && (
+                                <Pressable onPress={handleStageAdvance} style={[styles.overlayButton, { marginTop: 20 }]}>
+                                    <LinearGradient
+                                        colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
+                                        style={styles.overlayButtonGradient}
+                                    >
+                                        <Text style={styles.overlayButtonText}>Dissolve Deeper</Text>
+                                        <Ionicons name="chevron-down" size={20} color="white" />
+                                    </LinearGradient>
+                                </Pressable>
+                            )}
+                        </GlassCard>
+
+                        <Pressable style={styles.closeBtn} onPress={() => setShowOverlay(false)} hitSlop={20}>
+                            <Ionicons name="close-circle-outline" size={32} color="rgba(255,255,255,0.5)" />
+                        </Pressable>
+                    </View>
+                </View>
+            )}
+        </Animated.View>
+    );
+};
 
 // 1. HUB VIEW: The Main Room with Arc Hotspots
 const HubView: React.FC<{
@@ -55,7 +425,7 @@ const HubView: React.FC<{
     zoomLevel: Animated.Value;
     cameraShift: Animated.ValueXY;
 }> = ({ isActive, onOpenHotspot, opacity, levelId, unlockedHotspots, mode, onToggleMode, zoomLevel, cameraShift }) => {
-    const theme = useThemeColors();
+    const theme = themes.dark; // FORCE DARK THEME inside the room
     const breatheValue = useRef(new Animated.Value(0)).current;
 
     // Breathing Animation for centerpiece
@@ -204,7 +574,7 @@ const RealmView: React.FC<{
     opacity: Animated.Value;
     onBack: () => void;
 }> = ({ isActive, data, onSelectChip, opacity, onBack }) => {
-    const theme = useThemeColors();
+    const theme = themes.dark; // FORCE DARK THEME inside the room
     if (!data) return null;
 
     const zIndex = isActive ? 10 : 2;
@@ -257,7 +627,7 @@ const InsightView: React.FC<{
     onTravel: (target: string, hotspot?: HotspotType) => void;
     opacity: Animated.Value;
 }> = ({ isActive, article, onBack, onTravel, opacity }) => {
-    const theme = useThemeColors();
+    const theme = themes.dark; // FORCE DARK THEME inside the room
     const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
     useEffect(() => {
@@ -310,6 +680,7 @@ const InsightView: React.FC<{
                                 const processedText = text.replace(/\\n/g, '\n');
                                 const parts = processedText.split(/(\*\*.*?\*\*)/g);
                                 return parts.map((part, index) => {
+                                    if (!part) return null;
                                     if (part.startsWith('**') && part.endsWith('**')) {
                                         return (
                                             <Text key={index} style={{ fontWeight: '800', color: theme.white }}>
@@ -317,7 +688,8 @@ const InsightView: React.FC<{
                                             </Text>
                                         );
                                     }
-                                    return part || null;
+                                    // Wrap non-bold text in a Text component to avoid render errors
+                                    return <Text key={index}>{part}</Text>;
                                 }).filter(p => p !== null);
                             };
 
@@ -388,7 +760,7 @@ function RoomContent() {
     } = useAtmosphere();
 
     const { pushDepth, popDepth, depthStack } = useAtmosphereDepth();
-    const theme = useThemeColors();
+    const theme = themes.dark; // FORCE DARK THEME inside the room
 
     const params = route.params || {};
     const { levelId } = params;
@@ -652,17 +1024,29 @@ function RoomContent() {
                 pointerEvents="none"
             />
 
-            <HubView
-                isActive={depth === 'HUB'}
-                onOpenHotspot={handleOpenHotspot}
-                opacity={hubOpacity}
-                levelId={level.id}
-                unlockedHotspots={unlockedHotspots}
-                mode={mode}
-                onToggleMode={handleToggleMode}
-                zoomLevel={zoomLevel}
-                cameraShift={cameraShift}
-            />
+            {/* Content Layers - Switch based on Level and Depth */}
+            {level.level < 200 && depth === 'HUB' ? (
+                <AtmosphericRoom
+                    level={level}
+                    isActive={depth === 'HUB'}
+                    opacity={hubOpacity}
+                    onStartPractice={() => handleOpenHotspot('practices')}
+                    vignetteIntensity={vignetteIntensity}
+                    cameraShift={cameraShift}
+                />
+            ) : level.level >= 200 && depth === 'HUB' ? (
+                <HubView
+                    isActive={depth === 'HUB'}
+                    onOpenHotspot={handleOpenHotspot}
+                    opacity={hubOpacity}
+                    levelId={level.id}
+                    unlockedHotspots={unlockedHotspots}
+                    mode={mode}
+                    onToggleMode={handleToggleMode}
+                    zoomLevel={zoomLevel}
+                    cameraShift={cameraShift}
+                />
+            ) : null}
 
             {/* Realm Layer */}
             <RealmView
@@ -745,9 +1129,23 @@ const styles = StyleSheet.create({
     insightBody: { fontSize: typography.body, lineHeight: 28, textAlign: 'center' },
 
     // Utils
-    closeBtn: { position: 'absolute', top: 50, left: 20, zIndex: 100 },
+    closeBtn: { position: 'absolute', top: 50, left: 20, zIndex: 1100 },
     backButtonRelative: { flexDirection: 'row', alignItems: 'center', marginBottom: spacing.lg },
     backText: { color: 'white', marginLeft: spacing.xs, fontWeight: typography.bold },
+
+    // Atmospheric Room Styles
+    focusContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', zIndex: 10 },
+    attractorTouchable: { width: 220, height: 220, alignItems: 'center', justifyContent: 'center' },
+    fogOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(255,255,255,0.02)' },
+    whisperContainer: { position: 'absolute', bottom: 120, width: '100%', alignItems: 'center', paddingHorizontal: 40 },
+    descentWhisperText: { color: 'rgba(255,255,255,0.6)', fontSize: 16, textAlign: 'center', fontStyle: 'italic', lineHeight: 24 },
+    overlayBackdrop: { backgroundColor: 'rgba(0,0,0,0.6)', padding: spacing.xl, justifyContent: 'center', zIndex: 1000 },
+    overlayInner: { width: '100%' },
+    overlayTitle: { fontSize: 28, fontWeight: '800', color: 'white', marginBottom: spacing.md },
+    overlayBody: { fontSize: 18, color: 'rgba(255,255,255,0.8)', lineHeight: 28, marginBottom: spacing.xl },
+    overlayButton: { height: 56, borderRadius: 28, overflow: 'hidden' },
+    overlayButtonGradient: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm },
+    overlayButtonText: { color: 'white', fontSize: 18, fontWeight: '700' },
 
     // Orbit & Spatial Styles
     orbitNode: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
@@ -798,6 +1196,33 @@ const styles = StyleSheet.create({
         top: height / 2 - 140,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+
+    // Portal (Focus Layer) Styles
+    portalCircle: {
+        width: 200,
+        height: 200,
+        borderRadius: 100,
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)'
+    },
+    portalGradient: {
+        width: 180,
+        height: 180,
+        borderRadius: 90,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    portalRing: {
+        position: 'absolute',
+        width: 220,
+        height: 220,
+        borderRadius: 110,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderStyle: 'dashed'
     },
 
     // Orbital Door - Premium Glassmorphism
@@ -868,21 +1293,6 @@ const styles = StyleSheet.create({
     // Ritual Entry
     ritualTitle: { fontSize: 42, fontWeight: '800', textAlign: 'center', letterSpacing: 8, textTransform: 'uppercase', marginBottom: 10 },
     ritualSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center', letterSpacing: 2, fontWeight: '300' },
-
-    // Whispers
-    whisperBubble: {
-        position: 'absolute',
-        top: -60,
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        paddingVertical: 8,
-        paddingHorizontal: 16,
-        borderRadius: 20,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-        width: 200,
-        alignItems: 'center',
-    },
-    whisperText: { color: 'white', fontSize: 12, fontStyle: 'italic', textAlign: 'center' },
 
     modeToggle: {
         position: 'absolute',

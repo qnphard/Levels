@@ -6,9 +6,11 @@
  */
 
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
 
 // Hugging Face Space URL
-const VOICE_API_URL = 'https://qnphard-piper-tts-meditation.hf.space';
+// Modal API URL (Replace with your actual deployed URL)
+const VOICE_API_URL = 'https://REPLACE_WITH_YOUR_MODAL_URL';
 
 export interface BrainwavePreset {
     id: string;
@@ -80,142 +82,55 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
         speed = 1.0,
         brainwave = 'theta',
         binauralVolume = 0.15,
-        ambient = 'none',
-        ambientVolume = 0.1,
-        refAudio = null,
-        refText = null
+        refAudio = null
     } = options;
 
     if (!text.trim()) {
         throw new Error('Text is required');
     }
 
-    // Gradio API call format (use /gradio_api/ prefix)
-    const response = await fetch(`${VOICE_API_URL}/gradio_api/call/synthesize`, {
+    console.log(`Synthesizing via Modal: ${VOICE_API_URL}`);
+
+    // Modal returns a WAV file binary
+    const response = await fetch(VOICE_API_URL, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            data: [text, speed, brainwave, binauralVolume, ambient, ambientVolume, refAudio, refText]
+            text,
+            speed,
+            brainwave,
+            binaural_volume: binauralVolume,
+            // Future: ref_audio_base64
         }),
     });
 
     if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        throw new Error(`Modal API Error: ${response.status} - Check if URL is correct`);
     }
 
-    const result = await response.json();
-    const eventId = result.event_id;
+    // Convert Blob to Base64 and Save
+    const blob = await response.blob();
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
 
-    if (!eventId) {
-        throw new Error('No event ID returned from API');
-    }
+    return new Promise((resolve, reject) => {
+        reader.onloadend = async () => {
+            try {
+                const base64data = (reader.result as string).split(',')[1];
+                const fileUri = FileSystem.cacheDirectory + `meditation_${Date.now()}.wav`;
 
-    // Poll for result with timeout (10 minutes max for CPU generation)
-    const maxWaitTime = 10 * 60 * 1000;
-    const pollInterval = 3000; // 3 seconds
-    const startTime = Date.now();
-
-    while (Date.now() - startTime < maxWaitTime) {
-        try {
-            const resultResponse = await fetch(`${VOICE_API_URL}/gradio_api/call/synthesize/${eventId}`);
-            const resultText = await resultResponse.text();
-
-            // Parse SSE response to get audio URL
-            if (!resultText) {
-                // Connection closed without data, wait and retry
-                await new Promise(resolve => setTimeout(resolve, pollInterval));
-                continue;
+                await FileSystem.writeAsStringAsync(fileUri, base64data, {
+                    encoding: FileSystem.EncodingType.Base64,
+                });
+                resolve(fileUri);
+            } catch (e) {
+                reject(e);
             }
-
-            const lines = resultText.split('\n');
-            let lastError = '';
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-
-                // Check for heartbeat (still processing)
-                if (line.startsWith('event: heartbeat')) {
-                    // Gradio sends heartbeats to keep connection alive.
-                    // If we see one, the server is still working.
-                    continue;
-                }
-
-                if (line.startsWith('event: error')) {
-                    const nextLine = lines[i + 1];
-                    if (nextLine && nextLine.startsWith('data: ')) {
-                        lastError = nextLine.slice(6).trim();
-                    }
-                }
-
-                if (line.startsWith('event: complete')) {
-                    // Look for the data line after complete
-                    const nextLine = lines[i + 1];
-                    if (nextLine && nextLine.startsWith('data: ')) {
-                        const dataStr = nextLine.slice(6).trim();
-                        try {
-                            const data = JSON.parse(dataStr);
-                            if (Array.isArray(data) && data[0]) {
-                                const fileData = data[0];
-                                if (typeof fileData === 'string') {
-                                    return fileData;
-                                } else if (fileData.url) {
-                                    return fileData.url;
-                                } else if (fileData.path) {
-                                    return `${VOICE_API_URL}/file=${fileData.path}`;
-                                }
-                            }
-                        } catch (parseError) {
-                            console.warn('Failed to parse complete data:', dataStr);
-                        }
-                    }
-                }
-
-                if (line.startsWith('data: ')) {
-                    const dataStr = line.slice(6).trim();
-                    if (dataStr === 'null' || dataStr === '') continue;
-
-                    try {
-                        const data = JSON.parse(dataStr);
-
-                        if (data.error) {
-                            throw new Error(`Gradio error: ${data.error}`);
-                        }
-
-                        if (Array.isArray(data) && data[0]) {
-                            const fileData = data[0];
-                            if (typeof fileData === 'string') {
-                                return fileData;
-                            } else if (fileData.url) {
-                                return fileData.url;
-                            } else if (fileData.path) {
-                                return `${VOICE_API_URL}/file=${fileData.path}`;
-                            }
-                        }
-                    } catch (parseError: any) {
-                        if (parseError.message.includes('Gradio error')) throw parseError;
-                        // Not ready yet, continue polling
-                    }
-                }
-            }
-
-            if (lastError) {
-                throw new Error(`API Error: ${lastError}`);
-            }
-        } catch (fetchError: any) {
-            if (fetchError.message.includes('Gradio error') || fetchError.message.includes('API Error')) {
-                throw fetchError;
-            }
-            // Network error or timeout, retry
-            console.warn('Polling error, retrying:', fetchError.message);
-        }
-
-        // Wait before next poll
-        await new Promise(resolve => setTimeout(resolve, pollInterval));
-    }
-
-    throw new Error('Generation timed out. OpenVoice V2 should be fast. check Hugging Face Space logs.');
+        };
+        reader.onerror = reject;
+    });
 }
 
 /**

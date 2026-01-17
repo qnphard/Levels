@@ -188,6 +188,33 @@ export default function HomeScreen() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+
+        {/* DEV: Animation Test */}
+        <View style={styles.roomModule}>
+          <TouchableOpacity
+            style={[styles.roomCard, { borderWidth: 2, borderColor: '#10B981' }]}
+            onPress={() => navigation.navigate('AnimationShowcase')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={['#059669', '#10B981']}
+              style={styles.roomGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.roomContent}>
+                <View style={styles.roomTextSection}>
+                  <Text style={styles.roomLabel}>DEV TEST</Text>
+                  <Text style={styles.roomTitle}>Stairs Animation</Text>
+                  <Text style={styles.roomSubtitle}>Stickman climbing with Skia</Text>
+                </View>
+                <View style={styles.roomIconContainer}>
+                  <Ionicons name="walk-outline" size={32} color="#FFFFFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
         {/* Today's Practice Card */}
         {todaysPractice && (
           <View style={styles.todaysPracticeCard}>
