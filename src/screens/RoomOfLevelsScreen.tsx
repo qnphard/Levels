@@ -127,7 +127,13 @@ function RoomOfLevelsContent() {
             </Animated.ScrollView>
 
             {/* Return Button */}
-            <Pressable onPress={() => navigation.goBack()} style={styles.closeBtn}>
+            <Pressable onPress={() => {
+                if (navigation.canGoBack()) {
+                    navigation.goBack();
+                } else {
+                    navigation.navigate('Main');
+                }
+            }} style={styles.closeBtn}>
                 <Ionicons name="close" size={28} color="white" />
             </Pressable>
         </View>
