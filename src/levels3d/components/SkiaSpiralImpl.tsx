@@ -181,19 +181,13 @@ const LandingItem = ({
         const p = Skia.Paint();
         p.setColor(Skia.Color('black'));
         p.setAlphaf(0.3);
-        p.setMaskFilter(Skia.MaskFilter.MakeBlur(BlurStyle.Normal, 8, true));
         return p;
     }, []);
 
     // 2. Additive Glow Paint
-    const paintGlow = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(color);
-        p.setAlphaf(0.4);
-        p.setBlendMode(BlendMode.Plus);
-        p.setMaskFilter(Skia.MaskFilter.MakeBlur(BlurStyle.Normal, 20, true));
-        return p;
-    }, [color]);
+    // We cannot easily cache the paint if it depends on color, but we can avoid the expensive MaskFilter.
+    // Instead we render a Circle with RadialGradient.
+
 
     // 3. Crisp Outline Paint
     const paintOutline = useMemo(() => {
@@ -225,11 +219,15 @@ const LandingItem = ({
                 <Path path={BLOCK_PATHS.main} paint={paintShadow} />
             </Group>
 
-            {/* 2. Additive Glow (Behind) */}
-            <Group>
-                <Path path={BLOCK_PATHS.main} paint={paintGlow} />
-                {/* Double glow for punch */}
-                <Path path={BLOCK_PATHS.main} paint={paintGlow} />
+            {/* 2. Additive Glow (Behind) - Pre-calculated Gradient Sprite */}
+            <Group blendMode="plus">
+                <Circle cx={0} cy={0} r={60} opacity={0.6}>
+                    <RadialGradient
+                        c={vec(0, 0)}
+                        r={60}
+                        colors={[level.color, 'transparent']}
+                    />
+                </Circle>
             </Group>
 
             {/* 3. Block Geometry */}
