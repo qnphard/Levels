@@ -34,6 +34,9 @@ import {
     useAnimatedStyle,
     runOnJS
 } from 'react-native-reanimated';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../../navigation/types';
 import Animated from 'react-native-reanimated';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 
@@ -421,8 +424,13 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 };
 
 export const SkiaSpiralImpl = () => {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const scrollPos = useSharedValue(0);
     const isMoving = useSharedValue(false);
+
+    const navigateToMenu = (id: string) => {
+        navigation.navigate('LevelContentMenu', { levelId: id });
+    };
 
     // Interaction Flow
     const handleLevelPress = (id: string, stepIndex: number) => {
@@ -446,6 +454,8 @@ export const SkiaSpiralImpl = () => {
         }, (finished) => {
             if (finished) {
                 isMoving.value = false;
+                // Navigate after animation completes
+                runOnJS(navigateToMenu)(id);
             }
         });
     };
