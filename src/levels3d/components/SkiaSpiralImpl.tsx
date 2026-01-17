@@ -1,14 +1,13 @@
 /**
- * SkiaSpiralImpl - 2.5D implementation of the spiral tower using Skia
- * "Fake 3D" using manual projection for that clean vector look
+ * SkiaSpiralImpl - 2.5D Spiral Tower with Professional Polish
+ * Focus hierarchy, enhanced stickman, improved motion, premium atmosphere
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Dimensions } from 'react-native';
 import {
     Canvas,
     Path,
     Skia,
-    Paint,
     vec,
     LinearGradient,
     Group,
@@ -19,10 +18,6 @@ import {
     StrokeJoin,
     PaintStyle,
     RadialGradient,
-    BlendMode,
-    BlurMask,
-    BlurStyle,
-    mix,
 } from '@shopify/react-native-skia';
 import {
     useSharedValue,
@@ -34,7 +29,8 @@ import {
     Easing,
     SharedValue,
     useAnimatedStyle,
-    runOnJS
+    runOnJS,
+    interpolate,
 } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -42,9 +38,10 @@ import { RootStackParamList } from '../../navigation/types';
 import Animated from 'react-native-reanimated';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import * as Haptics from 'expo-haptics';
 
-import { LEVELS, TOTAL_STEPS, LevelNode } from '../levelGraph';
-import { SpiralConfig, DEFAULT_SPIRAL, spiralPose } from '../mathSpiral';
+import { LEVELS, LevelNode } from '../levelGraph';
+import { SpiralConfig, DEFAULT_SPIRAL } from '../mathSpiral';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CENTER_X = SCREEN_WIDTH / 2;
@@ -52,309 +49,207 @@ const CENTER_Y = SCREEN_HEIGHT / 2;
 
 // 2.5D projection parameters
 const FOCAL_LENGTH = 1000;
-const TILT = 0.3; // Tilt down (radians)
+const TILT = 0.3;
 
-// Shared projection logic (reused for both Canvas and UI Overlay)
+// Enhanced projection with focus distance calculation
 const useProjection = (
     stepIndex: number,
     scrollPos: SharedValue<number>,
+    time: SharedValue<number>,
     spiralCfg: SpiralConfig
 ) => {
     return useDerivedValue(() => {
         const relativeStep = stepIndex - scrollPos.value;
+        const focusDist = Math.abs(relativeStep);
 
-        // Tighter spiral to connect steps
         const customPitch = spiralCfg.pitch * 0.4;
         const customAngle = spiralCfg.stepAngle * 0.6;
 
         const theta = relativeStep * customAngle;
         const yWorld = relativeStep * customPitch * 60;
 
-        // Helix coordinates
+        // Micro-drift: subtle float per platform
+        const microDrift = Math.sin(time.value * 0.5 + stepIndex * 0.7) * 2;
+
         const r = spiralCfg.radius * 55;
         const x = r * Math.cos(theta + Math.PI / 2);
         const z = r * Math.sin(theta + Math.PI / 2);
 
-        // Apply Tilt
-        const yRel = yWorld;
+        const yRel = yWorld + microDrift;
         const yRot = yRel * Math.cos(TILT) - z * Math.sin(TILT);
         const zRot = yRel * Math.sin(TILT) + z * Math.cos(TILT);
 
-        // Project
-        const zDepth = zRot + 400;
         const scale = Math.max(0.1, (FOCAL_LENGTH + zRot) / FOCAL_LENGTH);
-
         const x2d = CENTER_X + x * scale;
         const y2d = CENTER_Y * 1.2 - yRot * scale;
+
+        // Focus: 0 = perfectly focused, higher = further away
+        const isFocused = focusDist < 0.6;
 
         return {
             x: x2d,
             y: y2d,
-            scale: scale,
+            scale,
             opacity: Math.max(0, Math.min(1, scale * scale)),
-            zIndex: zRot
+            zIndex: zRot,
+            focusDist,
+            isFocused,
         };
     });
 };
 
-// Reusing the rich visual style from StairsAnimation (2D Skia)
+// Block geometry
 const STEP_WIDTH = 70;
 const STEP_HEIGHT = 28;
 const STEP_DEPTH = 16;
 const CORNER_RADIUS = 10;
 
-// Pre-defined paths for the "Candy Block" look
 const createBlockPaths = () => {
     const main = Skia.Path.Make();
     const top = Skia.Path.Make();
     const side = Skia.Path.Make();
+    const pedestal = Skia.Path.Make();
 
-    // Main face (Rounded Rect)
     const w = STEP_WIDTH, h = STEP_HEIGHT, r = CORNER_RADIUS;
     main.addRRect(Skia.RRectXY(Skia.XYWHRect(-w / 2, -h / 2, w, h), r, r));
 
-    // Top face (Extruded back-right)
     const d = STEP_DEPTH;
-    const offset = d * 0.7; // Angle offset
+    const offset = d * 0.7;
 
-    // Top is tricky with rounded corners, simplified "lid"
-    // Just drawing a path behind main
     top.moveTo(-w / 2 + r, -h / 2);
     top.lineTo(w / 2 - r, -h / 2);
     top.lineTo(w / 2 - r + offset, -h / 2 - offset);
     top.lineTo(-w / 2 + r + offset, -h / 2 - offset);
     top.close();
 
-    // Right side
     side.moveTo(w / 2, -h / 2 + r);
     side.lineTo(w / 2, h / 2 - r);
     side.lineTo(w / 2 + offset, h / 2 - r - offset);
     side.lineTo(w / 2 + offset, -h / 2 + r - offset);
     side.close();
 
-    return { main, top, side };
+    // Pedestal/under-shadow base
+    pedestal.addRRect(Skia.RRectXY(Skia.XYWHRect(-w / 2 - 4, h / 2 - 2, w + 8, 8), 4, 4));
+
+    return { main, top, side, pedestal };
 };
 
 const BLOCK_PATHS = createBlockPaths();
 
-
+// --- Enhanced Landing Item with Focus Hierarchy ---
 const LandingItem = ({
     level,
     scrollPos,
-    index
+    time,
 }: {
     level: LevelNode,
     scrollPos: SharedValue<number>,
-    index: number
+    time: SharedValue<number>,
 }) => {
-    const projection = useProjection(level.stepIndex, scrollPos, DEFAULT_SPIRAL);
+    const projection = useProjection(level.stepIndex, scrollPos, time, DEFAULT_SPIRAL);
 
-    // Derived values for "Focus" state
-    const visualState = useDerivedValue(() => {
-        const { x, y, scale, opacity } = projection.value;
-        const dist = Math.abs(level.stepIndex - scrollPos.value);
-        const isFocused = dist < 0.8; // Active zone
-
-        // Focus scale boost
-        const finalScale = isFocused ? scale * 1.05 : scale;
-
-        // Micro-motion: Float
-        // We need a time-based value for float, but passing 'time' prop is heavy if we map it to all?
-        // Let's skip float for now to keep perf high, or use a local loop? 
-        // Local loop might desync. 
-        // Let's implement static focus first.
-
-        return { x, y, scale: finalScale, opacity, isFocused };
+    const transform = useDerivedValue(() => {
+        const { x, y, scale, isFocused, focusDist } = projection.value;
+        // Focus scale boost: 1.06x when focused, with spring-like interpolation
+        const focusScale = isFocused ? 1.06 : interpolate(focusDist, [0.6, 2], [1, 0.95]);
+        return [
+            { translateX: x },
+            { translateY: y },
+            { scale: scale * focusScale },
+        ];
     });
 
-    const transform = useDerivedValue(() => [
-        { translateX: visualState.value.x },
-        { translateY: visualState.value.y },
-        { scale: visualState.value.scale },
-    ]);
-
-    // Opacity with depth fade + focus boost
     const groupOpacity = useDerivedValue(() => {
-        const { opacity, isFocused } = visualState.value;
-        return isFocused ? Math.min(1, opacity * 1.5) : opacity;
+        const { opacity, isFocused, focusDist } = projection.value;
+        // Focused: full opacity, distant: fade more
+        if (isFocused) return Math.min(1, opacity * 1.4);
+        return opacity * interpolate(focusDist, [0.6, 4], [1, 0.6]);
     });
 
-    // Paints
+    // Dynamic glow based on focus
+    const glowRadius = useDerivedValue(() => {
+        const { isFocused } = projection.value;
+        return isFocused ? 80 : 55;
+    });
+
+    const glowOpacity = useDerivedValue(() => {
+        const { isFocused, focusDist } = projection.value;
+        // +50% glow for focused, -30% for non-focused
+        if (isFocused) return 0.85;
+        return interpolate(focusDist, [0.6, 3], [0.5, 0.35]);
+    });
+
+    // Dynamic outline opacity
+    const outlineOpacity = useDerivedValue(() => {
+        const { isFocused, focusDist } = projection.value;
+        if (isFocused) return 0.95;
+        return interpolate(focusDist, [0.6, 3], [0.6, 0.4]);
+    });
+
     const color = useMemo(() => Skia.Color(level.color), [level.color]);
-
-    // 1. Shadow Card Paint
-    const paintShadow = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(Skia.Color('black'));
-        p.setAlphaf(0.3);
-        return p;
-    }, []);
-
-    // 2. Additive Glow Paint
-    // We cannot easily cache the paint if it depends on color, but we can avoid the expensive MaskFilter.
-    // Instead we render a Circle with RadialGradient.
-
-
-    // 3. Crisp Outline Paint
-    const paintOutline = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(Skia.Color('white'));
-        p.setStyle(PaintStyle.Stroke);
-        p.setStrokeWidth(2); // Thinner, crisp
-        p.setAlphaf(0.9);
-        return p;
-    }, []);
-
-    const paintMain = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(color);
-        return p;
-    }, [color]);
 
     const paintSide = useMemo(() => {
         const p = Skia.Paint();
         p.setColor(Skia.Color('black'));
-        p.setAlphaf(0.5); // Darker contrast
+        p.setAlphaf(0.5);
         return p;
     }, []);
 
     return (
         <Group transform={transform} opacity={groupOpacity}>
-            {/* 1. Shadow Card (Offset down) */}
-            <Group transform={[{ translateY: 20 }, { translateX: 10 }]}>
-                <Path path={BLOCK_PATHS.main} paint={paintShadow} />
+            {/* Pedestal/under-shadow */}
+            <Group transform={[{ translateY: 4 }]}>
+                <Path path={BLOCK_PATHS.pedestal} color="white" opacity={0.08} />
             </Group>
 
-            {/* 2. Additive Glow (Behind) - Pre-calculated Gradient Sprite */}
+            {/* Drop shadow */}
+            <Group transform={[{ translateY: 18 }, { translateX: 8 }]}>
+                <Path path={BLOCK_PATHS.main} color="black" opacity={0.25} />
+            </Group>
+
+            {/* Additive Glow */}
             <Group blendMode="plus">
-                <Circle cx={0} cy={0} r={60} opacity={0.6}>
-                    <RadialGradient
-                        c={vec(0, 0)}
-                        r={60}
-                        colors={[level.color, 'transparent']}
-                    />
+                <Circle cx={0} cy={0} r={glowRadius} opacity={glowOpacity}>
+                    <RadialGradient c={vec(0, 0)} r={80} colors={[level.color, 'transparent']} />
                 </Circle>
             </Group>
 
-            {/* 3. Block Geometry */}
-            {/* Side */}
+            {/* Block Geometry */}
             <Path path={BLOCK_PATHS.side} paint={paintSide} />
 
-            {/* Top (Lid) - Whiteish tint */}
+            {/* Top highlight */}
             <Path path={BLOCK_PATHS.top} color={level.color} opacity={0.5} />
-            <Path path={BLOCK_PATHS.top} color="white" opacity={0.2} />
+            <Path path={BLOCK_PATHS.top} color="white" opacity={0.15} />
 
-            {/* Main Face */}
-            <Path path={BLOCK_PATHS.main} paint={paintMain}>
+            {/* Main Face with gradient */}
+            <Path path={BLOCK_PATHS.main} color={level.color}>
                 <LinearGradient
                     start={vec(-STEP_WIDTH / 2, -STEP_HEIGHT / 2)}
                     end={vec(STEP_WIDTH / 2, STEP_HEIGHT / 2)}
-                    colors={['rgba(255,255,255,0.4)', 'rgba(0,0,0,0.1)']}
+                    colors={['rgba(255,255,255,0.35)', 'rgba(0,0,0,0.15)']}
                 />
             </Path>
 
-            {/* 4. Crisp Outline (Top Face & Main Face edges) */}
-            <Path path={BLOCK_PATHS.main} paint={paintOutline} />
-            {/* Optional: Outline top for "Rim" feel */}
-            <Path path={BLOCK_PATHS.top} style="stroke" strokeWidth={1} color="white" opacity={0.6} />
-        </Group>
-    );
-};
-// Add central pillar background
-const PillarBackground = () => {
-    // Helper for rect path
-    const getRectPath = (x: number, y: number, w: number, h: number) => {
-        return `M ${x} ${y} L ${x + w} ${y} L ${x + w} ${y + h} L ${x} ${y + h} Z`;
-    };
-
-    return (
-        <Group>
-            {/* Main Pillar Cylinder */}
+            {/* Crisp Outline with focus-based opacity */}
             <Path
-                path={getRectPath(CENTER_X - 60, 0, 120, SCREEN_HEIGHT)}
-            >
-                <LinearGradient
-                    start={vec(CENTER_X - 60, 0)}
-                    end={vec(CENTER_X + 60, 0)}
-                    colors={['#1a1520', '#0a0a12', '#1a1520']}
-                />
-            </Path>
-            {/* Subtle glow lines for structure */}
-            <Path
-                path={getRectPath(CENTER_X - 40, 0, 2, SCREEN_HEIGHT)}
-                color="rgba(255,255,255,0.05)"
+                path={BLOCK_PATHS.main}
+                style="stroke"
+                strokeWidth={2}
+                color="white"
+                opacity={outlineOpacity}
             />
-            <Path
-                path={getRectPath(CENTER_X + 40, 0, 2, SCREEN_HEIGHT)}
-                color="rgba(255,255,255,0.05)"
-            />
+            <Path path={BLOCK_PATHS.top} style="stroke" strokeWidth={1} color="white" opacity={0.5} />
         </Group>
     );
 };
 
-// UI Overlay Item (Label + Hitbox)
-const LevelOverlayItem = ({
-    level,
-    scrollPos,
-    onPress
-}: {
-    level: LevelNode,
-    scrollPos: SharedValue<number>,
-    onPress: (id: string, step: number) => void
-}) => {
-    // Reusing the same projection logic via hook would be ideal, 
-    // but we can just inline the projection usage since useProjectedPoint is locally scoped to LandingItem?
-    // Let's refactor usage to use the useProjection shared hook if available, or duplicate slightly for safety.
-    // Actually, I'll define useSharedProjection just above.
-
-    // We'll duplicate the projection logic effectively by calling the same math.
-    // Ideally we lift useProjectedPoint out.
-    // For now, let's just assume we can use `useProjectedPoint` if I move it up?
-    // useProjectedPoint is defined at the top of file (renamed to useProjection in my thought, but likely still useProjectedPoint in file?)
-    // In file it's `useProjection` at line 45 (I checked the file).
-
-    const projection = useProjection(level.stepIndex, scrollPos, DEFAULT_SPIRAL);
-
-    const style = useAnimatedStyle(() => {
-        const { x, y, scale, opacity, zIndex } = projection.value;
-        const isVisible = scale > 0.4 && opacity > 0.1;
-
-        return {
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            transform: [
-                { translateX: x - 40 }, // Center the 80px wide view
-                { translateY: y - 50 }, // Position above the step
-                { scale: scale }
-            ],
-            opacity: withTiming(isVisible ? opacity : 0, { duration: 100 }),
-            zIndex: zIndex
-        };
-    });
-
-    return (
-        <Animated.View style={[style, { pointerEvents: 'box-none' }]}>
-            <TouchableOpacity
-                activeOpacity={0.8}
-                onPress={() => onPress(level.id, level.stepIndex)}
-                style={styles.levelLabelContainer}
-            >
-                <Text style={[styles.levelLabel, { color: level.color }]}>{level.label}</Text>
-                {/* Hitbox area extending down to the step */}
-                <View style={styles.hitbox} />
-            </TouchableOpacity>
-        </Animated.View>
-    );
-};
-
-// Optimized Stickman using Line primitives (no path parsing)
+// --- Enhanced Stickman with Halo and Shadow ---
 const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
     const time = useSharedValue(0);
 
     useDerivedValue(() => {
         if (isMoving.value) {
-            time.value = withRepeat(withTiming(Math.PI * 2, { duration: 240 }), -1); // Sprint!
+            time.value = withRepeat(withTiming(Math.PI * 2, { duration: 240 }), -1);
         } else {
             time.value = 0;
         }
@@ -368,26 +263,14 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
         return { legOffset, armOffset, bob };
     });
 
-    // Compute joints in derived value to avoid recreating vector objects?
-    // Skia Line props can take vectors.
-    // We'll use simple transforms or just derived vectors.
-
-    // Actually, Line takes p1={vec(x,y)} p2={vec(x,y)}.
-    // We can define derived values for each point.
-
     const scale = 1.8;
     const center = vec(CENTER_X + 2, CENTER_Y * 1.2 - 25);
-
-    // Helper calculation inline to avoid worklet scoping issues
-    // rootY = center.y - bob + offset
     const baseY = center.y + (50 * (1 - scale));
 
     const pNeck = useDerivedValue(() => vec(center.x, baseY - animPose.value.bob));
     const pHip = useDerivedValue(() => vec(center.x, baseY - animPose.value.bob + 25 * scale));
-
     const pLegL = useDerivedValue(() => vec(center.x - 5 * scale + animPose.value.legOffset * scale, baseY - animPose.value.bob + 50 * scale));
     const pLegR = useDerivedValue(() => vec(center.x + 5 * scale - animPose.value.legOffset * scale, baseY - animPose.value.bob + 50 * scale));
-
     const pShoulder = useDerivedValue(() => vec(center.x, baseY - animPose.value.bob + 5 * scale));
     const pArmL = useDerivedValue(() => vec(center.x - 8 * scale + animPose.value.armOffset * scale, baseY - animPose.value.bob + 20 * scale));
     const pArmR = useDerivedValue(() => vec(center.x + 8 * scale - animPose.value.armOffset * scale, baseY - animPose.value.bob + 20 * scale));
@@ -400,7 +283,7 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
     const paint = useMemo(() => {
         const p = Skia.Paint();
         p.setColor(Skia.Color('white'));
-        p.setStrokeWidth(6); // Slightly thicker for white-on-dark
+        p.setStrokeWidth(6);
         p.setStrokeCap(StrokeCap.Round);
         p.setStrokeJoin(StrokeJoin.Round);
         p.setStyle(PaintStyle.Stroke);
@@ -409,16 +292,38 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
     return (
         <Group>
-            {/* Torso */}
+            {/* Ground shadow blob */}
+            <Circle
+                cx={center.x}
+                cy={baseY + 55 * scale}
+                r={25}
+                opacity={0.3}
+            >
+                <RadialGradient
+                    c={vec(center.x, baseY + 55 * scale)}
+                    r={25}
+                    colors={['rgba(0,0,0,0.6)', 'transparent']}
+                />
+            </Circle>
+
+            {/* Halo glow behind stickman */}
+            <Group blendMode="plus">
+                <Circle cx={center.x} cy={baseY + 15 * scale} r={45} opacity={0.25}>
+                    <RadialGradient
+                        c={vec(center.x, baseY + 15 * scale)}
+                        r={45}
+                        colors={['rgba(180,200,255,0.5)', 'transparent']}
+                    />
+                </Circle>
+            </Group>
+
+            {/* Stickman body */}
             <Line p1={pNeck} p2={pHip} paint={paint} />
-            {/* Legs */}
             <Line p1={pHip} p2={pLegL} paint={paint} />
             <Line p1={pHip} p2={pLegR} paint={paint} />
-            {/* Arms */}
             <Line p1={pShoulder} p2={pArmL} paint={paint} />
             <Line p1={pShoulder} p2={pArmR} paint={paint} />
 
-            {/* Head */}
             <Group transform={headTransform}>
                 <Circle cx={0} cy={0} r={11} color="white" />
             </Group>
@@ -426,26 +331,115 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
     );
 };
 
+// --- Label Overlay with Focus-based Sizing ---
+const LevelOverlayItem = ({
+    level,
+    scrollPos,
+    time,
+    onPress
+}: {
+    level: LevelNode,
+    scrollPos: SharedValue<number>,
+    time: SharedValue<number>,
+    onPress: (id: string, step: number) => void
+}) => {
+    const projection = useProjection(level.stepIndex, scrollPos, time, DEFAULT_SPIRAL);
+
+    const style = useAnimatedStyle(() => {
+        const { x, y, scale, opacity, zIndex, isFocused, focusDist } = projection.value;
+        const isVisible = scale > 0.4 && opacity > 0.1;
+
+        // Fade labels that are far from focus
+        const labelOpacity = isFocused
+            ? opacity
+            : opacity * interpolate(focusDist, [0.6, 3], [0.9, 0.4]);
+
+        return {
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            transform: [
+                { translateX: x - 45 },
+                { translateY: y - 50 },
+                { scale: scale }
+            ],
+            opacity: withTiming(isVisible ? labelOpacity : 0, { duration: 150 }),
+            zIndex: Math.floor(zIndex + 1000)
+        };
+    });
+
+    // Determine if focused for styling
+    const isFocusedStyle = useDerivedValue(() => projection.value.isFocused);
+
+    return (
+        <Animated.View style={[style, { pointerEvents: 'box-none' }]}>
+            <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => onPress(level.id, level.stepIndex)}
+                style={styles.levelLabelContainer}
+            >
+                <Text style={[
+                    styles.levelLabel,
+                    { color: level.color }
+                ]}>
+                    {level.label}
+                </Text>
+                <View style={styles.hitbox} />
+            </TouchableOpacity>
+        </Animated.View>
+    );
+};
+
+// --- Vignette Overlay ---
+const VignetteOverlay = () => (
+    <Group>
+        {/* Top vignette */}
+        <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.25}>
+            <LinearGradient
+                start={vec(0, 0)}
+                end={vec(0, SCREEN_HEIGHT * 0.25)}
+                colors={['rgba(0,0,0,0.6)', 'transparent']}
+            />
+        </Rect>
+        {/* Bottom vignette */}
+        <Rect x={0} y={SCREEN_HEIGHT * 0.75} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.25}>
+            <LinearGradient
+                start={vec(0, SCREEN_HEIGHT * 0.75)}
+                end={vec(0, SCREEN_HEIGHT)}
+                colors={['transparent', 'rgba(0,0,0,0.7)']}
+            />
+        </Rect>
+    </Group>
+);
+
+// --- Main Component ---
 export const SkiaSpiralImpl = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const scrollPos = useSharedValue(0);
     const isMoving = useSharedValue(false);
     const scrollStart = useSharedValue(0);
+    const time = useSharedValue(0);
 
-    // Vertical pan gesture for scrolling through levels
+    // Continuous time for micro-drift animation
+    useEffect(() => {
+        time.value = withRepeat(
+            withTiming(Math.PI * 20, { duration: 30000, easing: Easing.linear }),
+            -1,
+            false
+        );
+    }, []);
+
+    // Pan gesture for scrolling
     const panGesture = Gesture.Pan()
         .onStart(() => {
             scrollStart.value = scrollPos.value;
         })
         .onUpdate((e) => {
-            // Negative because dragging down should go to lower indices (ascend tower)
-            const sensitivity = 0.008; // Adjust for scroll speed
+            const sensitivity = 0.008;
             scrollPos.value = scrollStart.value - e.translationY * sensitivity;
-            // Clamp to valid range
             scrollPos.value = Math.max(0, Math.min(LEVELS.length - 1, scrollPos.value));
         })
         .onEnd((e) => {
-            // Momentum scrolling with decay
             const velocity = -e.velocityY * 0.008;
             scrollPos.value = withDecay({
                 velocity: velocity,
@@ -454,89 +448,84 @@ export const SkiaSpiralImpl = () => {
             });
         });
 
-    // Interaction Flow
+    const triggerHaptic = () => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    };
+
     const handleLevelPress = (id: string, stepIndex: number) => {
-        // 1. Animate to the selected level
+        triggerHaptic();
         isMoving.value = true;
 
-        // Calculate duration based on distance
         const distance = Math.abs(stepIndex - scrollPos.value);
+        const duration = 400 + Math.sqrt(distance) * 120;
 
-        // "Bigger discrepancy = bigger speed" logic:
-        const duration = 500 + Math.sqrt(distance) * 150;
-
+        // Use spring for "pop" effect on arrival
         scrollPos.value = withTiming(stepIndex, {
             duration: duration,
             easing: Easing.out(Easing.exp),
         }, (finished) => {
             if (finished) {
                 isMoving.value = false;
-                // 2. Navigate after arrival
                 runOnJS(navigateToMenu)(id);
             }
         });
     };
 
     const navigateToMenu = (id: string) => {
-        // Small delay for effect? No, immediate is better for responsiveness after move.
         navigation.navigate('LevelContentMenu', { levelId: id });
     };
 
     return (
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#0a0a12' }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#070812' }}>
             <GestureDetector gesture={panGesture}>
                 <Animated.View style={{ flex: 1 }}>
                     <Canvas style={{ flex: 1 }}>
                         <Group>
-                            {/* 0. Atmosphere Background */}
+                            {/* Premium Background */}
                             <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
                                 <RadialGradient
                                     c={vec(CENTER_X, CENTER_Y)}
-                                    r={SCREEN_WIDTH * 0.8}
-                                    colors={['#1a1520', '#000000']}
+                                    r={SCREEN_WIDTH * 0.9}
+                                    colors={['#151020', '#0a0810', '#050508']}
                                 />
                             </Rect>
 
-                            {/* 1. Dust Particles (Static for now, can animate if needed) */}
-                            {/* Just a few soft circles to break the void */}
-                            <Group opacity={0.3}>
-                                <Circle cx={CENTER_X * 0.5} cy={CENTER_Y * 0.5} r={2} color="white" />
-                                <Circle cx={CENTER_X * 1.5} cy={CENTER_Y * 0.2} r={3} color="white" opacity={0.5} />
-                                <Circle cx={CENTER_X * 0.8} cy={CENTER_Y * 0.8} r={1} color="white" />
-                                <Circle cx={CENTER_X * 1.2} cy={CENTER_Y * 0.6} r={2} color="white" />
+                            {/* Dust Particles */}
+                            <Group opacity={0.2}>
+                                <Circle cx={CENTER_X * 0.4} cy={CENTER_Y * 0.3} r={1.5} color="white" />
+                                <Circle cx={CENTER_X * 1.6} cy={CENTER_Y * 0.25} r={2} color="white" opacity={0.6} />
+                                <Circle cx={CENTER_X * 0.7} cy={CENTER_Y * 0.9} r={1} color="white" />
+                                <Circle cx={CENTER_X * 1.3} cy={CENTER_Y * 0.55} r={1.5} color="white" opacity={0.5} />
+                                <Circle cx={CENTER_X * 0.25} cy={CENTER_Y * 1.4} r={2} color="white" opacity={0.4} />
+                                <Circle cx={CENTER_X * 1.7} cy={CENTER_Y * 1.3} r={1} color="white" opacity={0.3} />
                             </Group>
 
-                            {/* Draw Landings */}
-                            {/* We render ALL, but since they are 2D paths, order matters. */}
-                            {/* We want back steps first. */}
-                            {LEVELS.map((level, i) => (
+                            {/* Platforms */}
+                            {LEVELS.map((level) => (
                                 <LandingItem
                                     key={level.id}
                                     level={level}
                                     scrollPos={scrollPos}
-                                    index={i}
+                                    time={time}
                                 />
                             ))}
 
-                            {/* Stickman - Scaled up and black */}
-                            <Group transform={[{ scale: 1.5 }, { translateX: -CENTER_X * 0.5 }, { translateY: -CENTER_Y * 0.5 }]}>
-                                {/* Scale pivot is 0,0 default, so we need to adjust or just scale path logic? 
-                             Easier to scale group but center is tricky. 
-                             Actually, let's just adjust the stickman logic to draw bigger. 
-                         */}
-                            </Group>
-                            {/* Retrying approach: Update SkiaStickman component internal logic instead of group transform for cleaner position */}
+                            {/* Stickman */}
                             <SkiaStickman isMoving={isMoving} />
+
+                            {/* Vignette */}
+                            <VignetteOverlay />
                         </Group>
                     </Canvas>
 
-                    {/* Overlay Interactables */}
+                    {/* Label Overlay */}
                     <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
                         {LEVELS.map((level) => (
                             <LevelOverlayItem
                                 key={level.id}
                                 level={level}
                                 scrollPos={scrollPos}
+                                time={time}
                                 onPress={handleLevelPress}
                             />
                         ))}
@@ -551,18 +540,20 @@ const styles = StyleSheet.create({
     levelLabelContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        width: 80,
+        width: 90,
     },
     levelLabel: {
-        fontSize: 14,
-        fontWeight: '700',
-        textShadowColor: 'rgba(0,0,0,0.8)',
-        textShadowRadius: 4,
+        fontSize: 13,
+        fontWeight: '600',
+        letterSpacing: 0.3,
+        textShadowColor: 'rgba(0,0,0,0.95)',
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 6,
         marginBottom: 5,
         textAlign: 'center',
     },
     hitbox: {
-        width: 60,
-        height: 40,
+        width: 70,
+        height: 45,
     }
 });
