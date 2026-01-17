@@ -160,12 +160,9 @@ const LandingItem = ({
     });
 
     const groupOpacity = useDerivedValue(() => {
-        const { opacity, isFocused, focusDist } = projection.value;
-        // Keep all levels visible - only subtle dimming for distant ones
-        const baseOpacity = Math.max(0.7, opacity); // Never go below 70%
-        if (isFocused) return Math.min(1, baseOpacity * 1.15);
-        // Very gentle fade for distant levels
-        return baseOpacity * interpolate(focusDist, [0.6, 8], [1, 0.85]);
+        const { opacity, isFocused } = projection.value;
+        // Simple depth-based opacity, no focus fading
+        return isFocused ? Math.min(1, opacity * 1.1) : opacity;
     });
 
     // Dynamic glow based on focus
@@ -175,10 +172,9 @@ const LandingItem = ({
     });
 
     const glowOpacity = useDerivedValue(() => {
-        const { isFocused, focusDist } = projection.value;
-        // Focused gets brighter glow, but non-focused still visible
-        if (isFocused) return 0.75;
-        return interpolate(focusDist, [0.6, 6], [0.55, 0.4]);
+        const { isFocused } = projection.value;
+        // Focused gets slightly brighter glow
+        return isFocused ? 0.7 : 0.55;
     });
 
     // Dynamic outline opacity
@@ -349,13 +345,10 @@ const LevelOverlayItem = ({
 
     const style = useAnimatedStyle(() => {
         const { x, y, scale, opacity, zIndex, isFocused, focusDist } = projection.value;
-        const isVisible = scale > 0.3 && opacity > 0.05;
+        const isVisible = scale > 0.3;
 
-        // Keep labels visible - gentle fade for distant levels
-        const baseOpacity = Math.max(0.6, opacity);
-        const labelOpacity = isFocused
-            ? baseOpacity
-            : baseOpacity * interpolate(focusDist, [0.6, 8], [1, 0.75]);
+        // Simple opacity - no focus-based fading
+        const labelOpacity = isFocused ? Math.min(1, opacity * 1.1) : opacity;
 
         return {
             position: 'absolute',
