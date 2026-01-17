@@ -29,6 +29,7 @@ import {
     useDerivedValue,
     withRepeat,
     withTiming,
+    withDecay,
     Easing,
     SharedValue,
     useAnimatedStyle,
@@ -39,6 +40,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../navigation/types';
 import Animated from 'react-native-reanimated';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { LEVELS, TOTAL_STEPS, LevelNode } from '../levelGraph';
 import { SpiralConfig, DEFAULT_SPIRAL, spiralPose } from '../mathSpiral';
@@ -427,10 +429,30 @@ export const SkiaSpiralImpl = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const scrollPos = useSharedValue(0);
     const isMoving = useSharedValue(false);
+    const scrollStart = useSharedValue(0);
 
     const navigateToMenu = (id: string) => {
         navigation.navigate('LevelContentMenu', { levelId: id });
     };
+
+    // Pan gesture for vertical scrolling
+    const panGesture = Gesture.Pan()
+        .onStart(() => {
+            scrollStart.value = scrollPos.value;
+        })
+        .onUpdate((e) => {
+            const sensitivity = 0.008;
+            scrollPos.value = scrollStart.value - e.translationY * sensitivity;
+            scrollPos.value = Math.max(0, Math.min(LEVELS.length - 1, scrollPos.value));
+        })
+        .onEnd((e) => {
+            const velocity = -e.velocityY * 0.008;
+            scrollPos.value = withDecay({
+                velocity: velocity,
+                clamp: [0, LEVELS.length - 1],
+                deceleration: 0.995,
+            });
+        });
 
     // Interaction Flow
     const handleLevelPress = (id: string, stepIndex: number) => {
@@ -461,79 +483,83 @@ export const SkiaSpiralImpl = () => {
     };
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#0a0a12' }}>
-            <Canvas style={{ flex: 1 }}>
-                <Group>
-                    {/* 0. Atmosphere Background */}
-                    <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-                        <RadialGradient
-                            c={vec(CENTER_X, CENTER_Y)}
-                            r={SCREEN_WIDTH * 0.8}
-                            colors={['#1a1520', '#000000']}
-                        />
-                    </Rect>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#0a0a12' }}>
+            <GestureDetector gesture={panGesture}>
+                <Animated.View style={{ flex: 1 }}>
+                    <Canvas style={{ flex: 1 }}>
+                        <Group>
+                            {/* 0. Atmosphere Background */}
+                            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
+                                <RadialGradient
+                                    c={vec(CENTER_X, CENTER_Y)}
+                                    r={SCREEN_WIDTH * 0.8}
+                                    colors={['#1a1520', '#000000']}
+                                />
+                            </Rect>
 
-                    {/* 1. Dust Particles (Static for now, can animate if needed) */}
-                    {/* Just a few soft circles to break the void */}
-                    <Group opacity={0.3}>
-                        <Circle cx={CENTER_X * 0.5} cy={CENTER_Y * 0.5} r={2} color="white" />
-                        <Circle cx={CENTER_X * 1.5} cy={CENTER_Y * 0.2} r={3} color="white" opacity={0.5} />
-                        <Circle cx={CENTER_X * 0.8} cy={CENTER_Y * 0.8} r={1} color="white" />
-                        <Circle cx={CENTER_X * 1.2} cy={CENTER_Y * 0.6} r={2} color="white" />
-                    </Group>
+                            {/* 1. Dust Particles (Static for now, can animate if needed) */}
+                            {/* Just a few soft circles to break the void */}
+                            <Group opacity={0.3}>
+                                <Circle cx={CENTER_X * 0.5} cy={CENTER_Y * 0.5} r={2} color="white" />
+                                <Circle cx={CENTER_X * 1.5} cy={CENTER_Y * 0.2} r={3} color="white" opacity={0.5} />
+                                <Circle cx={CENTER_X * 0.8} cy={CENTER_Y * 0.8} r={1} color="white" />
+                                <Circle cx={CENTER_X * 1.2} cy={CENTER_Y * 0.6} r={2} color="white" />
+                            </Group>
 
-                    {/* Draw Landings */}
-                    {/* We render ALL, but since they are 2D paths, order matters. */}
-                    {/* We want back steps first. */}
-                    {LEVELS.map((level, i) => (
-                        <LandingItem
-                            key={level.id}
-                            level={level}
-                            scrollPos={scrollPos}
-                            index={i}
-                        />
-                    ))}
+                            {/* Draw Landings */}
+                            {/* We render ALL, but since they are 2D paths, order matters. */}
+                            {/* We want back steps first. */}
+                            {LEVELS.map((level, i) => (
+                                <LandingItem
+                                    key={level.id}
+                                    level={level}
+                                    scrollPos={scrollPos}
+                                    index={i}
+                                />
+                            ))}
 
-                    {/* Stickman - Scaled up and black */}
-                    <Group transform={[{ scale: 1.5 }, { translateX: -CENTER_X * 0.5 }, { translateY: -CENTER_Y * 0.5 }]}>
-                        {/* Scale pivot is 0,0 default, so we need to adjust or just scale path logic? 
+                            {/* Stickman - Scaled up and black */}
+                            <Group transform={[{ scale: 1.5 }, { translateX: -CENTER_X * 0.5 }, { translateY: -CENTER_Y * 0.5 }]}>
+                                {/* Scale pivot is 0,0 default, so we need to adjust or just scale path logic? 
                              Easier to scale group but center is tricky. 
                              Actually, let's just adjust the stickman logic to draw bigger. 
                          */}
-                    </Group>
-                    {/* Retrying approach: Update SkiaStickman component internal logic instead of group transform for cleaner position */}
-                    <SkiaStickman isMoving={isMoving} />
+                            </Group>
+                            {/* Retrying approach: Update SkiaStickman component internal logic instead of group transform for cleaner position */}
+                            <SkiaStickman isMoving={isMoving} />
 
-                    {/* Vignette Overlay - top and bottom fade to black */}
-                    <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.2}>
-                        <LinearGradient
-                            start={vec(0, 0)}
-                            end={vec(0, SCREEN_HEIGHT * 0.2)}
-                            colors={['rgba(0,0,0,0.5)', 'transparent']}
-                        />
-                    </Rect>
-                    <Rect x={0} y={SCREEN_HEIGHT * 0.8} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.2}>
-                        <LinearGradient
-                            start={vec(0, SCREEN_HEIGHT * 0.8)}
-                            end={vec(0, SCREEN_HEIGHT)}
-                            colors={['transparent', 'rgba(0,0,0,0.6)']}
-                        />
-                    </Rect>
-                </Group>
-            </Canvas>
+                            {/* Vignette Overlay - top and bottom fade to black */}
+                            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.2}>
+                                <LinearGradient
+                                    start={vec(0, 0)}
+                                    end={vec(0, SCREEN_HEIGHT * 0.2)}
+                                    colors={['rgba(0,0,0,0.5)', 'transparent']}
+                                />
+                            </Rect>
+                            <Rect x={0} y={SCREEN_HEIGHT * 0.8} width={SCREEN_WIDTH} height={SCREEN_HEIGHT * 0.2}>
+                                <LinearGradient
+                                    start={vec(0, SCREEN_HEIGHT * 0.8)}
+                                    end={vec(0, SCREEN_HEIGHT)}
+                                    colors={['transparent', 'rgba(0,0,0,0.6)']}
+                                />
+                            </Rect>
+                        </Group>
+                    </Canvas>
 
-            {/* Overlay Interactables */}
-            <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-                {LEVELS.map((level) => (
-                    <LevelOverlayItem
-                        key={level.id}
-                        level={level}
-                        scrollPos={scrollPos}
-                        onPress={handleLevelPress}
-                    />
-                ))}
-            </View>
-        </View>
+                    {/* Overlay Interactables */}
+                    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+                        {LEVELS.map((level) => (
+                            <LevelOverlayItem
+                                key={level.id}
+                                level={level}
+                                scrollPos={scrollPos}
+                                onPress={handleLevelPress}
+                            />
+                        ))}
+                    </View>
+                </Animated.View>
+            </GestureDetector>
+        </GestureHandlerRootView>
     );
 };
 
