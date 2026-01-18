@@ -218,7 +218,13 @@ export default function LevelChapterScreen() {
       <View style={styles.header}>
         <Pressable
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => {
+            if (navigation.canGoBack()) {
+              navigation.goBack();
+            } else {
+              navigation.navigate('Main' as never);
+            }
+          }}
           hitSlop={20}
         >
           <Ionicons name="chevron-back" size={24} color={theme.textPrimary} />
