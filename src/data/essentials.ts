@@ -110,7 +110,8 @@ export const essentialItems: EssentialItem[] = [
       screen: 'PowerVsForce',
     },
     icon: 'flash-outline',
-    tier: 'deep-dive',
+    tier: 'foundation',
+    isFoundation: true,
     related: ['effort', 'non-reactivity', 'intention'],
   },
   {
@@ -121,7 +122,8 @@ export const essentialItems: EssentialItem[] = [
       screen: 'LevelsOfTruth',
     },
     icon: 'document-text-outline',
-    tier: 'deep-dive',
+    tier: 'foundation',
+    isFoundation: true,
     related: ['intention', 'knowledge', 'what-you-really-are'],
   },
   {
@@ -275,7 +277,8 @@ export const essentialItems: EssentialItem[] = [
       screen: 'CommonTraps',
     },
     icon: 'sync-outline',
-    tier: 'deep-dive',
+    tier: 'foundation',
+    isFoundation: true,
     related: ['knowledge', 'letting-go', 'shadow-work'],
   },
   {
@@ -297,7 +300,8 @@ export const essentialItems: EssentialItem[] = [
       screen: 'RoomOfLevels',
     },
     icon: 'cloud-outline',
-    tier: 'deep-dive',
+    tier: 'foundation',
+    isFoundation: true,
     related: ['feelings-explained', 'shadow-work', 'letting-go'],
     takeaways: [
       'Transmuting dense energy into power',
