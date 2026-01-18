@@ -345,6 +345,23 @@ export default function JournalScreen() {
             {/* Current Entry Section */}
             {!showingPastEntries ? (
               <>
+                {/* Spiritual Purpose Section */}
+                <View style={styles.purposeCard}>
+                  <View style={styles.purposeHeader}>
+                    <Ionicons name="heart" size={20} color={theme.primary} />
+                    <Text style={styles.purposeTitle}>The Purpose of Your Journal</Text>
+                  </View>
+                  <Text style={styles.purposeText}>
+                    This is a safe space for you to express your thoughts and emotions freely.
+                  </Text>
+                  <Text style={styles.purposeText}>
+                    As you revisit old entries, notice how they have passed. You are not your thoughts or emotions—you are the awareness that observes them.
+                  </Text>
+                  <Text style={styles.purposeText}>
+                    Spiritual progress isn't linear. Every "bad" day is a beautiful opportunity for growth, forgiveness, and deeper understanding. Be gentle with yourself.
+                  </Text>
+                </View>
+
                 {/* Gentle Prompts */}
                 <View style={styles.promptsSection}>
                   <View style={styles.promptsHeader}>
@@ -683,7 +700,9 @@ export default function JournalScreen() {
                     <View style={styles.modalChipContainer}>
                       {filteredEmotions.map((emotion) => (
                         <React.Fragment key={emotion.label}>
-                          {[emotion.label, ...emotion.synonyms.slice(0, 2)].map((label) => (
+                          {([emotion.label, ...emotion.synonyms]).filter(l =>
+                            !['Shame', 'Guilt', 'Apathy', 'Grief', 'Fear', 'Desire', 'Anger', 'Pride'].includes(l)
+                          ).slice(0, 3).map((label) => (
                             <TouchableOpacity
                               key={label}
                               onPress={() => {
@@ -804,7 +823,9 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       marginRight: spacing.sm,
     },
     promptCard: {
-      backgroundColor: 'rgba(255, 255, 255, 0.6)',
+      backgroundColor: theme.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(255, 255, 255, 0.6)',
       paddingHorizontal: spacing.md,
       paddingVertical: spacing.sm,
       borderRadius: borderRadius.lg,
@@ -812,7 +833,9 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       alignItems: 'center',
       gap: spacing.xs,
       borderWidth: 1,
-      borderColor: 'rgba(203, 213, 225, 0.5)',
+      borderColor: theme.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(203, 213, 225, 0.5)',
       marginRight: spacing.sm,
     },
     promptCardSelected: {
@@ -858,17 +881,21 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     },
     writingSection: {
       backgroundColor: theme.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.05)'
+        ? 'rgba(139, 92, 246, 0.08)' // Premium violet tint
         : 'rgba(255, 255, 255, 0.7)',
       borderRadius: borderRadius.xl,
       padding: spacing.lg,
-      borderWidth: glowEnabled ? (theme.mode === 'dark' ? 2 : 2) : (theme.mode === 'dark' ? 1 : 1),
-      borderColor: glowEnabled
-        ? (theme.mode === 'dark' ? toRgba(theme.primary, 0.8) : toRgba(theme.primary, 0.95))
-        : (theme.mode === 'dark'
-          ? 'rgba(255, 255, 255, 0.08)'
-          : 'rgba(203, 213, 225, 0.4)'),
+      borderWidth: 1.5,
+      borderColor: theme.mode === 'dark'
+        ? 'rgba(139, 92, 246, 0.25)' // Soft violet border
+        : 'rgba(203, 213, 225, 0.4)',
       marginBottom: spacing.xl,
+      ...(glowEnabled && theme.mode === 'dark' && {
+        shadowColor: theme.primary,
+        shadowOpacity: 0.15,
+        shadowRadius: 20,
+        shadowOffset: { width: 0, height: 4 },
+      }),
     },
     writingHeader: {
       flexDirection: 'row',
@@ -887,6 +914,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       lineHeight: 24,
       minHeight: 200,
       padding: 0,
+      textAlignVertical: 'top',
     },
     actionButtons: {
       flexDirection: 'row',
@@ -970,12 +998,16 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       marginBottom: spacing.lg,
     },
     entryCard: {
-      backgroundColor: 'rgba(255, 255, 255, 0.7)',
+      backgroundColor: theme.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(255, 255, 255, 0.7)',
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
       marginBottom: spacing.md,
       borderWidth: 1,
-      borderColor: 'rgba(203, 213, 225, 0.4)',
+      borderColor: theme.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(203, 213, 225, 0.4)',
     },
     entryHeader: {
       flexDirection: 'row',
@@ -1097,6 +1129,33 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     moodSelectorText: {
       fontSize: typography.body,
       fontWeight: '600',
+    },
+    purposeCard: {
+      backgroundColor: theme.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.03)'
+        : 'rgba(255, 255, 255, 0.5)',
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      marginBottom: spacing.xl,
+      borderWidth: 1,
+      borderColor: theme.border,
+    },
+    purposeHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: spacing.md,
+    },
+    purposeTitle: {
+      fontSize: typography.body,
+      fontWeight: 'bold',
+      color: theme.textPrimary,
+    },
+    purposeText: {
+      fontSize: typography.small,
+      color: theme.textSecondary,
+      lineHeight: 20,
+      marginBottom: spacing.sm,
     },
     moodSelectorPlaceholder: {
       fontSize: typography.body,
