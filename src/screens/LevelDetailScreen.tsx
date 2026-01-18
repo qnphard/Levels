@@ -12,7 +12,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { getLevelById } from '../data/levels';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import {
   useThemeColors,
   typography,
@@ -288,6 +288,7 @@ const adjustColor = (color: string, amount: number): string => {
 };
 
 const toRgba = (color: string, alpha = 1): string => {
+  if (color.startsWith('rgba')) return color;
   const hex = color.replace('#', '');
   const expand = (value: string) =>
     parseInt(value.length === 1 ? value + value : value, 16);

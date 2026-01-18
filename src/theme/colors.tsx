@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { typography as typographyFull } from './typography';
 
 // Palette tuned for the Settle -> Notice -> Release -> Rest arc.
 // Each hue carries a psychological intent (sage = safety, sand = groundedness, gold/peach = gentle humanity).
@@ -439,21 +440,15 @@ export const useGlowToggle = (): (() => void) => {
 };
 
 export const typography = {
-  headerFont: 'System',
-  bodyFont: 'System',
-  h1: 32,
-  h2: 28,
-  h3: 24,
-  h4: 20,
-  body: 16,
-  small: 14,
-  tiny: 12,
-  light: '300' as const,
-  regular: '400' as const,
-  medium: '500' as const,
-  semibold: '600' as const,
-  bold: '700' as const,
-  lineHeight: 1.6,
+  ...typographyFull,
+  h1: typographyFull.sizes.h1,
+  h2: typographyFull.sizes.h2,
+  h3: typographyFull.sizes.h3,
+  h4: typographyFull.sizes.caption,
+  body: typographyFull.sizes.body,
+  small: typographyFull.sizes.small,
+  bold: typographyFull.weights.bold,
+  regular: typographyFull.weights.regular,
 };
 
 export const spacing = {

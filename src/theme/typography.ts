@@ -72,6 +72,12 @@ export const typography = {
             letterSpacing: -0.3,
             fontWeight: '600',
         } as TextStyle,
+        h3: {
+            fontSize: 20,
+            lineHeight: 28,
+            letterSpacing: -0.2,
+            fontWeight: '600',
+        } as TextStyle,
         body: {
             fontSize: 16,
             lineHeight: 28, // Breathable

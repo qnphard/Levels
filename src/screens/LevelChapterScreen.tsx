@@ -138,18 +138,18 @@ export default function LevelChapterScreen() {
 
       <GlassSurface style={styles.infoCard}>
         <Text style={styles.sectionTitle}>What this level feels like</Text>
-        <Text style={styles.sectionBody}>{item.description}</Text>
+        <Text style={[styles.sectionBody, { color: theme.textPrimary }]}>{item.description}</Text>
       </GlassSurface>
 
       <View style={styles.splitRow}>
         <GlassSurface style={[styles.splitCard, { flex: 1 }]}>
-          <Text style={[styles.splitTitle, { color: toRgba(theme.textSecondary, 0.8) }]}>The Trap</Text>
-          <Text style={[styles.splitBody, { fontStyle: 'italic' }]}>{item.trapDescription}</Text>
+          <Text style={[styles.splitTitle, { color: theme.mode === 'dark' ? '#FF6B6B' : theme.textSecondary }]}>The Trap</Text>
+          <Text style={[styles.splitBody, { fontStyle: 'italic', color: theme.textPrimary }]}>{item.trapDescription}</Text>
         </GlassSurface>
 
         <GlassSurface style={[styles.splitCard, { flex: 1, borderColor: toRgba(luminousAccent, 0.4) }]} intensity={50}>
           <Text style={[styles.splitTitle, { color: luminousAccent }]}>Way Through</Text>
-          <Text style={styles.splitBody}>{item.wayThrough}</Text>
+          <Text style={[styles.splitBody, { color: theme.textPrimary }]}>{item.wayThrough}</Text>
         </GlassSurface>
       </View>
 
@@ -295,6 +295,9 @@ const adjustColor = (color: string, amount: number): string => {
 };
 
 const toRgba = (color: string, alpha = 1): string => {
+  if (color.startsWith('rgba')) {
+    return color; // Already rgba
+  }
   const hex = color.replace('#', '');
   const expand = (v: string) => parseInt(v.length === 1 ? v + v : v, 16);
   const r = expand(hex.substring(0, hex.length >= 6 ? 2 : 1));
@@ -448,7 +451,7 @@ const getStyles = (theme: ThemeColors, accent: string, windowWidth: number, glow
     splitBody: {
       fontSize: 14,
       lineHeight: 22,
-      color: theme.textPrimary,
+      // Color is handled inline to ensure contrast
     },
     meditationCard: {
       marginBottom: spacing.md,
