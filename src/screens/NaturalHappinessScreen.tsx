@@ -154,7 +154,7 @@ export default function NaturalHappinessScreen() {
           screen="natural-happiness"
           section="main"
           id="joy-desc"
-          originalContent="As you consistently let go of the lower energy fields, you eventually reach the level of Joy (540). Here, happiness becomes internal and autonomous. It no longer needs a 'reason' to exist. You are happy because your connection to the Source of life is finally unobstructed."
+          originalContent="As you consistently let go of the lower energy fields, you eventually reach the level of Joy. Here, happiness becomes internal and autonomous. It no longer needs a 'reason' to exist. You are happy because your connection to the Source of life is finally unobstructed."
           textStyle={cardStyles.paragraph}
           type="paragraph"
         />
@@ -166,7 +166,7 @@ export default function NaturalHappinessScreen() {
               screen="natural-happiness"
               section="main"
               id="insight-title"
-              originalContent="Joy (540) vs Pleasure"
+              originalContent="Joy vs Pleasure"
               textStyle={cardStyles.insightTitle}
               type="title"
             />

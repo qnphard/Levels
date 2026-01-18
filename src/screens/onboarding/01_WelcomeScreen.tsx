@@ -1,63 +1,78 @@
-import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity, Text, StatusBar, Image, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import Animated, {
-    useSharedValue,
-    useAnimatedStyle,
-    withTiming,
-    withDelay,
-    Easing,
-} from 'react-native-reanimated';
 import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { LivingBackground } from '../../components/LivingBackground';
+import { KineticText } from '../../components/KineticText';
+import PrimaryButton from '../../components/PrimaryButton';
+import { useThemeColors } from '../../theme/colors';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Welcome'>;
+const { width } = Dimensions.get('window');
 
 const WelcomeScreen = () => {
     const navigation = useNavigation<NavigationProp>();
     const completeOnboarding = useOnboardingStore(s => s.completeOnboarding);
-    const line1Opacity = useSharedValue(0);
-    const line2Opacity = useSharedValue(0);
-    const buttonOpacity = useSharedValue(0);
+    const theme = useThemeColors();
 
-    useEffect(() => {
-        // Significantly snappier timing: full message and button visible within ~1.3 seconds
-        line1Opacity.value = withTiming(1, { duration: 600, easing: Easing.ease });
-        line2Opacity.value = withDelay(400, withTiming(1, { duration: 600, easing: Easing.ease }));
-        buttonOpacity.value = withDelay(800, withTiming(1, { duration: 500, easing: Easing.ease }));
-    }, []);
-
-    const line1Style = useAnimatedStyle(() => ({ opacity: line1Opacity.value }));
-    const line2Style = useAnimatedStyle(() => ({ opacity: line2Opacity.value }));
-    const buttonStyle = useAnimatedStyle(() => ({ opacity: buttonOpacity.value }));
+    const handleSkip = () => {
+        completeOnboarding();
+    };
 
     return (
         <View style={styles.container}>
+            {/* Status bar dark because background is light */}
+            <StatusBar barStyle="dark-content" />
+
+            {/* Using Light mode for uplifting/morning vibe */}
+            <LivingBackground mode="light" />
+
             <View style={styles.content}>
-                <Animated.Text style={[styles.headline, line1Style]}>
-                    You don't need to add anything
-                </Animated.Text>
-                <Animated.Text style={[styles.headline, line2Style]}>
-                    to be whole.
-                </Animated.Text>
+                {/* Logo Area - Replaces Text */}
+                <View style={styles.logoContainer}>
+                    <Image
+                        source={require('../../../assets/images/levels-logo.png')}
+                        style={styles.logo}
+                        resizeMode="contain"
+                    />
+                </View>
+
+                {/* Main Message - Dark text for contrast */}
+                <View style={styles.messageContainer}>
+                    <KineticText
+                        type="h2"
+                        style={styles.headline}
+                        delay={600}
+                    >
+                        You don't have to do this alone.
+                    </KineticText>
+                    <KineticText
+                        type="h3"
+                        style={[styles.subheadline]}
+                        delay={1400}
+                    >
+                        We can walk this journey together.
+                    </KineticText>
+                </View>
             </View>
 
-            <Animated.View style={[styles.buttonContainer, buttonStyle]}>
-                <TouchableOpacity
-                    style={styles.button}
+            <View style={styles.footer}>
+                <PrimaryButton
+                    label="Help me with a quick relief"
                     onPress={() => navigation.navigate('SpectrumCheck')}
-                >
-                    <Text style={styles.buttonText}>Begin</Text>
-                </TouchableOpacity>
+                    backgroundColor="#2D3142"
+                    textColor="#ffffff"
+                />
 
-                <TouchableOpacity
-                    style={styles.skipButton}
-                    onPress={() => completeOnboarding()}
-                >
-                    <Text style={styles.skipButtonText}>I don't feel bad</Text>
-                </TouchableOpacity>
-            </Animated.View>
+                <PrimaryButton
+                    label="Enter Levels"
+                    onPress={handleSkip}
+                    backgroundColor="#2D3142"
+                    textColor="#ffffff"
+                />
+            </View>
         </View>
     );
 };
@@ -65,50 +80,56 @@ const WelcomeScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0a0a0f',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 32,
+        backgroundColor: '#FAF9F6', // Light fallback
     },
     content: {
         flex: 1,
         justifyContent: 'center',
+        paddingHorizontal: 32,
+    },
+    logoContainer: {
         alignItems: 'center',
+        marginBottom: 40,
+        height: 100, // Reserve space
+        justifyContent: 'center',
+    },
+    logo: {
+        width: width * 0.6, // 60% of screen width
+        height: 100,
+    },
+    messageContainer: {
+        alignItems: 'center',
+        gap: 24,
     },
     headline: {
-        fontSize: 32,
-        fontWeight: '300',
-        color: '#f0f0f5',
         textAlign: 'center',
-        lineHeight: 44,
+        fontSize: 28, // Slightly smaller to balance with visual logo
+        fontWeight: '400',
+        lineHeight: 40,
+        color: '#1c1c1e', // Dark text
     },
-    buttonContainer: {
-        paddingBottom: 60,
-        width: '100%',
-    },
-    button: {
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        paddingVertical: 18,
-        paddingHorizontal: 48,
-        borderRadius: 30,
-        borderWidth: 1,
-        borderColor: 'rgba(255, 255, 255, 0.2)',
-        alignItems: 'center',
-    },
-    buttonText: {
-        color: '#f0f0f5',
+    subheadline: {
+        textAlign: 'center',
         fontSize: 18,
-        fontWeight: '500',
+        fontWeight: '400',
+        lineHeight: 28,
+        color: '#48484a', // Dark Gray
+    },
+    footer: {
+        padding: 32,
+        paddingBottom: 60,
+        gap: 24,
     },
     skipButton: {
-        marginTop: 20,
-        paddingVertical: 12,
         alignItems: 'center',
+        padding: 12,
     },
     skipButtonText: {
-        color: 'rgba(255, 255, 255, 0.4)',
+        color: '#6e6e73', // Muted Gray
         fontSize: 16,
-        fontWeight: '400',
+        fontWeight: '500',
+        letterSpacing: 0.5,
+        textDecorationLine: 'underline',
     },
 });
 

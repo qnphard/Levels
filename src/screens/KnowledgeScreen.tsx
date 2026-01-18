@@ -99,7 +99,7 @@ export default function KnowledgeScreen() {
           screen="knowledge"
           section="main"
           id="intro"
-          originalContent="The linear mind collects facts, data, and 'information about' things. This is a level 400 activity (Reason). While useful for mapping out the spiritual path, it can eventually become a primary obstacle. The mind thinks that because it 'understands' a concept, it has 'achieved' it."
+          originalContent="The linear mind collects facts, data, and 'information about' things. This is a Reason-level activity. While useful for mapping out the spiritual path, it can eventually become a primary obstacle. The mind thinks that because it 'understands' a concept, it has 'achieved' it."
           textStyle={cardStyles.paragraph}
           type="paragraph"
         />
@@ -121,7 +121,7 @@ export default function KnowledgeScreen() {
           screen="knowledge"
           section="main"
           id="realization-desc"
-          originalContent="Realization (level 600 and above) is not an 'addition' to what the mind knows, but a total shift in context. It is the move from the linear ('I know this') to the nonlinear ('This is'). Knowledge is a possession of the ego; Realization is the dissolution of the ego into the Truth. In Silence, the Truth reveals itself."
+          originalContent="Realization (the level of Enlightenment and above) is not an 'addition' to what the mind knows, but a total shift in context. It is the move from the linear ('I know this') to the nonlinear ('This is'). Knowledge is a possession of the ego; Realization is the dissolution of the ego into the Truth. In Silence, the Truth reveals itself."
           textStyle={cardStyles.paragraph}
           type="paragraph"
         />
@@ -142,7 +142,7 @@ export default function KnowledgeScreen() {
             screen="knowledge"
             section="main"
             id="ceiling-text"
-            originalContent="The level of Reason (400) is the highest level of the linear mind. It is brilliant but limited by its own logic. To reach the level of Love (500) and Peace (600), one must be willing to let go of the need for 'explanations' and step into the radical simplicity of direct experience."
+            originalContent="The level of Reason is the highest level of the linear mind. It is brilliant but limited by its own logic. To reach the level of Love and Peace, one must be willing to let go of the need for 'explanations' and step into the radical simplicity of direct experience."
             textStyle={cardStyles.insightText}
             type="paragraph"
           />

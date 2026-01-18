@@ -157,7 +157,7 @@ export default function PositiveReprogrammingScreen() {
             screen="positive-reprogramming"
             section="main"
             id="forceful"
-            originalContent="Many people try to 'force' positive thinking through sheer will. This is a level 200 activity trying to fix a level 100 problem. It creates massive internal conflict because the deep feelings ('I am not enough') contradict the surface thoughts ('I am successful'). The mind senses this as a lie, creating more stress."
+            originalContent="Many people try to 'force' positive thinking through sheer will. This is a Courage-level activity trying to fix a Fear-level problem. It creates massive internal conflict because the deep feelings ('I am not enough') contradict the surface thoughts ('I am successful'). The mind senses this as a lie, creating more stress."
             textStyle={cardStyles.warningText}
             type="paragraph"
           />

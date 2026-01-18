@@ -85,7 +85,7 @@ export default function RelaxingScreen() {
           screen="relaxing"
           section="main"
           id="intro"
-          originalContent="True relaxation is a quality of the level of Neutrality (250) and above. Below this level, even when the body is still, the mind is often racing with 'Force-based' desires. To truly relax, we must address the Body, the Mind, and the Spirit simultaneously."
+          originalContent="True relaxation is a quality of the level of Neutrality and above. Below this level, even when the body is still, the mind is often racing with 'Force-based' desires. To truly relax, we must address the Body, the Mind, and the Spirit simultaneously."
           textStyle={cardStyles.paragraph}
           type="paragraph"
         />

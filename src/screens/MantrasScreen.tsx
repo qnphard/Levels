@@ -140,7 +140,7 @@ export default function MantrasScreen() {
         {/* Categorized Mantras */}
         {[
           {
-            category: "Foundational Security (Level 200+)",
+            category: "Foundational Security (Courage and above)",
             items: [
               "I am safe to feel what I feel.",
               "I allow life to move through me.",
@@ -158,7 +158,7 @@ export default function MantrasScreen() {
             ]
           },
           {
-            category: "Divine Reality (Level 500+)",
+            category: "Divine Reality (Love and above)",
             items: [
               "I am loving awareness.",
               "My life is an expression of Divine Love.",
@@ -279,7 +279,7 @@ const getStyles = (theme: ThemeColors) =>
     headerTitle: {
       flex: 1,
       fontSize: typography.h3,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       color: theme.textPrimary,
       textAlign: 'center',
     },
@@ -288,7 +288,7 @@ const getStyles = (theme: ThemeColors) =>
     categorySection: { marginBottom: spacing.xl },
     categoryTitle: {
       fontSize: typography.h4,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       color: theme.textSecondary,
       marginBottom: spacing.md,
       marginLeft: spacing.xs,
@@ -309,7 +309,7 @@ const getStyles = (theme: ThemeColors) =>
       lineHeight: 24,
       marginBottom: spacing.md,
       fontStyle: 'italic',
-      fontWeight: typography.medium,
+      fontWeight: '500',
     },
     copyButton: {
       flexDirection: 'row',
@@ -328,7 +328,7 @@ const getStyles = (theme: ThemeColors) =>
     },
     copyButtonText: {
       fontSize: typography.small,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
       color: theme.feelingsChapters.violet,
     },
     copyButtonTextCopied: { color: '#FFFFFF' },

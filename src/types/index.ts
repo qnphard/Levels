@@ -82,7 +82,8 @@ export interface ConsciousnessLevel {
   physicalSigns: string[]; // Bodily sensations
   trapDescription: string; // What keeps people stuck here
   wayThrough: string; // How transformation happens
-  meditations: string[]; // Meditation IDs (placeholders for now)
+  meditations: string[]; // Meditation IDs
+  articles?: string[]; // Article IDs for LevelChapterScreen
   estimatedTime: number; // Suggested minutes of practice
   color: string; // Visual theme color
   gradient?: readonly [string, string]; // Optional gradient pair for UI treatments

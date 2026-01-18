@@ -190,7 +190,7 @@ export default function LevelsOfTruthScreen() {
             screen="levels-of-truth"
             section="main"
             id="facts-text"
-            originalContent="Facts are linear and can be used to prove almost anything depending on how they are framed. Truth is nonlinear and is a quality of being. A 'fact' stated with pride (175) has a different energetic truth than the same fact stated with love (500)."
+            originalContent="Facts are linear and can be used to prove almost anything depending on how they are framed. Truth is nonlinear and is a quality of being. A 'fact' stated with Pride has a different energetic truth than the same fact stated with Love."
             textStyle={cardStyles.insightText}
             type="paragraph"
           />

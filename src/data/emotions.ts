@@ -158,7 +158,11 @@ export const emotionClusters: EmotionCluster[] = [
       },
       {
         label: 'Burned out',
-        synonyms: ['drained', 'exhausted', 'over it', 'stuck', 'unmotivated', 'hopeless', 'why bother'],
+        synonyms: ['drained', 'exhausted', 'over it', 'stuck', 'unmotivated'],
+      },
+      {
+        label: 'Hopeless',
+        synonyms: ['despair', 'helpless', 'why bother', 'lifeless'],
       },
     ],
     color: 'slate',
@@ -176,8 +180,12 @@ export const emotionClusters: EmotionCluster[] = [
         synonyms: ['devastated', 'heavy-hearted', 'bereft', 'sorrow', 'blue', 'tearful'],
       },
       {
+        label: 'Sad',
+        synonyms: ['unhappy', 'mourning', 'rejected', 'let down', 'disappointed'],
+      },
+      {
         label: 'Lonely',
-        synonyms: ['missing you', 'homesick', 'disappointed', 'let down'],
+        synonyms: ['missing you', 'homesick', 'isolation'],
       },
     ],
     color: 'indigo',
@@ -196,10 +204,83 @@ export const emotionClusters: EmotionCluster[] = [
       },
       {
         label: 'Guilty',
-        synonyms: ['remorse', 'regret', 'beat myself up', 'my fault', 'over-apologizing'],
+        synonyms: ['remorse', 'regret', 'beat myself up', 'my fault', 'blame'],
+      },
+      {
+        label: 'Inadequate',
+        synonyms: ['exposed', 'defective', 'flawed', 'inferior'],
       },
     ],
     color: 'garnet',
+  },
+  // Empowerment cluster
+  {
+    id: 'empowerment',
+    label: 'Empowerment',
+    primaryLevelId: 'courage',
+    secondaryLevelIds: ['willingness', 'acceptance'],
+    relatedChapterIds: [],
+    emotions: [
+      {
+        label: 'Courageous',
+        synonyms: ['brave', 'confident', 'responsible', 'determined', 'resilient'],
+      },
+      {
+        label: 'Willing',
+        synonyms: ['open', 'helpful', 'cooperative', 'enthusiastic', 'optimistic'],
+      },
+      {
+        label: 'Accepting',
+        synonyms: ['harmonious', 'forgiving', 'balanced', 'settled', 'receptive'],
+      },
+      {
+        label: 'Clear',
+        synonyms: ['rational', 'objective', 'focused', 'logical', 'understanding'],
+      },
+    ],
+    color: 'teal',
+  },
+  // Heart-Centered cluster
+  {
+    id: 'heart-centered',
+    label: 'Heart-Centered',
+    primaryLevelId: 'love',
+    secondaryLevelIds: ['joy'],
+    relatedChapterIds: [],
+    emotions: [
+      {
+        label: 'Loving',
+        synonyms: ['compassionate', 'kind', 'affectionate', 'warm', 'inclusive'],
+      },
+      {
+        label: 'Joyful',
+        synonyms: ['blissful', 'happy', 'radiant', 'innocent', 'playful'],
+      },
+      {
+        label: 'Grateful',
+        synonyms: ['thankful', 'appreciative', 'blessed', 'content'],
+      },
+    ],
+    color: 'rose',
+  },
+  // Stillness cluster
+  {
+    id: 'stillness',
+    label: 'Stillness',
+    primaryLevelId: 'peace',
+    secondaryLevelIds: [],
+    relatedChapterIds: [],
+    emotions: [
+      {
+        label: 'Peaceful',
+        synonyms: ['serene', 'tranquil', 'calm', 'still', 'quiet'],
+      },
+      {
+        label: 'Present',
+        synonyms: ['aware', 'mindful', 'grounded', 'centered', 'observing'],
+      },
+    ],
+    color: 'violet',
   },
 ];
 
@@ -208,7 +289,7 @@ export const emotionClusters: EmotionCluster[] = [
  */
 export function getAllEmotionTerms(): Array<{ label: string; clusterId: string; levelId: string }> {
   const terms: Array<{ label: string; clusterId: string; levelId: string }> = [];
-  
+
   emotionClusters.forEach((cluster) => {
     cluster.emotions.forEach((emotion) => {
       // Add primary label
@@ -227,7 +308,7 @@ export function getAllEmotionTerms(): Array<{ label: string; clusterId: string; 
       });
     });
   });
-  
+
   return terms;
 }
 
@@ -236,7 +317,7 @@ export function getAllEmotionTerms(): Array<{ label: string; clusterId: string; 
  */
 export function findClusterByEmotion(emotionLabel: string): EmotionCluster | undefined {
   const normalized = emotionLabel.toLowerCase().trim();
-  
+
   for (const cluster of emotionClusters) {
     for (const emotion of cluster.emotions) {
       if (emotion.label.toLowerCase() === normalized) {
@@ -247,7 +328,7 @@ export function findClusterByEmotion(emotionLabel: string): EmotionCluster | und
       }
     }
   }
-  
+
   return undefined;
 }
 

@@ -25,11 +25,16 @@ image = (
     # Install MeloTTS from GitHub
     .run_commands(
         "git clone https://github.com/myshell-ai/MeloTTS.git /root/MeloTTS",
-        "cd /root/MeloTTS && pip install -e ."
+        "cd /root/MeloTTS && pip install -e .",
+        "python -m unidecode.util download"
     )
     # Download NLTK data
     .run_commands(
         "python -c \"import nltk; nltk.download('averaged_perceptron_tagger_eng')\""
+    )
+    # Pre-download the model to cache it in the image
+    .run_commands(
+        "python -c 'from melo.api import TTS; TTS(language=\"EN\")'"
     )
 )
 

@@ -228,7 +228,7 @@ export default function PowerVsForceScreen() {
             screen="power-vs-force"
             section="main"
             id="insight-text"
-            originalContent="A person who is aligned with the Power of unconditional love (500) has more influence on the collective consciousness than millions of people operating in the force of anger (150). Your inner state is your greatest contribution to the world."
+            originalContent="A person who is aligned with the Power of unconditional Love has more influence on the collective consciousness than millions of people operating in the force of Anger. Your inner state is your greatest contribution to the world."
             textStyle={cardStyles.insightText}
             type="paragraph"
           />

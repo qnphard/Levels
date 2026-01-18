@@ -6,6 +6,8 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Pressable,
+  Modal,
   KeyboardAvoidingView,
   Platform,
   Animated,
@@ -28,6 +30,9 @@ import PromptEditModal from '../components/PromptEditModal';
 import EditModeIndicator from '../components/EditModeIndicator';
 import FeatureExplanationOverlay from '../components/FeatureExplanationOverlay';
 import { useOnboardingStore } from '../store/onboardingStore';
+import { useUserStore, JournalEntry } from '../store/userStore';
+import { consciousnessLevels } from '../data/levels';
+import { emotionClusters } from '../data/emotions';
 
 // Helper to convert hex to rgba
 const toRgba = (hex: string, alpha: number): string => {
@@ -66,9 +71,23 @@ export default function JournalScreen() {
   const glowEnabled = useGlowEnabled();
   const { editModeEnabled } = useContentEdit();
   const styles = getStyles(theme, glowEnabled);
+
+  // Store integration
+  const journalEntries = useUserStore((s) => s.journalEntries);
+  const addJournalEntry = useUserStore((s) => s.addJournalEntry);
+  const deleteJournalEntry = useUserStore((s) => s.deleteJournalEntry);
+  const currentJournalStreak = useUserStore((s) => s.currentJournalStreak);
+
   const [journalText, setJournalText] = useState('');
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
-  const [entries, setEntries] = useState<Array<{ text: string; date: Date }>>([]);
+  const [selectedMood, setSelectedMood] = useState<{
+    levelId: string;
+    name: string;
+    color: string;
+    emotion?: string;
+  } | null>(null);
+  const [showMoodModal, setShowMoodModal] = useState(false);
+  const [moodSearchQuery, setMoodSearchQuery] = useState('');
   const [showingPastEntries, setShowingPastEntries] = useState(false);
   const [prompts, setPrompts] = useState<JournalPrompt[]>(DEFAULT_PROMPTS);
   const [editingPrompt, setEditingPrompt] = useState<JournalPrompt | undefined>(undefined);
@@ -153,14 +172,14 @@ export default function JournalScreen() {
 
   const handleSaveEntry = () => {
     if (journalText.trim()) {
-      const newEntry = {
+      addJournalEntry({
         text: journalText,
-        date: new Date(),
-      };
-      setEntries([newEntry, ...entries]);
+        promptId: selectedPrompt || undefined,
+        mood: selectedMood || undefined,
+      });
       setJournalText('');
       setSelectedPrompt(null);
-      // TODO: Save to persistent storage via context
+      setSelectedMood(null);
     }
   };
 
@@ -224,7 +243,8 @@ export default function JournalScreen() {
     }
   };
 
-  const formatDate = (date: Date) => {
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp);
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
@@ -309,12 +329,17 @@ export default function JournalScreen() {
         >
           <Animated.View style={{ opacity: fadeAnim }}>
             <EditModeIndicator />
-            {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.headerTitle}>Your Safe Space</Text>
-              <Text style={styles.headerSubtitle}>
-                Write freely. No judgment. Just you.
-              </Text>
+              <View>
+                <Text style={styles.headerTitle}>Journal</Text>
+                <Text style={styles.headerSubtitle}>Safe space for your thoughts</Text>
+              </View>
+              {currentJournalStreak > 0 && (
+                <View style={styles.streakBadge}>
+                  <Ionicons name="flame" size={20} color="#FF9800" />
+                  <Text style={styles.streakCount}>{currentJournalStreak}</Text>
+                </View>
+              )}
             </View>
 
             {/* Current Entry Section */}
@@ -400,6 +425,52 @@ export default function JournalScreen() {
                     elevation: 0, // Remove elevation to prevent square shadow
                   },
                 ]}>
+                  {/* Mood Selector integration */}
+                  <View style={styles.moodSection}>
+                    <Text style={styles.moodTitle}>How are you?</Text>
+                    <TouchableOpacity
+                      onPress={() => setShowMoodModal(true)}
+                      style={[
+                        styles.moodSelectorTrigger,
+                        selectedMood && {
+                          backgroundColor: theme.mode === 'light' ? toRgba(selectedMood.color, 0.25) : selectedMood.color + '40',
+                          borderColor: theme.mode === 'light' ? toRgba(selectedMood.color, 0.5) : selectedMood.color + '60',
+                          borderWidth: 1.5
+                        }
+                      ]}
+                    >
+                      <View style={styles.moodSelectorLeft}>
+                        {selectedMood ? (
+                          <>
+                            <View style={[styles.moodDot, { backgroundColor: selectedMood.color }]} />
+                            <Text style={[
+                              styles.moodSelectorText,
+                              {
+                                color: theme.mode === 'light' ? '#1E293B' : theme.textPrimary
+                              }
+                            ]}>
+                              {selectedMood.emotion || selectedMood.name}
+                            </Text>
+                          </>
+                        ) : (
+                          <>
+                            <Ionicons name="happy-outline" size={20} color={theme.textMuted} />
+                            <Text style={styles.moodSelectorPlaceholder}>Select your current state...</Text>
+                          </>
+                        )}
+                      </View>
+                      <Ionicons
+                        name={selectedMood ? "close-circle" : "chevron-down"}
+                        size={20}
+                        color={selectedMood ? selectedMood.color : theme.textMuted}
+                        onPress={selectedMood ? (e) => {
+                          e.stopPropagation();
+                          setSelectedMood(null);
+                        } : undefined}
+                      />
+                    </TouchableOpacity>
+                  </View>
+
                   <View style={styles.writingHeader}>
                     <Ionicons name="create-outline" size={20} color={theme.mode === 'dark' ? theme.textPrimary : theme.textSecondary} />
                     <Text style={styles.writingTitle}>Express yourself</Text>
@@ -424,6 +495,7 @@ export default function JournalScreen() {
                           onPress={() => {
                             setJournalText('');
                             setSelectedPrompt(null);
+                            setSelectedMood(null);
                           }}
                         >
                           <Text style={styles.clearButtonText}>Clear</Text>
@@ -447,14 +519,14 @@ export default function JournalScreen() {
                 </View>
 
                 {/* View Past Entries Link */}
-                {entries.length > 0 && (
+                {journalEntries.length > 0 && (
                   <TouchableOpacity
                     style={styles.viewEntriesButton}
                     onPress={() => setShowingPastEntries(true)}
                   >
                     <Ionicons name="book-outline" size={20} color={theme.primary} />
                     <Text style={styles.viewEntriesText}>
-                      View past entries ({entries.length})
+                      View past entries ({journalEntries.length})
                     </Text>
                     <Ionicons name="chevron-forward" size={20} color={theme.primary} />
                   </TouchableOpacity>
@@ -477,19 +549,51 @@ export default function JournalScreen() {
                     Reflections and moments you've captured
                   </Text>
 
-                  {entries.map((entry, index) => (
-                    <View key={index} style={styles.entryCard}>
+                  {journalEntries.map((entry) => (
+                    <View key={entry.id} style={styles.entryCard}>
                       <View style={styles.entryHeader}>
-                        <Ionicons name="calendar-outline" size={16} color={theme.textMuted} />
-                        <Text style={styles.entryDate}>{formatDate(entry.date)}</Text>
+                        <View style={styles.entryHeaderMain}>
+                          <Ionicons name="calendar-outline" size={16} color={theme.textMuted} />
+                          <Text style={styles.entryDate}>{formatDate(entry.timestamp)}</Text>
+                        </View>
+                        <TouchableOpacity
+                          onPress={() => deleteJournalEntry(entry.id)}
+                          style={styles.deleteButton}
+                        >
+                          <Ionicons name="trash-outline" size={18} color={toRgba(theme.error || '#EF4444', 0.6)} />
+                        </TouchableOpacity>
                       </View>
-                      <Text style={styles.entryText} numberOfLines={5}>
+
+                      {entry.mood && (
+                        <View style={[
+                          styles.entryMoodBadge,
+                          {
+                            backgroundColor: theme.mode === 'light'
+                              ? toRgba(entry.mood.color, 0.25)
+                              : entry.mood.color + '30',
+                            borderColor: theme.mode === 'light' ? toRgba(entry.mood.color, 0.5) : 'transparent',
+                            borderWidth: theme.mode === 'light' ? 1.5 : 0,
+                          }
+                        ]}>
+                          <View style={[styles.moodDot, { backgroundColor: entry.mood.color }]} />
+                          <Text style={[
+                            styles.entryMoodText,
+                            {
+                              color: theme.mode === 'light' ? '#1E293B' : entry.mood.color
+                            }
+                          ]}>
+                            {entry.mood.emotion || entry.mood.name}
+                          </Text>
+                        </View>
+                      )}
+
+                      <Text style={styles.entryText}>
                         {entry.text}
                       </Text>
                     </View>
                   ))}
 
-                  {entries.length === 0 && (
+                  {journalEntries.length === 0 && (
                     <View style={styles.emptyState}>
                       <Ionicons name="book-outline" size={48} color={theme.textMuted} />
                       <Text style={styles.emptyStateText}>
@@ -515,6 +619,117 @@ export default function JournalScreen() {
         onSave={handleSavePrompt}
         onDelete={editingPrompt ? () => handleDeletePrompt(editingPrompt.id) : undefined}
       />
+
+      <Modal
+        visible={showMoodModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowMoodModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setShowMoodModal(false)}
+          />
+          <View
+            style={[
+              styles.modalContent,
+              {
+                backgroundColor: theme.mode === 'dark' ? '#1E293B' : '#FFFFFF',
+                height: '80%'
+              }
+            ]}
+          >
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>How are you feeling?</Text>
+              <TouchableOpacity onPress={() => setShowMoodModal(false)}>
+                <Ionicons name="close" size={24} color={theme.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.modalSearchContainer}>
+              <Ionicons name="search" size={20} color={theme.textMuted} style={styles.modalSearchIcon} />
+              <TextInput
+                style={styles.modalSearchInput}
+                placeholder="Search emotions..."
+                placeholderTextColor={theme.textMuted}
+                value={moodSearchQuery}
+                onChangeText={setMoodSearchQuery}
+              />
+            </View>
+
+            <ScrollView
+              style={styles.modalScroll}
+              contentContainerStyle={{ paddingBottom: 60 }}
+              showsVerticalScrollIndicator={true}
+              keyboardShouldPersistTaps="handled"
+            >
+              {emotionClusters.map((cluster) => {
+                const filteredEmotions = cluster.emotions.filter(e =>
+                  e.label.toLowerCase().includes(moodSearchQuery.toLowerCase()) ||
+                  e.synonyms.some(s => s.toLowerCase().includes(moodSearchQuery.toLowerCase()))
+                );
+
+                if (filteredEmotions.length === 0) return null;
+
+                const level = consciousnessLevels.find(l => l.id === cluster.primaryLevelId);
+                const clusterColor = level?.color || theme.primary;
+
+                return (
+                  <View key={cluster.id} style={styles.clusterSection}>
+                    <Text style={[styles.clusterLabel, { color: theme.textSecondary }]}>
+                      {cluster.label}
+                    </Text>
+                    <View style={styles.modalChipContainer}>
+                      {filteredEmotions.map((emotion) => (
+                        <React.Fragment key={emotion.label}>
+                          {[emotion.label, ...emotion.synonyms.slice(0, 2)].map((label) => (
+                            <TouchableOpacity
+                              key={label}
+                              onPress={() => {
+                                setSelectedMood({
+                                  levelId: cluster.primaryLevelId,
+                                  name: level?.name || cluster.primaryLevelId,
+                                  color: clusterColor,
+                                  emotion: label
+                                });
+                                setShowMoodModal(false);
+                                setMoodSearchQuery('');
+                              }}
+                              style={[
+                                styles.modalChip,
+                                {
+                                  backgroundColor: theme.mode === 'light' ? toRgba(clusterColor, 0.3) : clusterColor + '30',
+                                  borderColor: theme.mode === 'light' ? toRgba(clusterColor, 0.6) : clusterColor + '50',
+                                  borderWidth: 1.5
+                                },
+                                selectedMood?.emotion === label && {
+                                  borderColor: clusterColor,
+                                  borderWidth: 2,
+                                  backgroundColor: theme.mode === 'light' ? toRgba(clusterColor, 0.5) : clusterColor + '60',
+                                }
+                              ]}
+                            >
+                              <Text style={[
+                                styles.modalChipText,
+                                {
+                                  color: theme.mode === 'light' ? '#1E293B' : clusterColor
+                                }
+                              ]}>
+                                {label}
+                              </Text>
+                            </TouchableOpacity>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </View>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
 
       <FeatureExplanationOverlay
         visible={showJournalExplanation}
@@ -551,7 +766,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     },
     headerTitle: {
       fontSize: typography.h1,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       color: theme.mode === 'dark' ? theme.textPrimary : '#1E293B',
       marginBottom: spacing.xs,
       letterSpacing: -0.5,
@@ -572,7 +787,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     },
     promptsTitle: {
       fontSize: typography.small,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
       color: theme.mode === 'dark' ? theme.textPrimary : theme.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
@@ -607,11 +822,11 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     promptText: {
       fontSize: typography.small,
       color: theme.textSecondary,
-      fontWeight: typography.medium,
+      fontWeight: '500',
     },
     promptTextSelected: {
       color: theme.primary,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
     },
     editPromptButton: {
       position: 'absolute',
@@ -663,7 +878,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     },
     writingTitle: {
       fontSize: typography.body,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
       color: theme.textPrimary,
     },
     textInput: {
@@ -690,7 +905,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     clearButtonText: {
       fontSize: typography.body,
       color: theme.textSecondary,
-      fontWeight: typography.medium,
+      fontWeight: '500',
     },
     saveButton: {
       flexDirection: 'row',
@@ -704,7 +919,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     saveButtonText: {
       fontSize: typography.body,
       color: '#FFFFFF',
-      fontWeight: typography.semibold,
+      fontWeight: '600',
     },
     privacyNote: {
       fontSize: typography.small,
@@ -727,7 +942,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     viewEntriesText: {
       fontSize: typography.body,
       color: theme.primary,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
     },
     backButton: {
       flexDirection: 'row',
@@ -738,14 +953,14 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     backButtonText: {
       fontSize: typography.body,
       color: theme.primary,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
     },
     entriesSection: {
       marginBottom: spacing.xl,
     },
     entriesSectionTitle: {
       fontSize: typography.h2,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       color: theme.textPrimary,
       marginBottom: spacing.xs,
     },
@@ -771,7 +986,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     entryDate: {
       fontSize: typography.small,
       color: theme.textMuted,
-      fontWeight: typography.medium,
+      fontWeight: '500',
     },
     entryText: {
       fontSize: typography.body,
@@ -792,5 +1007,168 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     },
     bottomSpacer: {
       height: 40,
+    },
+    moodSection: {
+      marginBottom: spacing.lg,
+    },
+    moodTitle: {
+      fontSize: typography.small,
+      fontWeight: '600',
+      color: theme.textSecondary,
+      marginBottom: spacing.sm,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    moodScroll: {
+      gap: spacing.sm,
+      paddingRight: spacing.lg,
+    },
+    moodChip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.roundedChip,
+      borderWidth: 1,
+      borderColor: 'transparent',
+    },
+    moodChipText: {
+      fontSize: typography.small,
+      fontWeight: '600',
+    },
+    entryHeaderMain: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+    },
+    deleteButton: {
+      padding: spacing.xs,
+    },
+    entryMoodBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+      borderRadius: borderRadius.roundedChip,
+      marginBottom: spacing.sm,
+      gap: 6,
+    },
+    moodDot: {
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+    },
+    entryMoodText: {
+      fontSize: 10,
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    streakBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.mode === 'dark' ? 'rgba(255,152,0,0.15)' : 'rgba(255,152,0,0.1)',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      borderRadius: borderRadius.roundedChip,
+      gap: 6,
+    },
+    streakCount: {
+      fontSize: typography.body,
+      fontWeight: 'bold',
+      color: '#FF9800',
+    },
+    // New Mood Redesign Styles
+    moodSelectorTrigger: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.8)',
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.lg,
+      borderWidth: 1,
+      borderColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(203, 213, 225, 0.5)',
+    },
+    moodSelectorLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    moodSelectorText: {
+      fontSize: typography.body,
+      fontWeight: '600',
+    },
+    moodSelectorPlaceholder: {
+      fontSize: typography.body,
+      color: theme.textMuted,
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      justifyContent: 'flex-end',
+    },
+    modalContent: {
+      borderTopLeftRadius: borderRadius.xxl,
+      borderTopRightRadius: borderRadius.xxl,
+      paddingTop: spacing.xl,
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.xxl,
+    },
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: spacing.lg,
+    },
+    modalTitle: {
+      fontSize: typography.h3,
+      fontWeight: 'bold',
+      color: theme.textPrimary,
+    },
+    modalSearchContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+      borderRadius: borderRadius.lg,
+      paddingHorizontal: spacing.md,
+      marginBottom: spacing.lg,
+    },
+    modalSearchIcon: {
+      marginRight: spacing.sm,
+    },
+    modalSearchInput: {
+      flex: 1,
+      height: 44,
+      color: theme.textPrimary,
+      fontSize: typography.body,
+    },
+    modalScroll: {
+      flex: 1,
+      marginBottom: spacing.md,
+    },
+    clusterSection: {
+      marginBottom: spacing.xl,
+    },
+    clusterLabel: {
+      fontSize: typography.small,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+      marginBottom: spacing.md,
+      opacity: 0.6,
+    },
+    modalChipContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: spacing.sm,
+    },
+    modalChip: {
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
+      borderRadius: borderRadius.roundedChip,
+    },
+    modalChipText: {
+      fontSize: typography.small,
+      fontWeight: '700',
     },
   });

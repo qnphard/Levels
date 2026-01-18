@@ -195,7 +195,7 @@ export default function TensionScreen() {
                 screen="tension"
                 section="how-it-builds"
                 id="pressure-text"
-                originalContent="Desire (Level 125) is the primary engine of tension. The constant sequence of 'I need this' creates a state of inner yearning. This translates into a literal tightening of the muscle fibers as the body prepares to 'grab' its target. You can't be both deeply desiring and deeply relaxed."
+                originalContent="The level of Desire is the primary engine of tension. The constant sequence of 'I need this' creates a state of inner yearning. This translates into a literal tightening of the muscle fibers as the body prepares to 'grab' its target. You can't be both deeply desiring and deeply relaxed."
                 textStyle={cardStyles.warningText}
                 type="paragraph"
               />

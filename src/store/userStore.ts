@@ -30,6 +30,19 @@ export interface ReadingProgress {
     timestamp: number;
 }
 
+export interface JournalEntry {
+    id: string;
+    timestamp: number;
+    text: string;
+    promptId?: string;
+    mood?: {
+        levelId: string;
+        name: string;
+        color: string;
+        emotion?: string; // Specific emotion chosen (e.g. 'Anxious')
+    };
+}
+
 const MILESTONES: Milestone[] = [
     { id: 'first-topic', title: 'First Steps', description: 'Completed your first topic', unlockedAt: null, icon: 'footsteps-outline' },
     { id: 'foundations-complete', title: 'Foundation Builder', description: 'Completed all 3 foundation topics', unlockedAt: null, icon: 'ribbon-outline' },
@@ -54,11 +67,17 @@ interface UserState {
     currentStreak: number;
     longestStreak: number;
     lastStreakDate: string | null; // ISO date string YYYY-MM-DD
+    currentJournalStreak: number;
+    longestJournalStreak: number;
+    lastJournalStreakDate: string | null; // ISO date string YYYY-MM-DD
     pendingCelebration: Milestone | null; // Milestone to celebrate
     lastReadPosition: ReadingProgress | null; // Last reading position
+    journalEntries: JournalEntry[];
 
     // Actions
     addCheckIn: (zone: Zone, note?: string) => void;
+    addJournalEntry: (entry: Omit<JournalEntry, 'id' | 'timestamp'>) => void;
+    deleteJournalEntry: (id: string) => void;
     canCheckIn: () => boolean;
     setLastAccessedLevel: (levelId: string) => void;
     markTopicComplete: (topicId: string) => void;
@@ -100,8 +119,12 @@ export const useUserStore = create<UserState>()(
             currentStreak: 0,
             longestStreak: 0,
             lastStreakDate: null,
+            currentJournalStreak: 0,
+            longestJournalStreak: 0,
+            lastJournalStreakDate: null,
             pendingCelebration: null,
             lastReadPosition: null,
+            journalEntries: [],
 
             addCheckIn: (zone, note) => {
                 const now = Date.now();
@@ -163,6 +186,47 @@ export const useUserStore = create<UserState>()(
                         pendingCelebration: newlyUnlocked,
                     };
                 });
+            },
+
+            addJournalEntry: (entry) => {
+                const now = Date.now();
+                const today = new Date().toISOString().split('T')[0];
+                const newEntry: JournalEntry = {
+                    ...entry,
+                    id: `journal-${now}`,
+                    timestamp: now,
+                };
+
+                set((state) => {
+                    let newStreak = state.currentJournalStreak;
+                    if (state.lastJournalStreakDate) {
+                        const lastDate = new Date(state.lastJournalStreakDate);
+                        const todayDate = new Date(today);
+
+                        if (isSameDay(lastDate, todayDate)) {
+                            // Already journaled today
+                        } else if (isConsecutiveDay(lastDate, todayDate)) {
+                            newStreak = state.currentJournalStreak + 1;
+                        } else {
+                            newStreak = 1;
+                        }
+                    } else {
+                        newStreak = 1;
+                    }
+
+                    return {
+                        journalEntries: [newEntry, ...state.journalEntries],
+                        currentJournalStreak: newStreak,
+                        longestJournalStreak: Math.max(state.longestJournalStreak || 0, newStreak),
+                        lastJournalStreakDate: today,
+                    };
+                });
+            },
+
+            deleteJournalEntry: (id) => {
+                set((state) => ({
+                    journalEntries: state.journalEntries.filter((e) => e.id !== id),
+                }));
             },
 
             canCheckIn: () => {

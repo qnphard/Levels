@@ -144,7 +144,7 @@ export default function ShadowWorkScreen() {
           screen="shadow-work"
           section="main"
           id="evolution"
-          originalContent="As consciousness evolves above level 200, something remarkable happens: life becomes more harmonious. Maternal caring appears, along with concern for others, group loyalty, and cooperation. The shift from predatory to benign marks a fundamental change in how we relate to the world."
+          originalContent="As consciousness evolves above the level of Courage, something remarkable happens: life becomes more harmonious. Maternal caring appears, along with concern for others, group loyalty, and cooperation. The shift from predatory to benign marks a fundamental change in how we relate to the world."
           textStyle={cardStyles.paragraph}
           type="paragraph"
         />

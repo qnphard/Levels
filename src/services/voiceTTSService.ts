@@ -95,9 +95,9 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
     console.log(`Synthesizing via Modal: ${VOICE_API_URL}`);
     console.log(`Script length: ${text.length} chars`);
 
-    // Create AbortController for timeout (5 minutes max)
+    // Create AbortController for timeout (10 minutes max)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
+    const timeoutId = setTimeout(() => controller.abort(), 10 * 60 * 1000);
 
     try {
         // Modal returns JSON with base64-encoded audio

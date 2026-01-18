@@ -50,6 +50,16 @@ export default function ArticleCard({ article, onPress, style }: ArticleCardProp
 
   const pressable = Boolean(onPress || article.url);
 
+  const getPillTextColor = (key: string) => {
+    // Rest and Release have dark accent backgrounds in Light Mode
+    // Settle and Notice have light accent backgrounds
+    if (key === 'rest' || key === 'release') return theme.white;
+    // For darker themes/backgrounds, use appropriate contrast
+    return theme.textPrimary;
+  };
+
+  const pillTextColor = getPillTextColor(stageKey);
+
   return (
     <TouchableOpacity
       style={[styles.card, style]}
@@ -64,7 +74,7 @@ export default function ArticleCard({ article, onPress, style }: ArticleCardProp
           { backgroundColor: stageToken.accent ?? theme.primarySubtle },
         ]}
       >
-        <Text style={styles.stageText}>{String(article.stage || '')}</Text>
+        <Text style={[styles.stageText, { color: pillTextColor }]}>{String(article.stage || '')}</Text>
       </View>
 
       <Text style={styles.title} numberOfLines={2}>
@@ -107,14 +117,14 @@ const getStyles = (theme: ThemeColors) =>
       marginBottom: spacing.sm,
     },
     stageText: {
-      fontSize: typography.tiny,
-      fontWeight: typography.semibold,
+      fontSize: 10,
+      fontWeight: '600',
       color: theme.textPrimary,
       letterSpacing: 0.5,
     },
     title: {
       fontSize: typography.h4,
-      fontWeight: typography.semibold,
+      fontWeight: '600',
       color: theme.textPrimary,
       marginBottom: spacing.xs,
     },
@@ -130,7 +140,7 @@ const getStyles = (theme: ThemeColors) =>
       marginTop: 'auto',
     },
     metaText: {
-      fontSize: typography.tiny,
+      fontSize: 10,
       color: theme.textMuted,
     },
     metaDot: {

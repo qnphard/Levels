@@ -1,5 +1,6 @@
 import React, { useMemo, useEffect } from 'react';
 import { Dimensions, View, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import {
     Canvas,
     Path,
@@ -19,6 +20,7 @@ import Animated, {
     useSharedValue,
     withTiming,
     withDelay,
+    withRepeat,
     Easing,
     SharedValue,
     useAnimatedStyle,
@@ -100,57 +102,173 @@ const BLOCK_PATHS = (() => {
     return { main, top, side };
 })();
 
-// --- Atmosphere Background ---
-const AtmosphereBackground = () => (
-    <Group>
-        {/* Radial gradient background */}
-        <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
-            <RadialGradient
-                c={vec(CENTER_X, CENTER_Y)}
-                r={SCREEN_WIDTH * 0.9}
-                colors={['#1a1520', '#0a0a12', '#000000']}
-            />
-        </Rect>
-
-        {/* Dust particles */}
-        <Group opacity={0.25}>
-            <Circle cx={CENTER_X * 0.3} cy={CENTER_Y * 0.4} r={1.5} color="white" />
-            <Circle cx={CENTER_X * 1.7} cy={CENTER_Y * 0.3} r={2} color="white" opacity={0.6} />
-            <Circle cx={CENTER_X * 0.6} cy={CENTER_Y * 1.5} r={1} color="white" />
-            <Circle cx={CENTER_X * 1.4} cy={CENTER_Y * 0.8} r={1.5} color="white" opacity={0.5} />
-            <Circle cx={CENTER_X * 0.2} cy={CENTER_Y * 1.2} r={2} color="white" opacity={0.4} />
-        </Group>
-    </Group>
-);
-
-// --- Static Stickman ---
-const SkiaStickman = () => {
-    const scale = 2.4;
-    const center = vec(CENTER_X, (CENTER_Y * 1.2) - 40);
-
-    const paint = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(Skia.Color('white'));
-        p.setStrokeWidth(7);
-        p.setStrokeCap(StrokeCap.Round);
-        p.setStyle(PaintStyle.Stroke);
-        return p;
+// --- Atmosphere Background (Enhanced for Immersive Experience) ---
+const AtmosphereBackground = () => {
+    // Generate varied dust particles for depth
+    const particles = useMemo(() => {
+        const result = [];
+        for (let i = 0; i < 30; i++) {
+            result.push({
+                x: Math.random() * SCREEN_WIDTH,
+                y: Math.random() * SCREEN_HEIGHT,
+                r: 0.5 + Math.random() * 2,
+                opacity: 0.1 + Math.random() * 0.3,
+            });
+        }
+        return result;
     }, []);
 
-    const baseY = center.y + (50 * (1 - scale));
     return (
         <Group>
-            <Line p1={vec(center.x, baseY)} p2={vec(center.x, baseY + 25 * scale)} paint={paint} />
-            <Line p1={vec(center.x, baseY + 25 * scale)} p2={vec(center.x - 8 * scale, baseY + 48 * scale)} paint={paint} />
-            <Line p1={vec(center.x, baseY + 25 * scale)} p2={vec(center.x + 8 * scale, baseY + 48 * scale)} paint={paint} />
-            <Line p1={vec(center.x, baseY + 6 * scale)} p2={vec(center.x - 11 * scale, baseY + 21 * scale)} paint={paint} />
-            <Line p1={vec(center.x, baseY + 6 * scale)} p2={vec(center.x + 11 * scale, baseY + 21 * scale)} paint={paint} />
-            <Circle cx={center.x} cy={baseY - 7 * scale} r={13} color="white" />
+            {/* Deep space background with rich purple/blue tones */}
+            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
+                <RadialGradient
+                    c={vec(CENTER_X, CENTER_Y * 0.8)}
+                    r={SCREEN_WIDTH * 1.2}
+                    colors={['#1a1028', '#100818', '#08050f', '#000000']}
+                    positions={[0, 0.3, 0.6, 1]}
+                />
+            </Rect>
+
+            {/* Subtle ambient glow in center */}
+            <Group blendMode="plus">
+                <Circle cx={CENTER_X} cy={CENTER_Y * 0.9} r={200} opacity={0.15}>
+                    <RadialGradient
+                        c={vec(CENTER_X, CENTER_Y * 0.9)}
+                        r={200}
+                        colors={['#6366f1', '#4f46e5', 'transparent']}
+                    />
+                </Circle>
+            </Group>
+
+            {/* Secondary warm glow - creates depth */}
+            <Group blendMode="plus">
+                <Circle cx={CENTER_X * 0.7} cy={CENTER_Y * 1.3} r={150} opacity={0.08}>
+                    <RadialGradient
+                        c={vec(CENTER_X * 0.7, CENTER_Y * 1.3)}
+                        r={150}
+                        colors={['#ec4899', 'transparent']}
+                    />
+                </Circle>
+            </Group>
+
+            {/* Dust particles with varying sizes and opacity */}
+            <Group opacity={0.4}>
+                {particles.map((p, i) => (
+                    <Circle key={i} cx={p.x} cy={p.y} r={p.r} color="white" opacity={p.opacity} />
+                ))}
+            </Group>
+
+            {/* Dark vignette around edges for cinematic focus */}
+            <Rect x={0} y={0} width={SCREEN_WIDTH} height={SCREEN_HEIGHT}>
+                <RadialGradient
+                    c={vec(CENTER_X, CENTER_Y * 0.9)}
+                    r={SCREEN_WIDTH * 0.7}
+                    colors={['transparent', 'transparent', 'rgba(0,0,0,0.6)', 'rgba(0,0,0,0.9)']}
+                    positions={[0, 0.4, 0.75, 1]}
+                />
+            </Rect>
         </Group>
     );
 };
 
-// --- Landing Item with Focus Highlight ---
+// --- Enhanced Stickman with Glow and Breathing Animation ---
+const SkiaStickman = () => {
+    const scale = 2.4;
+    const center = vec(CENTER_X, (CENTER_Y * 1.2) - 40);
+
+    // Breathing animation - slow 4 second cycle
+    const breathingProgress = useSharedValue(0);
+
+    useEffect(() => {
+        breathingProgress.value = withRepeat(
+            withTiming(1, { duration: 4000, easing: Easing.inOut(Easing.sin) }),
+            -1,
+            true
+        );
+    }, []);
+
+    // Derived values for breathing effect
+    const breathOffset = useDerivedValue(() => {
+        return Math.sin(breathingProgress.value * Math.PI) * 3;
+    });
+
+    const glowOpacity = useDerivedValue(() => {
+        return 0.4 + Math.sin(breathingProgress.value * Math.PI) * 0.2;
+    });
+
+    // Main body paint - slightly softer stroke
+    const paint = useMemo(() => {
+        const p = Skia.Paint();
+        p.setColor(Skia.Color('#ffffff'));
+        p.setStrokeWidth(6);
+        p.setStrokeCap(StrokeCap.Round);
+        p.setStrokeJoin(StrokeJoin.Round);
+        p.setStyle(PaintStyle.Stroke);
+        return p;
+    }, []);
+
+    // Glow paint for outer glow effect
+    const glowPaint = useMemo(() => {
+        const p = Skia.Paint();
+        p.setColor(Skia.Color('#a5b4fc'));
+        p.setStrokeWidth(14);
+        p.setStrokeCap(StrokeCap.Round);
+        p.setStrokeJoin(StrokeJoin.Round);
+        p.setStyle(PaintStyle.Stroke);
+        p.setMaskFilter(Skia.MaskFilter.MakeBlur(1, 8, true));
+        return p;
+    }, []);
+
+    const baseY = center.y + (50 * (1 - scale));
+
+    // Compute breathing offset position
+    const animatedBaseY = useDerivedValue(() => baseY - breathOffset.value);
+
+    return (
+        <Group>
+            {/* Outer ethereal glow - creates soft halo effect */}
+            <Group opacity={glowOpacity} blendMode="plus">
+                <Circle cx={center.x} cy={baseY + 20 * scale} r={60} opacity={0.3}>
+                    <RadialGradient
+                        c={vec(center.x, baseY + 20 * scale)}
+                        r={60}
+                        colors={['#a5b4fc', '#6366f1', 'transparent']}
+                    />
+                </Circle>
+            </Group>
+
+            {/* Glow layer - blurred larger strokes */}
+            <Group opacity={0.3}>
+                <Line p1={vec(center.x, animatedBaseY.value)} p2={vec(center.x, animatedBaseY.value + 25 * scale)} paint={glowPaint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x - 8 * scale, animatedBaseY.value + 48 * scale)} paint={glowPaint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x + 8 * scale, animatedBaseY.value + 48 * scale)} paint={glowPaint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x - 11 * scale, animatedBaseY.value + 21 * scale)} paint={glowPaint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x + 11 * scale, animatedBaseY.value + 21 * scale)} paint={glowPaint} />
+                <Circle cx={center.x} cy={animatedBaseY.value - 7 * scale} r={18} color="#a5b4fc" />
+            </Group>
+
+            {/* Main body - crisp white strokes */}
+            <Group>
+                <Line p1={vec(center.x, animatedBaseY.value)} p2={vec(center.x, animatedBaseY.value + 25 * scale)} paint={paint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x - 8 * scale, animatedBaseY.value + 48 * scale)} paint={paint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x + 8 * scale, animatedBaseY.value + 48 * scale)} paint={paint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x - 11 * scale, animatedBaseY.value + 21 * scale)} paint={paint} />
+                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x + 11 * scale, animatedBaseY.value + 21 * scale)} paint={paint} />
+                {/* Head with subtle gradient for depth */}
+                <Circle cx={center.x} cy={animatedBaseY.value - 7 * scale} r={13}>
+                    <RadialGradient
+                        c={vec(center.x - 3, animatedBaseY.value - 7 * scale - 3)}
+                        r={13}
+                        colors={['#ffffff', '#e0e7ff']}
+                    />
+                </Circle>
+            </Group>
+        </Group>
+    );
+};
+
+// --- Landing Item with Enhanced Glass/Crystal Effect ---
 const LandingItem = ({
     index,
     color,
@@ -167,7 +285,7 @@ const LandingItem = ({
     const transform = useDerivedValue(() => {
         const { x, y, scale, focus } = projection.value;
         // Scale up slightly when focused (within 0.5 of center)
-        const focusScale = focus < 0.5 ? 1.1 : 1;
+        const focusScale = focus < 0.5 ? 1.15 : 1;
         return [
             { translateX: x },
             { translateY: y },
@@ -180,52 +298,96 @@ const LandingItem = ({
     // Enhanced glow for focused step
     const glowRadius = useDerivedValue(() => {
         const { focus } = projection.value;
-        return focus < 0.5 ? 95 : 75;
+        return focus < 0.5 ? 110 : 70;
     });
 
     const glowOpacity = useDerivedValue(() => {
         const { focus } = projection.value;
-        return focus < 0.5 ? 0.8 : 0.5;
+        return focus < 0.5 ? 0.7 : 0.35;
+    });
+
+    // Focus ring opacity
+    const focusRingOpacity = useDerivedValue(() => projection.value.focus < 0.5 ? 0.5 : 0);
+
+    // Inner glow intensity
+    const innerGlowOpacity = useDerivedValue(() => {
+        const { focus } = projection.value;
+        return focus < 0.5 ? 0.6 : 0.3;
     });
 
     return (
         <Group transform={transform} opacity={opacity}>
-            {/* Enhanced glow for focused step */}
-            <Group blendMode="plus">
-                <Circle cx={0} cy={0} r={glowRadius} opacity={glowOpacity}>
-                    <RadialGradient c={vec(0, 0)} r={95} colors={[color, 'transparent']} />
+            {/* Floating shadow beneath stair */}
+            <Group opacity={0.4}>
+                <Circle cx={0} cy={25} r={45}>
+                    <RadialGradient c={vec(0, 25)} r={45} colors={['rgba(0,0,0,0.5)', 'transparent']} />
                 </Circle>
             </Group>
 
-            {/* Focus ring for active step */}
+            {/* Outer glow - enhanced for focused step */}
+            <Group blendMode="plus">
+                <Circle cx={0} cy={0} r={glowRadius} opacity={glowOpacity}>
+                    <RadialGradient c={vec(0, 0)} r={110} colors={[color, `${color}66`, 'transparent']} />
+                </Circle>
+            </Group>
+
+            {/* Focus ring - pulsing effect for active step */}
             <Circle
                 cx={0}
                 cy={0}
-                r={50}
+                r={55}
                 style="stroke"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 color="white"
-                opacity={useDerivedValue(() => projection.value.focus < 0.5 ? 0.3 : 0)}
+                opacity={focusRingOpacity}
             />
 
-            <Path path={BLOCK_PATHS.side} color="black" opacity={0.5} />
-            <Path path={BLOCK_PATHS.top} color={color} opacity={0.4} />
-            <Path path={BLOCK_PATHS.main} color={color}>
+            {/* Glass effect base layer */}
+            <Path path={BLOCK_PATHS.side} color="black" opacity={0.3} />
+            <Path path={BLOCK_PATHS.top} opacity={0.25}>
                 <LinearGradient
-                    start={vec(-40, -15)} end={vec(40, 15)}
-                    colors={['rgba(255,255,255,0.4)', 'rgba(0,0,0,0.1)']}
+                    start={vec(-40, -20)} end={vec(40, 0)}
+                    colors={[`${color}aa`, `${color}55`]}
                 />
             </Path>
-            <Path path={BLOCK_PATHS.main} style="stroke" strokeWidth={2} color="white" opacity={0.7} />
+
+            {/* Main glass/crystal body with transparency */}
+            <Path path={BLOCK_PATHS.main} opacity={0.85}>
+                <LinearGradient
+                    start={vec(-40, -15)} end={vec(40, 15)}
+                    colors={[`${color}cc`, color, `${color}88`]}
+                />
+            </Path>
+
+            {/* Glass highlight - creates crystal shimmer effect */}
+            <Path path={BLOCK_PATHS.main} opacity={innerGlowOpacity}>
+                <LinearGradient
+                    start={vec(-40, -15)} end={vec(40, 15)}
+                    colors={['rgba(255,255,255,0.5)', 'rgba(255,255,255,0.1)', 'transparent']}
+                />
+            </Path>
+
+            {/* Edge glow - soft lit edges */}
+            <Path path={BLOCK_PATHS.main} style="stroke" strokeWidth={1.5} opacity={0.8}>
+                <LinearGradient
+                    start={vec(-40, 0)} end={vec(40, 0)}
+                    colors={['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.8)']}
+                />
+            </Path>
         </Group>
     );
 };
 
-const SECTIONS = [
-    { id: 'feltSense', label: 'Felt Sense', color: '#F43F5E' },
-    { id: 'purpose', label: 'Purpose', color: '#10B981' },
-    { id: 'traps', label: 'Traps', color: '#F59E0B' },
-    { id: 'exits', label: 'Exits', color: '#3B82F6' },
+// Heavy Weather Levels - The 8 lower consciousness states
+const LEVELS = [
+    { id: 'shame', label: 'Shame', color: '#6B21A8' },
+    { id: 'guilt', label: 'Guilt', color: '#7C3AED' },
+    { id: 'apathy', label: 'Apathy', color: '#4B5563' },
+    { id: 'grief', label: 'Grief', color: '#1E40AF' },
+    { id: 'fear', label: 'Fear', color: '#F59E0B' },
+    { id: 'desire', label: 'Desire', color: '#DC2626' },
+    { id: 'anger', label: 'Anger', color: '#EF4444' },
+    { id: 'pride', label: 'Pride', color: '#10B981' },
 ];
 
 // --- Label with Enhanced Typography ---
@@ -278,6 +440,7 @@ const LabelOverlayItem = ({
 export const LevelStairsMenu: React.FC<{ onSelectSection: (id: string) => void }> = ({ onSelectSection }) => {
     const scrollPos = useSharedValue(0);
     const entranceProgress = useSharedValue(0);
+    const startScrollPos = useSharedValue(0);
 
     // Entrance animation on mount
     useEffect(() => {
@@ -291,50 +454,78 @@ export const LevelStairsMenu: React.FC<{ onSelectSection: (id: string) => void }
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     };
 
+    // Pan gesture for scrolling through levels
+    const panGesture = Gesture.Pan()
+        .onStart(() => {
+            startScrollPos.value = scrollPos.value;
+        })
+        .onUpdate((event) => {
+            // Convert vertical drag to scroll position
+            // Negative because dragging up should increase scroll (go to higher levels)
+            const newPos = startScrollPos.value - event.translationY / 100;
+            // Clamp between 0 and last level index
+            scrollPos.value = Math.max(0, Math.min(LEVELS.length - 1, newPos));
+        })
+        .onEnd((event) => {
+            // Snap to nearest level
+            const nearestLevel = Math.round(scrollPos.value);
+            const clampedLevel = Math.max(0, Math.min(LEVELS.length - 1, nearestLevel));
+
+            // Haptic feedback on snap
+            runOnJS(triggerHaptic)();
+
+            scrollPos.value = withTiming(clampedLevel, {
+                duration: 300,
+                easing: Easing.out(Easing.cubic)
+            });
+        });
+
     const handlePress = (idx: number) => {
         // Haptic feedback on selection
         triggerHaptic();
 
         scrollPos.value = withTiming(idx, { duration: 750, easing: Easing.out(Easing.exp) }, (done) => {
-            if (done) runOnJS(onSelectSection)(SECTIONS[idx].id);
+            if (done) runOnJS(onSelectSection)(LEVELS[idx].id);
         });
     };
 
     return (
-        <View style={styles.container}>
-            <Canvas style={styles.canvas}>
-                {/* Atmosphere */}
-                <AtmosphereBackground />
+        <GestureDetector gesture={panGesture}>
+            <View style={styles.container}>
+                <Canvas style={styles.canvas}>
+                    {/* Atmosphere */}
+                    <AtmosphereBackground />
 
-                {/* Steps with entrance animation */}
-                {SECTIONS.map((s, i) => (
-                    <LandingItem
-                        key={s.id}
-                        index={i}
-                        color={s.color}
-                        scrollPos={scrollPos}
-                        entranceProgress={entranceProgress}
-                    />
-                ))}
+                    {/* Steps with entrance animation */}
+                    {LEVELS.map((s, i) => (
+                        <LandingItem
+                            key={s.id}
+                            index={i}
+                            color={s.color}
+                            scrollPos={scrollPos}
+                            entranceProgress={entranceProgress}
+                        />
+                    ))}
 
-                {/* Static Stickman */}
-                <SkiaStickman />
-            </Canvas>
+                    {/* Static Stickman */}
+                    <SkiaStickman />
+                </Canvas>
 
-            <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
-                {SECTIONS.map((s, i) => (
-                    <LabelOverlayItem
-                        key={s.id}
-                        index={i}
-                        label={s.label}
-                        color={s.color}
-                        scrollPos={scrollPos}
-                        onPress={handlePress}
-                        entranceProgress={entranceProgress}
-                    />
-                ))}
+                <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+                    {LEVELS.map((s, i) => (
+                        <LabelOverlayItem
+                            key={s.id}
+                            index={i}
+                            label={s.label}
+                            color={s.color}
+                            scrollPos={scrollPos}
+                            onPress={handlePress}
+                            entranceProgress={entranceProgress}
+                        />
+                    ))}
+                </View>
             </View>
-        </View>
+        </GestureDetector>
     );
 };
 

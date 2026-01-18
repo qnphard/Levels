@@ -371,7 +371,7 @@ const createStyles = (theme: ThemeColors) =>
     },
     welcomeText: {
       fontSize: typography.h1,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       color: theme.mode === 'dark' ? '#F8FAFC' : '#1E293B',
       marginBottom: spacing.xs,
       letterSpacing: -0.5,
@@ -379,7 +379,7 @@ const createStyles = (theme: ThemeColors) =>
     subtitle: {
       fontSize: typography.body,
       color: theme.mode === 'dark' ? '#CBD5E1' : '#475569',
-      fontWeight: typography.regular,
+      fontWeight: '400',
       opacity: 0.9,
       fontStyle: 'italic',
     },
@@ -399,8 +399,8 @@ const createStyles = (theme: ThemeColors) =>
     },
     todaysPracticeLabel: {
       fontSize: typography.small,
-      color: theme.accentGold,
-      fontWeight: typography.semibold,
+      color: '#D97706', // Darker Amber/Gold for better contrast on light & dark
+      fontWeight: '600',
       textTransform: 'uppercase',
       letterSpacing: 1.2,
       marginBottom: spacing.sm,
@@ -408,7 +408,7 @@ const createStyles = (theme: ThemeColors) =>
     todaysPracticeTitle: {
       fontSize: typography.h3,
       color: theme.textPrimary,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       marginBottom: spacing.xs,
     },
     todaysPracticeDescription: {
@@ -436,11 +436,11 @@ const createStyles = (theme: ThemeColors) =>
     },
     categoryText: {
       color: theme.textSecondary,
-      fontWeight: typography.medium,
+      fontWeight: '500',
       fontSize: typography.small,
     },
     categoryTextActive: {
-      fontWeight: typography.semibold,
+      fontWeight: '600',
     },
     meditationList: {
       paddingHorizontal: spacing.lg,
@@ -459,7 +459,7 @@ const createStyles = (theme: ThemeColors) =>
     },
     sectionTitle: {
       fontSize: typography.h3,
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       color: theme.textPrimary,
       marginBottom: spacing.xs,
       letterSpacing: -0.3,
@@ -504,7 +504,7 @@ const createStyles = (theme: ThemeColors) =>
     journeyLabel: {
       fontSize: 12,
       color: 'rgba(255, 255, 255, 0.8)',
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       textTransform: 'uppercase',
       letterSpacing: 1,
       marginBottom: 4,
@@ -512,7 +512,7 @@ const createStyles = (theme: ThemeColors) =>
     journeyTitle: {
       fontSize: 24,
       color: '#FFFFFF',
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
     },
     sosButton: {
       position: 'absolute',
@@ -568,7 +568,7 @@ const createStyles = (theme: ThemeColors) =>
     generatorLabel: {
       fontSize: 10,
       color: 'rgba(255, 255, 255, 0.9)',
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       textTransform: 'uppercase',
       letterSpacing: 1.5,
       marginBottom: 2,
@@ -576,7 +576,7 @@ const createStyles = (theme: ThemeColors) =>
     generatorTitle: {
       fontSize: 20,
       color: '#FFFFFF',
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       marginBottom: 2,
     },
     generatorSubtitle: {
@@ -620,7 +620,7 @@ const createStyles = (theme: ThemeColors) =>
     roomLabel: {
       fontSize: 10,
       color: 'rgba(255, 255, 255, 0.9)',
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       textTransform: 'uppercase',
       letterSpacing: 1.5,
       marginBottom: 2,
@@ -628,7 +628,7 @@ const createStyles = (theme: ThemeColors) =>
     roomTitle: {
       fontSize: 20,
       color: '#FFFFFF',
-      fontWeight: typography.bold,
+      fontWeight: 'bold',
       marginBottom: 2,
     },
     roomSubtitle: {
@@ -649,12 +649,5 @@ const createStyles = (theme: ThemeColors) =>
       alignItems: 'center',
       gap: spacing.sm,
     },
-    profileIcon: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
+
   });

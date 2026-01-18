@@ -329,6 +329,8 @@ export default function JourneyMapScreen() {
     const glowTint =
       theme.mode === 'dark' ? glowBase : adjustColor(gradientColors[0], -12);
 
+    const activeColor = theme.mode === 'dark' ? glowTint : gradientColors[0];
+
     return (
       <View
         key={level.id}
@@ -340,7 +342,7 @@ export default function JourneyMapScreen() {
         ]}
       >
         <Pressable
-          onPress={() => navigation.navigate('LevelRoom', { levelId: level.id })}
+          onPress={() => openChapter(level, 'overview')}
           style={({ pressed }) => [
             styles.levelCard,
             isCurrent && styles.levelCardCurrent,
@@ -390,40 +392,57 @@ export default function JourneyMapScreen() {
           ]}
         >
           <View style={styles.portalContent}>
-            <View style={styles.portalIconContainer}>
-              <Ionicons
-                name={zoneIcons[level.zone]}
-                size={24}
-                color={theme.mode === 'dark' ? glowTint : gradientColors[0]}
-              />
+
+            {/* Header: Title and Arrow */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <View>
+                <Text style={[styles.portalTitle, { color: theme.textPrimary, fontSize: 18, lineHeight: 22 }]}>
+                  Transcending
+                </Text>
+                <Text style={[styles.portalTitle, { color: theme.textPrimary, fontSize: 18, lineHeight: 22 }]}>
+                  {level.name}
+                </Text>
+              </View>
+              <Ionicons name="arrow-forward" size={16} color={activeColor} />
             </View>
 
-            <View style={styles.portalTextContainer}>
-              <Text style={[styles.portalTitle, { color: theme.textPrimary }]}>
-                {level.name}
+            {/* Body: Description */}
+            <View style={{ flex: 1, paddingTop: 16 }}>
+              <Text style={[styles.portalFeltSense, { color: theme.textSecondary, fontSize: 15, lineHeight: 22, fontStyle: 'normal' }]}>
+                {level.description}
               </Text>
-              <Text style={[styles.portalFeltSense, { color: theme.textSecondary }]}>
-                {level.feltSense}
-              </Text>
             </View>
 
-            <View style={styles.portalActions}>
-              <Pressable
-                style={[styles.portalPrimaryBtn, { backgroundColor: theme.primary }]}
-                onPress={() => navigation.navigate('LevelRoom', { levelId: level.id })}
-              >
-                <Text style={styles.portalPrimaryBtnText}>Enter Space</Text>
-                <Ionicons name="arrow-forward" size={14} color={theme.white} />
-              </Pressable>
+            {/* Footer: Chips and Link */}
+            <View style={{ marginTop: 24, gap: 16 }}>
+              <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                {/* Meditations Chip - Filled */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 4,
+                  backgroundColor: toRgba(activeColor, 0.2),
+                  paddingVertical: 6, paddingHorizontal: 8, borderRadius: 16
+                }}>
+                  <Ionicons name="headset-outline" size={13} color={activeColor} />
+                  <Text style={{ fontSize: 11, fontWeight: '600', color: theme.textPrimary }}>Meditations</Text>
+                </View>
 
-              <Pressable
-                style={styles.portalSecondaryBtn}
-                onPress={() => openChapter(level, 'meditations')}
-              >
-                <Ionicons name="headset-outline" size={16} color={theme.primary} />
-                <Text style={[styles.portalSecondaryBtnText, { color: theme.primary }]}>Practices</Text>
-              </Pressable>
+                {/* Articles Chip - Outlined */}
+                <View style={{
+                  flexDirection: 'row', alignItems: 'center', gap: 4,
+                  borderWidth: 1, borderColor: toRgba(activeColor, 0.4),
+                  paddingVertical: 5, paddingHorizontal: 7, borderRadius: 16
+                }}>
+                  <Ionicons name="book-outline" size={13} color={theme.textSecondary} />
+                  <Text style={{ fontSize: 11, fontWeight: '600', color: theme.textSecondary }}>Articles</Text>
+                </View>
+              </View>
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: activeColor }}>Chapter overview</Text>
+                <Ionicons name="chevron-forward" size={13} color={activeColor} />
+              </View>
             </View>
+
           </View>
         </Pressable>
       </View>
@@ -442,13 +461,7 @@ export default function JourneyMapScreen() {
     return (
       <View key={zone} style={styles.categorySection}>
         <Pressable
-          onPress={() => {
-            if (zone === 'Heavy Weather') {
-              navigation.navigate('RoomOfLevels');
-            } else {
-              toggleSection(zone);
-            }
-          }}
+          onPress={() => toggleSection(zone)}
           style={({ pressed }) => [
             styles.categoryHero,
             pressed && styles.categoryHeroPressed,
@@ -502,7 +515,7 @@ export default function JourneyMapScreen() {
               </View>
               <View style={styles.categoryToggle}>
                 <Ionicons
-                  name={zone === 'Heavy Weather' ? 'arrow-forward' : (expanded ? 'chevron-up' : 'chevron-down')}
+                  name={expanded ? 'chevron-up' : 'chevron-down'}
                   size={20}
                   color={theme.textPrimary}
                 />
@@ -511,7 +524,7 @@ export default function JourneyMapScreen() {
           </LinearGradient>
         </Pressable>
 
-        {expanded && zone !== 'Heavy Weather' && (
+        {expanded && (
           <View style={styles.levelsGrid}>
             {levels.map((level, index) =>
               renderLevelCard(level, index)
@@ -629,7 +642,7 @@ export default function JourneyMapScreen() {
                   screen="journey"
                   section="courage-disclaimer"
                   id="text"
-                  originalContent="Crossing into level 200 shifts you from force to power. Expect old patterns to soften - move gently."
+                  originalContent="Crossing into Courage shifts you from force to power. Expect old patterns to soften - move gently."
                   textStyle={styles.disclaimerText}
                   type="description"
                 />

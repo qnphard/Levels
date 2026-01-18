@@ -105,7 +105,7 @@ export default function LossAndAbandonmentScreen() {
           screen="loss-and-abandonment"
           section="main"
           id="source-desc"
-          originalContent="Suffering in loss comes from the belief that the external object was the SOURCE of our happiness. In reality, the object was only the TRIGGER (Level 125) that allowed the happiness already inside us (Level 540) to shine through. The happiness is still there; only the trigger is gone."
+          originalContent="Suffering in loss comes from the belief that the external object was the SOURCE of our happiness. In reality, the object was only the TRIGGER (Desire) that allowed the happiness already inside us (Joy) to shine through. The happiness is still there; only the trigger is gone."
           textStyle={cardStyles.paragraph}
           type="paragraph"
         />
@@ -174,7 +174,7 @@ export default function LossAndAbandonmentScreen() {
             screen="loss-and-abandonment"
             section="main"
             id="insight-text"
-            originalContent="The vibration of love (500) is independent of time and space. While the person or situation may leave the 'Linear' world, the 'Nonlinear' bond remains. You can let go of the pain of the loss while keeping the power of the love."
+            originalContent="The vibration of Love is independent of time and space. While the person or situation may leave the 'Linear' world, the 'Nonlinear' bond remains. You can let go of the pain of the loss while keeping the power of the love."
             textStyle={cardStyles.insightText}
             type="paragraph"
           />

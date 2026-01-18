@@ -264,7 +264,7 @@ export default function CommonTrapsScreen() {
                 screen="common-traps"
                 section="happiness-lookup"
                 id="trap-desc"
-                originalContent="Many are driven by religious fear, living in constant guilt. This vibration is below level 200 and blocks the very connection it seeks. Realize that the sun is always shining; you don't have to 'earn' its warmth through pain."
+                originalContent="Many are driven by religious fear, living in constant guilt. This vibration is below the level of Courage and blocks the very connection it seeks. Realize that the sun is always shining; you don't have to 'earn' its warmth through pain."
                 textStyle={cardStyles.warningText}
                 type="paragraph"
               />

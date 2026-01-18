@@ -230,7 +230,7 @@ export default function FulfillmentVsSatisfactionScreen() {
             screen="fulfillment-vs-satisfaction"
             section="main"
             id="insight-text"
-            originalContent="Imagine fulfillment as a diamond that has been covered in mud (emotional blocks). You don't need to 'buy' a diamond; you just need to wash away the mud. As you let go of desire, the natural radiance of Joy (level 540) begins to shine through of itself."
+            originalContent="Imagine fulfillment as a diamond that has been covered in mud (emotional blocks). You don't need to 'buy' a diamond; you just need to wash away the mud. As you let go of desire, the natural radiance of Joy begins to shine through of itself."
             textStyle={cardStyles.insightText}
             type="paragraph"
           />

@@ -97,23 +97,40 @@ export default function LevelChapterScreen() {
     );
   }
 
-  const filteredMeditations = useMemo(
-    () =>
-      sampleMeditations.filter((meditation) => {
-        if (meditation._level == null) return false;
-        return Math.abs(meditation._level - level.level) <= 80;
-      }),
-    [level.level]
-  );
+  const filteredMeditations = useMemo(() => {
+    // 1. Curated list from level definition
+    if (level.meditations && level.meditations.length > 0) {
+      // Map IDs to meditation objects, maintaining the order defined in level.meditations
+      const curated = level.meditations
+        .map(id => sampleMeditations.find(m => m.id === id))
+        .filter(Boolean) as typeof sampleMeditations;
 
-  const filteredArticles = useMemo(
-    () =>
-      featuredArticles.filter((article) => {
-        if (article.calibration == null) return false;
-        return Math.abs(article.calibration - level.level) <= 80;
-      }),
-    [level.level]
-  );
+      if (curated.length > 0) return curated;
+    }
+
+    // 2. Fallback: Proximity logic
+    return sampleMeditations.filter((meditation) => {
+      if (meditation._level == null) return false;
+      return Math.abs(meditation._level - level.level) <= 80;
+    });
+  }, [level]);
+
+  const filteredArticles = useMemo(() => {
+    // 1. Curated list from level definition
+    if (level.articles && level.articles.length > 0) {
+      const curated = level.articles
+        .map(id => featuredArticles.find(a => a.id === id))
+        .filter(Boolean) as typeof featuredArticles;
+
+      if (curated.length > 0) return curated;
+    }
+
+    // 2. Fallback: Proximity logic
+    return featuredArticles.filter((article) => {
+      if (article.calibration == null) return false;
+      return Math.abs(article.calibration - level.level) <= 80;
+    });
+  }, [level]);
 
   const handleOpenDetail = () => {
     HapticOrchestrator.elementClick();
@@ -231,7 +248,7 @@ export default function LevelChapterScreen() {
         </Pressable>
 
         <View style={styles.headerContent}>
-          <Text style={styles.levelLabel}>LEVEL {level.level}</Text>
+          <Text style={styles.levelLabel}>{level.zone?.toUpperCase()}</Text>
           <KineticText type="display" style={styles.levelTitle} delay={100}>
             {String(level.name || '')}
           </KineticText>

@@ -126,7 +126,7 @@ export default function AddictionScreen() {
             screen="addiction"
             section="main"
             id="power-shift-text"
-            originalContent="Recovery is not just about stopping a behavior; it is about shifting the entire field of consciousness. When an addict moves from Level 125 (Desire) to Level 200 (Courage) and eventually Level 500 (Love), the craving simply ceases to exist. The energy of the new field is stronger than the memory of the old 'high'."
+            originalContent="Recovery is not just about stopping a behavior; it is about shifting the entire field of consciousness. When an addict moves from Desire to Courage and eventually Love, the craving simply ceases to exist. The energy of the new field is stronger than the memory of the old 'high'."
             textStyle={cardStyles.keyInsightText}
             type="paragraph"
           />
@@ -148,7 +148,7 @@ export default function AddictionScreen() {
             screen="addiction"
             section="main"
             id="mechanism-text"
-            originalContent="Addiction is fueled by the level of Desire (125). The focus becomes the *craving* itself. The mind becomes convinced that it *must* have the object of desire to survive. This is the ego's ultimate trap, as the object can never provide the permanent peace that is being sought."
+            originalContent="Addiction is fueled by the level of Desire. The focus becomes the *craving* itself. The mind becomes convinced that it *must* have the object of desire to survive. This is the ego's ultimate trap, as the object can never provide the permanent peace that is being sought."
             textStyle={cardStyles.warningText}
             type="paragraph"
           />
@@ -243,7 +243,7 @@ export default function AddictionScreen() {
             screen="addiction"
             section="main"
             id="insight-text"
-            originalContent="The 12-Step programs (like AA) are effective because they move the individual from the level of Desire (125) and Hopelessness (50) to the level of Love and Service (500+). By surrendering to a 'Higher Power', the addict connects to a field of energy that is stronger than their egoic craving."
+            originalContent="The 12-Step programs (like AA) are effective because they move the individual from the level of Desire and Hopelessness to the level of Love and Service. By surrendering to a 'Higher Power', the addict connects to a field of energy that is stronger than their egoic craving."
             textStyle={cardStyles.insightText}
             type="paragraph"
           />

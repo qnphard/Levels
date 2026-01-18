@@ -145,13 +145,73 @@ vec4 main(vec2 xy) {
 }
 `)!;
 
-interface LivingBackgroundProps {
-    style?: ViewStyle;
+// DAWN MODE SHADER - Twilight into Sunrise
+const dawnSource = Skia.RuntimeEffect.Make(`
+uniform float u_time;
+uniform vec2 u_resolution;
+
+float random (in vec2 _st) {
+    return fract(sin(dot(_st.xy, vec2(12.9898,78.233))) * 43758.5453123);
 }
 
-export const LivingBackground: React.FC<LivingBackgroundProps> = ({ style }) => {
+float noise (in vec2 _st) {
+    vec2 i = floor(_st);
+    vec2 f = fract(_st);
+    float a = random(i);
+    float b = random(i + vec2(1.0, 0.0));
+    float c = random(i + vec2(0.0, 1.0));
+    float d = random(i + vec2(1.0, 1.0));
+    vec2 u = f * f * (3.0 - 2.0 * f);
+    return mix(a, b, u.x) + (c - a)* u.y * (1.0 - u.x) + (d - b) * u.x * u.y;
+}
+
+vec4 main(vec2 xy) {
+    vec2 st = xy / u_resolution.xy;
+    float ratio = u_resolution.x / u_resolution.y;
+    st.x *= ratio;
+
+    float t = u_time * 0.12;
+
+    // Base: Deep Twilight Indigo
+    vec3 color = vec3(0.11, 0.10, 0.29); 
+
+    vec2 pos1 = st + vec2(cos(t * 0.3), sin(t * 0.2)) * 0.2;
+    vec2 pos2 = st + vec2(sin(t * 0.4), cos(t * 0.3)) * 0.3;
+
+    float n1 = noise(pos1 * 3.0 + t);
+    float n2 = noise(pos2 * 2.5 - t * 0.5);
+    float fog = mix(n1, n2, 0.5);
+
+    // Pulse 1: Rose
+    vec3 pulse1 = vec3(0.99, 0.64, 0.68);
+    // Pulse 2: Gold
+    vec3 pulse2 = vec3(0.98, 0.82, 0.30);
+    
+    float breathe = 0.5 + 0.5 * sin(t * 0.8);
+    
+    color = mix(color, pulse1, fog * 0.35 * breathe);
+    color = mix(color, pulse2, (1.0 - fog) * 0.25);
+
+    vec2 uv = xy / u_resolution.xy;
+    float dist = distance(uv, vec2(0.5));
+    color *= smoothstep(1.3, 0.2, dist);
+
+    float grain = random(xy + u_time) * 0.03;
+    color += grain;
+
+    return vec4(color, 1.0);
+}
+`)!;
+
+interface LivingBackgroundProps {
+    style?: ViewStyle;
+    mode?: 'light' | 'dark' | 'dawn';
+}
+
+export const LivingBackground: React.FC<LivingBackgroundProps> = ({ style, mode: modeOverride }) => {
     const theme = useThemeColors();
     const time = useSharedValue(0);
+    const mode = modeOverride || theme.mode;
 
     useEffect(() => {
         time.value = withRepeat(
@@ -167,7 +227,7 @@ export const LivingBackground: React.FC<LivingBackgroundProps> = ({ style }) => 
         };
     });
 
-    const source = theme.mode === 'dark' ? darkSource : lightSource;
+    const source = mode === 'dark' ? darkSource : mode === 'dawn' ? dawnSource : lightSource;
 
     if (!source) {
         // Fallback solid color if shader fails
@@ -175,7 +235,7 @@ export const LivingBackground: React.FC<LivingBackgroundProps> = ({ style }) => 
             <View
                 style={[
                     StyleSheet.absoluteFill,
-                    { backgroundColor: theme.mode === 'dark' ? '#070812' : '#FAF9F6' },
+                    { backgroundColor: mode === 'dark' ? '#070812' : '#FAF9F6' },
                     style
                 ]}
             />
