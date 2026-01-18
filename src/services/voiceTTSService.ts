@@ -6,11 +6,14 @@
  */
 
 import { Audio } from 'expo-av';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
+
+// Destructure to handle potential type/runtime differences in common environments
+const { cacheDirectory, writeAsStringAsync } = FileSystem;
 
 // Hugging Face Space URL
 // Modal API URL (Replace with your actual deployed URL)
-const VOICE_API_URL = 'https://REPLACE_WITH_YOUR_MODAL_URL';
+const VOICE_API_URL = 'https://qnphard--meditation-tts-fast-model-synthesize.modal.run';
 
 export interface BrainwavePreset {
     id: string;
@@ -90,47 +93,84 @@ export async function synthesize(options: SynthesizeOptions): Promise<string> {
     }
 
     console.log(`Synthesizing via Modal: ${VOICE_API_URL}`);
+    console.log(`Script length: ${text.length} chars`);
 
-    // Modal returns a WAV file binary
-    const response = await fetch(VOICE_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            text,
-            speed,
-            brainwave,
-            binaural_volume: binauralVolume,
-            // Future: ref_audio_base64
-        }),
-    });
+    // Create AbortController for timeout (5 minutes max)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5 * 60 * 1000);
 
-    if (!response.ok) {
-        throw new Error(`Modal API Error: ${response.status} - Check if URL is correct`);
+    try {
+        // Modal returns JSON with base64-encoded audio
+        const response = await fetch(VOICE_API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text,
+                speed,
+                brainwave,
+                binaural_volume: binauralVolume,
+            }),
+            signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            const errBody = await response.text();
+            console.error('Modal API Error Detail:', errBody);
+            throw new Error(`Modal API Error (${response.status}): ${errBody.slice(0, 300)}...`);
+        }
+
+        console.log('Response received, parsing JSON...');
+        const result = await response.json();
+
+        if (!result.audio_base64) {
+            console.error('Response keys:', Object.keys(result));
+            throw new Error('No audio_base64 in response');
+        }
+
+        console.log(`Audio received: ${(result.audio_base64.length / 1024).toFixed(1)} KB base64`);
+
+        // Write base64 audio directly to file
+        const ext = result.format || 'mp3';
+        const fileUri = cacheDirectory + `meditation_${Date.now()}.${ext}`;
+        await writeAsStringAsync(fileUri, result.audio_base64, {
+            encoding: 'base64',
+        });
+
+        console.log('Audio saved to:', fileUri);
+        return fileUri;
+    } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err.name === 'AbortError') {
+            throw new Error('Synthesis timed out after 5 minutes. The script may be too long.');
+        }
+        throw err;
     }
+}
 
-    // Convert Blob to Base64 and Save
-    const blob = await response.blob();
-    const reader = new FileReader();
-    reader.readAsDataURL(blob);
-
-    return new Promise((resolve, reject) => {
-        reader.onloadend = async () => {
-            try {
-                const base64data = (reader.result as string).split(',')[1];
-                const fileUri = FileSystem.cacheDirectory + `meditation_${Date.now()}.wav`;
-
-                await FileSystem.writeAsStringAsync(fileUri, base64data, {
-                    encoding: FileSystem.EncodingType.Base64,
-                });
-                resolve(fileUri);
-            } catch (e) {
-                reject(e);
-            }
-        };
-        reader.onerror = reject;
-    });
+// Helper to convert ArrayBuffer to Base64
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    try {
+        // In React Native / Expo, btoa is usually available or shimmed
+        return btoa(binary);
+    } catch (e) {
+        // Fallback for environments where btoa might be missing
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        let base64 = '';
+        for (let i = 0; i < bytes.length; i += 3) {
+            const chunk = (bytes[i] << 16) | (bytes[i + 1] << 8) | bytes[i + 2];
+            base64 += chars[(chunk >> 18) & 63] + chars[(chunk >> 12) & 63] + chars[(chunk >> 6) & 63] + chars[chunk & 63];
+        }
+        return base64;
+    }
 }
 
 /**

@@ -2,7 +2,7 @@
  * SkiaSpiralImpl - 2.5D implementation of the spiral tower using Skia
  * "Fake 3D" using manual projection for that clean vector look
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import { Dimensions } from 'react-native';
 import {
     Canvas,
@@ -350,6 +350,16 @@ const LevelOverlayItem = ({
 // Optimized Stickman using Line primitives (no path parsing)
 const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
     const time = useSharedValue(0);
+    const breathe = useSharedValue(0);
+
+    // Continuous breathing/pulse animation
+    useEffect(() => {
+        breathe.value = withRepeat(
+            withTiming(1, { duration: 2000, easing: Easing.inOut(Easing.ease) }),
+            -1,
+            true
+        );
+    }, []);
 
     useDerivedValue(() => {
         if (isMoving.value) {
@@ -361,24 +371,26 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
     const animPose = useDerivedValue(() => {
         const t = time.value;
+        const b = breathe.value;
+
         const legOffset = Math.sin(t) * 10;
         const armOffset = Math.sin(t + Math.PI) * 8;
-        const bob = Math.abs(Math.sin(t * 2)) * 2;
-        return { legOffset, armOffset, bob };
+        const sprintBob = Math.abs(Math.sin(t * 2)) * 2;
+
+        // Subtle breathing bob when stationary
+        const breatheBob = isMoving.value ? 0 : b * 3;
+
+        return {
+            legOffset,
+            armOffset,
+            bob: sprintBob + breatheBob,
+            glowScale: 1 + b * 0.2,
+            glowOpacity: 0.3 + b * 0.4
+        };
     });
 
-    // Compute joints in derived value to avoid recreating vector objects?
-    // Skia Line props can take vectors.
-    // We'll use simple transforms or just derived vectors.
-
-    // Actually, Line takes p1={vec(x,y)} p2={vec(x,y)}.
-    // We can define derived values for each point.
-
-    const scale = 1.8;
-    const center = vec(CENTER_X + 2, CENTER_Y * 1.2 - 25);
-
-    // Helper calculation inline to avoid worklet scoping issues
-    // rootY = center.y - bob + offset
+    const scale = 2.0; // Slightly larger
+    const center = vec(CENTER_X + 2, CENTER_Y * 1.2 - 30);
     const baseY = center.y + (50 * (1 - scale));
 
     const pNeck = useDerivedValue(() => vec(center.x, baseY - animPose.value.bob));
@@ -398,8 +410,8 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
     const paint = useMemo(() => {
         const p = Skia.Paint();
-        p.setColor(Skia.Color('black'));
-        p.setStrokeWidth(5);
+        p.setColor(Skia.Color('white')); // Changed to white
+        p.setStrokeWidth(6); // Slightly thicker
         p.setStrokeCap(StrokeCap.Round);
         p.setStrokeJoin(StrokeJoin.Round);
         p.setStyle(PaintStyle.Stroke);
@@ -408,6 +420,22 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
     return (
         <Group>
+            {/* Bioluminescent Glow Aura */}
+            <Group blendMode="plus">
+                <Circle
+                    cx={center.x}
+                    cy={useDerivedValue(() => baseY - animPose.value.bob + 20 * scale)}
+                    r={useDerivedValue(() => 45 * scale * animPose.value.glowScale)}
+                    opacity={useDerivedValue(() => animPose.value.glowOpacity)}
+                >
+                    <RadialGradient
+                        c={useDerivedValue(() => vec(center.x, baseY - animPose.value.bob + 20 * scale))}
+                        r={useDerivedValue(() => 45 * scale * animPose.value.glowScale)}
+                        colors={['rgba(139, 92, 246, 0.6)', 'transparent']}
+                    />
+                </Circle>
+            </Group>
+
             {/* Torso */}
             <Line p1={pNeck} p2={pHip} paint={paint} />
             {/* Legs */}
@@ -419,7 +447,7 @@ const SkiaStickman = ({ isMoving }: { isMoving: SharedValue<boolean> }) => {
 
             {/* Head */}
             <Group transform={headTransform}>
-                <Circle cx={0} cy={0} r={11} color="black" />
+                <Circle cx={0} cy={0} r={12} color="white" />
             </Group>
         </Group>
     );

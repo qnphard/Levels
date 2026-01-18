@@ -222,34 +222,34 @@ const sharedCategoryChips = (mode: ThemeMode) => {
 
 const buildTheme = (mode: ThemeMode): ThemeColors => {
   const isDark = mode === 'dark';
-  const background = isDark ? '#0E1F25' : '#EDEFF2'; // Light canvas in L* ~90 for airy glow
-  const surface = isDark ? '#132A31' : palette.sand100; // Softer dark surface
+  const background = isDark ? '#070812' : '#EDEFF2'; // Ultra-Premium: Deepest purple-black
+  const surface = isDark ? 'rgba(255, 255, 255, 0.03)' : palette.sand100; // Glass surface
   const cardBackground = isDark
-    ? 'rgba(15, 28, 34, 0.72)'
+    ? 'rgba(25, 28, 40, 0.6)' // Slightly lighter glass for cards
     : palette.sand100;
   const appBackgroundGradient = isDark
-    ? (['#0E1F25', '#16323B', '#1D4250'] as const) // Slate-teal night gradient (brighter)
+    ? (['#070812', '#0C0E1C', '#131525'] as const) // Deep breathing violet-black
     : ([
-      '#E7ECF0', // Misty Slate top
-      '#DCE4EB', // Balanced middle
-      '#EAEFF3', // Soft base
+      '#E7ECF0',
+      '#DCE4EB',
+      '#EAEFF3',
     ] as const);
-  const canvasOverlay = isDark ? 'rgba(7,16,24,0.35)' : 'rgba(255,255,255,0)';
-  const border = isDark ? 'rgba(255,255,255,0.09)' : palette.sand200;
-  const textPrimary = isDark ? palette.ice50 : palette.stone800;
-  const textSecondary = isDark ? '#C8E0E2' : palette.stone600;
-  const textMuted = isDark ? '#89A1A5' : '#8F8B82';
-  // Updated to violet theme: bright for dark mode, deep for light mode
+  const canvasOverlay = isDark ? 'rgba(7,16,24,0.2)' : 'rgba(255,255,255,0)';
+  const border = isDark ? 'rgba(255,255,255,0.06)' : palette.sand200;
+  const textPrimary = isDark ? '#E0E1E8' : palette.stone800; // Lavender-gray off-white
+  const textSecondary = isDark ? 'rgba(224, 225, 232, 0.6)' : palette.stone600;
+  const textMuted = isDark ? 'rgba(224, 225, 232, 0.4)' : '#8F8B82';
+  // Updated to violet theme
   const primary = isDark ? palette.violet400 : palette.violet600;
   const primarySubtle = isDark ? palette.violet700 : palette.violet300;
   const primaryContrast = isDark ? palette.night900 : '#FFFFFF';
-  const accentTeal = isDark ? palette.violet500 : palette.violet500; // Now violet accent
+  const accentTeal = isDark ? palette.violet500 : palette.violet500;
   const highlightMist = isDark ? '#2B4652' : palette.mist400;
   const shadowSoft = isDark
-    ? 'rgba(0,0,0,0.65)'
+    ? 'rgba(0,0,0,0.8)'
     : 'rgba(15, 28, 31, 0.08)';
   const shadowMedium = isDark
-    ? 'rgba(0,0,0,0.52)'
+    ? 'rgba(0,0,0,0.6)'
     : 'rgba(15, 28, 31, 0.16)';
   const gold = isDark ? '#C9B37F' : palette.gold300;
   const warning = palette.warning500;

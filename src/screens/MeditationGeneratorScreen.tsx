@@ -155,25 +155,31 @@ export default function MeditationGeneratorScreen() {
                 {/* Duration Selection */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Duration</Text>
+                    <Text style={styles.sectionSubtitle}>How long should your meditation be?</Text>
                     <View style={styles.durationRow}>
-                        {DURATIONS.map((d) => (
+                        {[
+                            { id: 'short', label: 'Short', range: '3-5 min', value: 5 },
+                            { id: 'medium', label: 'Medium', range: '5-10 min', value: 10 },
+                            { id: 'long', label: 'Long', range: '15-20 min', value: 18 },
+                        ].map((d) => (
                             <TouchableOpacity
-                                key={d}
+                                key={d.id}
                                 style={[
-                                    styles.durationButton,
-                                    duration === d && styles.durationButtonSelected,
+                                    styles.durationCard,
+                                    duration === d.value && styles.durationCardSelected,
                                 ]}
-                                onPress={() => setDuration(d)}
+                                onPress={() => setDuration(d.value as MeditationDuration)}
                                 activeOpacity={0.7}
                             >
                                 <Text
                                     style={[
-                                        styles.durationText,
-                                        duration === d && styles.durationTextSelected,
+                                        styles.durationLabel,
+                                        duration === d.value && styles.durationLabelSelected,
                                     ]}
                                 >
-                                    {d} min
+                                    {d.label}
                                 </Text>
+                                <Text style={styles.durationRange}>{d.range}</Text>
                             </TouchableOpacity>
                         ))}
                     </View>
@@ -454,26 +460,32 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 12,
     },
-    durationButton: {
+    durationCard: {
         flex: 1,
         backgroundColor: 'rgba(255,255,255,0.05)',
-        borderRadius: 12,
-        paddingVertical: 14,
+        borderRadius: 16,
+        paddingVertical: 16,
+        paddingHorizontal: 12,
         alignItems: 'center',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
     },
-    durationButtonSelected: {
+    durationCardSelected: {
         backgroundColor: 'rgba(99,102,241,0.3)',
         borderColor: '#6366f1',
     },
-    durationText: {
-        fontSize: 16,
+    durationLabel: {
+        fontSize: 15,
         fontWeight: '600',
         color: '#8b8ba7',
     },
-    durationTextSelected: {
+    durationLabelSelected: {
         color: '#ffffff',
+    },
+    durationRange: {
+        fontSize: 12,
+        color: '#6b6b8a',
+        marginTop: 4,
     },
     vibeGrid: {
         flexDirection: 'row',

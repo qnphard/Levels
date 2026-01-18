@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     View,
     Text,
@@ -6,24 +6,26 @@ import {
     Pressable,
     ScrollView,
     StatusBar,
-    Dimensions
+    Dimensions,
+    TouchableOpacity
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { getLevelById } from '../data/levels';
-import { themes, typography, spacing, borderRadius } from '../theme/colors';
+import { themes, typography, spacing, borderRadius, useThemeColors } from '../theme/colors';
 import { RootStackParamList } from '../navigation/types';
 import { LEVEL_DOSSIER_DATA } from '../data/dossierData';
 import { DossierArticle } from '../types';
-import GlassCard from '../components/GlassCard';
+import { LivingBackground } from '../components/LivingBackground';
+import { GlassSurface } from '../components/GlassSurface';
+import { KineticText } from '../components/KineticText';
+import { HapticOrchestrator } from '../services/HapticOrchestrator';
 
 const { width } = Dimensions.get('window');
 
 // --- Helper Components ---
 
-const FormattedText: React.FC<{ text: string; style?: any }> = ({ text, style }) => {
-    const theme = themes.dark;
+const FormattedText: React.FC<{ text: string; style?: any; theme: any }> = ({ text, style, theme }) => {
     if (!text) return null;
     const processedText = text.replace(/\\n/g, '\n');
     const parts = processedText.split(/(\*\*.*?\*\*)/g);
@@ -33,7 +35,7 @@ const FormattedText: React.FC<{ text: string; style?: any }> = ({ text, style })
                 if (!part) return null;
                 if (part.startsWith('**') && part.endsWith('**')) {
                     return (
-                        <Text key={index} style={{ fontWeight: '800', color: theme.white }}>
+                        <Text key={index} style={{ fontWeight: '800', color: theme.textPrimary }}>
                             {part.slice(2, -2)}
                         </Text>
                     );
@@ -45,12 +47,11 @@ const FormattedText: React.FC<{ text: string; style?: any }> = ({ text, style })
 };
 
 // Reused Article Content Viewer
-const ArticleContent: React.FC<{ article: DossierArticle; onBack?: () => void }> = ({ article, onBack }) => {
-    const theme = themes.dark;
+const ArticleContent: React.FC<{ article: DossierArticle; onBack?: () => void; theme: any }> = ({ article, onBack, theme }) => {
     const [expandedSections, setExpandedSections] = useState<number[]>([]);
 
     // Auto-expand default sections
-    React.useEffect(() => {
+    useEffect(() => {
         if (article?.sections) {
             const defaultExpanded = article.sections
                 .map((s, i) => s.defaultExpanded ? i : -1)
@@ -60,6 +61,7 @@ const ArticleContent: React.FC<{ article: DossierArticle; onBack?: () => void }>
     }, [article]);
 
     const toggleSection = (index: number) => {
+        HapticOrchestrator.tick();
         setExpandedSections(prev =>
             prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]
         );
@@ -70,36 +72,50 @@ const ArticleContent: React.FC<{ article: DossierArticle; onBack?: () => void }>
     return (
         <View style={{ flex: 1 }}>
             {onBack && (
-                <Pressable onPress={onBack} style={styles.backButtonRelative}>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                    <Text style={styles.backText}>Back</Text>
-                </Pressable>
+                <TouchableOpacity onPress={onBack} style={styles.backButtonRelative}>
+                    <Ionicons name="arrow-back" size={24} color={theme.textPrimary} />
+                    <Text style={[styles.backText, { color: theme.textPrimary }]}>Back</Text>
+                </TouchableOpacity>
             )}
 
-            <Text style={styles.insightTitle}>{article.title}</Text>
-            <Text style={styles.insightSpine}>{article.spineBody}</Text>
+            <KineticText type="h1" style={[styles.insightTitle, { color: theme.textPrimary }]}>
+                {article.title}
+            </KineticText>
+
+            <GlassSurface style={styles.spineCard} intensity={20} forceTheme="dark">
+                <Text style={[styles.insightSpine, { color: theme.textSecondary }]}>{article.spineBody}</Text>
+            </GlassSurface>
 
             <View style={styles.chamberList}>
                 {article.sections?.map((section, i) => {
                     const isExpanded = expandedSections.includes(i);
                     return (
-                        <View key={i} style={[styles.chamberCard, { borderColor: isExpanded ? theme.primary : 'rgba(255,255,255,0.1)' }]}>
+                        <GlassSurface
+                            key={i}
+                            style={[styles.chamberCard, { borderColor: isExpanded ? theme.primary : 'rgba(255,255,255,0.08)' }]}
+                            intensity={isExpanded ? 30 : 15}
+                            forceTheme="dark"
+                        >
                             <Pressable onPress={() => toggleSection(i)} style={styles.chamberHeader}>
-                                <Text style={[styles.chamberTitle, { color: isExpanded ? theme.primary : theme.white }]}>
+                                <Text style={[styles.chamberTitle, { color: isExpanded ? theme.primary : theme.textPrimary }]}>
                                     {section.title}
                                 </Text>
                                 <Ionicons
                                     name={isExpanded ? "chevron-up" : "chevron-down"}
                                     size={20}
-                                    color={isExpanded ? theme.primary : 'rgba(255,255,255,0.5)'}
+                                    color={isExpanded ? theme.primary : theme.textSecondary}
                                 />
                             </Pressable>
                             {isExpanded && (
                                 <View style={styles.chamberBody}>
-                                    <FormattedText text={section.body} style={styles.chamberText} />
+                                    <FormattedText
+                                        text={section.body}
+                                        style={[styles.chamberText, { color: theme.textSecondary }]}
+                                        theme={theme}
+                                    />
                                 </View>
                             )}
-                        </View>
+                        </GlassSurface>
                     );
                 })}
             </View>
@@ -107,36 +123,46 @@ const ArticleContent: React.FC<{ article: DossierArticle; onBack?: () => void }>
     );
 };
 
-// Simple List Viewer for Traps/Exits
-const ListView: React.FC<{ data: any; onBack?: () => void }> = ({ data, onBack }) => {
-    const theme = themes.dark;
-
+// List Viewer for Traps/Exits
+const ListView: React.FC<{ data: any; onBack?: () => void; onItemPress: (item: any) => void; theme: any }> = ({ data, onBack, onItemPress, theme }) => {
     return (
         <View style={{ flex: 1 }}>
             {onBack && (
-                <Pressable onPress={onBack} style={styles.backButtonRelative}>
-                    <Ionicons name="arrow-back" size={24} color="white" />
-                    <Text style={styles.backText}>Back</Text>
-                </Pressable>
+                <TouchableOpacity onPress={onBack} style={styles.backButtonRelative}>
+                    <Ionicons name="arrow-back" size={24} color={theme.textPrimary} />
+                    <Text style={[styles.backText, { color: theme.textPrimary }]}>Back</Text>
+                </TouchableOpacity>
             )}
 
-            <Text style={styles.insightTitle}>{data.title || 'Collection'}</Text>
+            <KineticText type="h1" style={[styles.insightTitle, { color: theme.textPrimary }]}>
+                {data.title || 'Collection'}
+            </KineticText>
+
             {data.body ? (
-                <Text style={[styles.insightSpine, { marginBottom: 32 }]}>{data.body}</Text>
+                <GlassSurface style={{ marginBottom: 32, padding: 16 }} intensity={20} forceTheme="dark">
+                    <Text style={[styles.insightSpine, { marginBottom: 0, color: theme.textSecondary }]}>{data.body}</Text>
+                </GlassSurface>
             ) : null}
 
             <View style={styles.artifactGrid}>
                 {data.chips?.map((chip: any, i: number) => (
-                    <View key={i} style={styles.listItem}>
-                        <View style={styles.orbIcon}>
-                            {/* Placeholder Icon */}
-                            <Ionicons name="disc-outline" size={20} color={theme.primary} />
+                    <TouchableOpacity
+                        key={i}
+                        style={[styles.listItem, { backgroundColor: theme.cardBackground, borderColor: theme.border }]}
+                        onPress={() => {
+                            HapticOrchestrator.elementClick();
+                            onItemPress(chip);
+                        }}
+                    >
+                        <View style={[styles.orbIcon, { backgroundColor: 'rgba(255,255,255,0.05)' }]}>
+                            <Ionicons name="finger-print-outline" size={24} color={theme.primary} />
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.listItemTitle}>{chip.label}</Text>
-                            {/* If chips have more detail, render it here */}
+                            <Text style={[styles.listItemTitle, { color: theme.textPrimary }]}>{chip.label}</Text>
+                            <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 4 }}>Tap to read</Text>
                         </View>
-                    </View>
+                        <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+                    </TouchableOpacity>
                 ))}
             </View>
         </View>
@@ -151,7 +177,11 @@ export default function LevelRoomScreen() {
     const navigation = useNavigation();
     const { levelId, initialHotspot } = route.params || {};
 
+    // Force Dark Theme for this immersive screen
     const theme = themes.dark;
+
+    // Internal navigation state to drill down into lists
+    const [selectedArticle, setSelectedArticle] = useState<DossierArticle | null>(null);
 
     const level = useMemo(() => getLevelById(levelId), [levelId]);
     const dossier = useMemo(() => LEVEL_DOSSIER_DATA[levelId?.toLowerCase()] || {}, [levelId]);
@@ -165,44 +195,62 @@ export default function LevelRoomScreen() {
         if (initialHotspot === 'traps') return { type: 'list', data: { title: 'Traps', body: dossier.traps?.body, chips: dossier.traps?.chips } };
         if (initialHotspot === 'exits') return { type: 'list', data: { title: 'Exits', body: dossier.exits?.body, chips: dossier.exits?.chips } };
 
-        return null; // Fallback
+        return null;
     }, [initialHotspot, dossier]);
 
-    // Helper for navigation back
-    const handleBack = () => navigation.goBack();
+    // Handle back press
+    const handleBack = () => {
+        if (selectedArticle) {
+            setSelectedArticle(null); // Go back to list
+        } else {
+            navigation.goBack(); // Go back to Hub
+        }
+    };
+
+    const handleListItemPress = (item: any) => {
+        // Assume item matches DossierArticle shape roughly or map it
+        setSelectedArticle(item);
+        // Scroll to top? (handled by key change usually or manually ref)
+    };
 
     if (!level) return <View style={styles.container} />;
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.background }]}>
             <StatusBar barStyle="light-content" />
 
-            {/* Background */}
-            <LinearGradient
-                colors={['#111', '#000']}
-                style={StyleSheet.absoluteFill}
-            />
+            {/* Alive Background */}
+            <LivingBackground />
 
-            {/* Subtle Gradient based on Level Color */}
-            <LinearGradient
-                colors={[level.color + '20', 'transparent']} // Low opacity level color
-                style={[StyleSheet.absoluteFill, { height: '40%' }]}
-            />
-
-            <ScrollView contentContainerStyle={styles.scrollContent}>
+            {/* Content */}
+            <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
                 <View style={styles.headerSpacer} />
 
-                {content?.type === 'article' && content.data ? (
-                    <ArticleContent article={content.data as DossierArticle} onBack={handleBack} />
+                {selectedArticle ? (
+                    // 1. Details drilled down from list
+                    <ArticleContent
+                        article={selectedArticle}
+                        onBack={() => setSelectedArticle(null)}
+                        theme={theme}
+                    />
+                ) : content?.type === 'article' && content.data ? (
+                    // 2. Direct article (Purpose, Felt Sense)
+                    <ArticleContent article={content.data as DossierArticle} onBack={handleBack} theme={theme} />
                 ) : content?.type === 'list' && content.data ? (
-                    <ListView data={content.data} onBack={handleBack} />
+                    // 3. List View (Traps, Exits)
+                    <ListView
+                        data={content.data}
+                        onBack={handleBack}
+                        onItemPress={handleListItemPress}
+                        theme={theme}
+                    />
                 ) : (
-                    // Fallback / Empty State
+                    // Fallback
                     <View style={{ alignItems: 'center', marginTop: 100 }}>
-                        <Text style={{ color: 'white' }}>Select a section from the menu.</Text>
-                        <Pressable onPress={handleBack} style={{ marginTop: 20, padding: 10, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
-                            <Text style={{ color: 'white' }}>Go Back</Text>
-                        </Pressable>
+                        <Text style={{ color: theme.textSecondary }}>Select a section from the menu.</Text>
+                        <TouchableOpacity onPress={handleBack} style={{ marginTop: 20, padding: 12, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 8 }}>
+                            <Text style={{ color: theme.textPrimary }}>Go Back</Text>
+                        </TouchableOpacity>
                     </View>
                 )}
 
@@ -210,54 +258,56 @@ export default function LevelRoomScreen() {
             </ScrollView>
 
             {/* Close Button (Floating) */}
-            <Pressable onPress={handleBack} style={styles.closeBtn}>
-                <Ionicons name="close" size={28} color="white" />
-            </Pressable>
+            <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={[styles.closeBtn, { backgroundColor: 'rgba(0,0,0,0.3)' }]}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+                <Ionicons name="close" size={24} color="#FFF" />
+            </TouchableOpacity>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: 'black' },
+    container: { flex: 1 },
     scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
     headerSpacer: { height: 80 },
 
     // Back Button
-    backButtonRelative: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, alignSelf: 'flex-start' },
-    backText: { color: 'white', marginLeft: 8, fontWeight: '700', fontSize: 16 },
-    closeBtn: { position: 'absolute', top: 50, right: 20, zIndex: 100, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 20, padding: 8 },
+    backButtonRelative: { flexDirection: 'row', alignItems: 'center', marginBottom: 24, alignSelf: 'flex-start', padding: 8, marginLeft: -8, opacity: 0.8 },
+    backText: { marginLeft: 6, fontWeight: '600', fontSize: 16 },
+    closeBtn: { position: 'absolute', top: 50, right: 20, zIndex: 100, borderRadius: 20, padding: 8 },
 
-    // Typography
-    insightTitle: { fontSize: 32, fontWeight: '800', marginBottom: 12, color: 'white', letterSpacing: -0.5 },
-    insightSpine: { fontSize: 18, lineHeight: 28, color: 'rgba(255,255,255,0.9)', marginBottom: 32, fontWeight: '300' },
+    // Typography & Spacing
+    insightTitle: { marginBottom: 16 },
+    insightSpine: { fontSize: 18, lineHeight: 28, fontWeight: '400' },
+    spineCard: { padding: 20, marginBottom: 32 },
 
     // Cards/Sections
     chamberList: { gap: 16 },
-    chamberCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, borderWidth: 1, overflow: 'hidden' },
+    chamberCard: { overflow: 'hidden', borderWidth: 1 },
     chamberHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 20 },
-    chamberTitle: { fontSize: 18, fontWeight: '600', letterSpacing: 0.5 },
-    chamberBody: { padding: 20, paddingTop: 0, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' },
-    chamberText: { fontSize: 16, lineHeight: 26, color: 'rgba(255,255,255,0.8)' },
+    chamberTitle: { fontSize: 17, fontWeight: '600', letterSpacing: 0.3 },
+    chamberBody: { padding: 20, paddingTop: 0 },
+    chamberText: { fontSize: 16, lineHeight: 28 },
 
     // List View
     artifactGrid: { gap: 12 },
     listItem: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.05)',
         padding: 16,
-        borderRadius: 12,
+        borderRadius: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)'
     },
     orbIcon: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         alignItems: 'center',
         justifyContent: 'center',
         marginRight: 16
     },
-    listItemTitle: { color: 'white', fontSize: 16, fontWeight: '600' }
+    listItemTitle: { fontSize: 17, fontWeight: '600' }
 });

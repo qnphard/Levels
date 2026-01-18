@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -26,10 +27,16 @@ import WhyFeelingSheet from '../components/WhyFeelingSheet';
 import EditableText from '../components/EditableText';
 import EditModeIndicator from '../components/EditModeIndicator';
 import ContentBuilder from '../components/ContentBuilder';
-import { useContentStructure } from '../hooks/useContentStructure';
+import { LivingBackground } from '../components/LivingBackground';
+import { KineticText } from '../components/KineticText';
+import { GlassSurface } from '../components/GlassSurface';
+import { GradientDivider } from '../components/GradientDivider';
+import { HapticOrchestrator } from '../services/HapticOrchestrator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type LevelDetailRouteProp = RouteProp<RootStackParamList, 'LevelDetail'>;
+
+const { width } = Dimensions.get('window');
 
 export default function LevelDetailScreen() {
   const navigation = useNavigation<NavigationProp>();
@@ -38,36 +45,28 @@ export default function LevelDetailScreen() {
   const glowEnabled = useGlowEnabled();
   const { levelId } = route.params;
   const level = getLevelById(levelId);
-  
-  // Use level-specific colors like LevelChapterScreen
+
   const luminousAccent = useMemo(() => {
-    if (!level) {
-      return theme.primary;
-    }
+    if (!level) return theme.primary;
     if (theme.mode === 'dark') {
-      return (
-        level.glowDark ||
-        level.gradientDark?.[0] ||
-        adjustColor(level.color, 8)
-      );
+      return level.glowDark || level.gradientDark?.[0] || adjustColor(level.color, 8);
     }
     return level.gradient?.[0] ?? adjustColor(level.color, -6);
   }, [level, theme]);
-  
-  // Get level-specific button color (toned down by 20% in dark theme)
+
   const buttonColor = useMemo(() => {
     if (!level) return theme.primary;
     const baseColor = theme.mode === 'dark'
       ? (level.glowDark || level.gradientDark?.[0] || level.color)
       : (level.gradient?.[0] || level.color);
-    // Tone down by 20% in dark theme (80% opacity)
     return theme.mode === 'dark' ? toRgba(baseColor, 0.8) : baseColor;
   }, [level, theme]);
-  
+
   const styles = useMemo(
     () => getStyles(theme, luminousAccent, glowEnabled),
     [theme, luminousAccent, glowEnabled]
   );
+
   const { progress, markLevelExplored, setCurrentLevel, markCourageEngaged } =
     useUserProgress();
   const [showWhyFeelingSheet, setShowWhyFeelingSheet] = useState(false);
@@ -78,14 +77,13 @@ export default function LevelDetailScreen() {
   };
 
   useEffect(() => {
-    // Mark this level as explored when viewing
     if (level) {
       markLevelExplored(level.id);
-
-      // If this is Courage (200), mark special engagement
       if (level.isThreshold) {
         markCourageEngaged();
       }
+      // Haptic feedback on entry
+      HapticOrchestrator.elementClick();
     }
   }, [level]);
 
@@ -98,122 +96,82 @@ export default function LevelDetailScreen() {
   }
 
   const isCurrentLevel = progress?.currentLevel === level.id;
-
-  // Use level-specific gradients like LevelChapterScreen
-  const backgroundGradient = useMemo(() => {
-    const base =
-      level.gradient ??
-      ([
-        adjustColor(level.color, 12),
-        adjustColor(level.color, -16),
-      ] as const);
-    const dark = level.gradientDark ?? base;
-    const pair = theme.mode === 'dark' ? dark : base;
-    const [start, end] = pair;
-    const tail = adjustColor(
-      end,
-      theme.mode === 'dark' ? -8 : -24
-    );
-    return [start, end, tail] as const;
-  }, [level.gradient, level.gradientDark, level.color, theme.mode]);
-  
-  // Use level-specific accent color
   const accentColor = luminousAccent;
 
   const handleSetAsCurrent = async () => {
+    HapticOrchestrator.commit();
     await setCurrentLevel(level.id);
   };
 
   const handleBeginPractice = () => {
-    // For now, show a placeholder - will integrate with meditation player later
-    // In production, this would navigate to the first meditation for this level
-    alert(
-      `Practice sessions for ${String(level.name || '')} will be available soon. The meditation scripts are being crafted with care.`
-    );
+    HapticOrchestrator.elementActive();
+    alert(`Practice sessions for ${String(level.name || '')} will be available soon.`);
   };
 
+  const handleGoBack = () => {
+    HapticOrchestrator.elementClick();
+    navigation.goBack();
+  }
+
   return (
-    <LinearGradient
-      colors={backgroundGradient}
-      style={styles.container}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+    <View style={styles.container}>
+      {/* 1. Alive Foundation */}
+      <LivingBackground />
+
       <EditModeIndicator />
-      {/* Header with gradient */}
-      <LinearGradient
-        colors={theme.mode === 'dark'
-          ? (level.gradientDark ?? [
-              adjustColor(level.color, 8),
-              adjustColor(level.color, -12),
-            ] as const)
-          : (level.gradient ?? [
-              adjustColor(level.color, 12),
-              adjustColor(level.color, -16),
-            ] as const)}
-        style={styles.header}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="arrow-back" size={24} color={theme.white} />
-        </TouchableOpacity>
-
-        <View style={styles.headerContent}>
-          <View style={styles.titleRow}>
-          <Text style={styles.levelTitle}>
-              {level.level < 200 ? `Transcending ${String(level.name || '')}` : String(level.name || '')}
-          </Text>
-            <TouchableOpacity
-              onPress={() => setShowWhyFeelingSheet(true)}
-              style={styles.infoButton}
-            >
-              <Ionicons name="information-circle-outline" size={24} color={theme.white} />
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.antithesisContainer}>
-            <Ionicons name="arrow-forward" size={18} color={theme.white} />
-            <Text style={styles.antithesisText}>
-              {level.level < 200 ? `Through ${String(level.antithesis || '')}` : String(level.antithesis || '')}
-            </Text>
-          </View>
-
-          {level.isThreshold && (
-            <View style={styles.thresholdBadge}>
-              <Ionicons name="star" size={16} color={theme.gold} />
-              <Text style={styles.thresholdText}>
-                The Threshold - Where Power Begins
-              </Text>
-            </View>
-          )}
-        </View>
-      </LinearGradient>
 
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Description */}
-        <View style={styles.section} key={structureRefreshKey}>
-          <EditableText
-            screen="level-detail"
-            section={levelId}
-            id="title"
-            originalContent={`Understanding ${String(level.name || '')}`}
-            textStyle={styles.sectionTitle}
-            type="title"
-          />
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={handleGoBack}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Ionicons name="arrow-back" size={24} color={theme.textPrimary} />
+          </TouchableOpacity>
+
+          <View style={styles.headerContent}>
+            <View style={styles.eyebrowContainer}>
+              <Text style={typography.styles.eyebrow}>CONSCIOUSNESS LEVEL {level.level}</Text>
+            </View>
+
+            <KineticText
+              type="display"
+              style={[styles.levelTitle, { color: theme.textPrimary }]}
+              delay={100}
+            >
+              {String(level.name || 'Unknown')}
+            </KineticText>
+
+            <View style={styles.antithesisContainer}>
+              <Text style={[typography.styles.h3, { color: toRgba(theme.textSecondary, 0.7) }]}>Transmuting</Text>
+              <Text style={[typography.styles.h3, { color: accentColor, fontWeight: '600' }]}>
+                {String(level.antithesis || '')}
+              </Text>
+            </View>
+
+            {level.isThreshold && (
+              <View style={styles.thresholdBadge}>
+                <Ionicons name="star" size={14} color={theme.gold} />
+                <Text style={styles.thresholdText}>THE THRESHOLD OF POWER</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Content Section: Description */}
+        <View style={styles.editorialSection} key={structureRefreshKey}>
           <EditableText
             screen="level-detail"
             section={levelId}
             id="description"
             originalContent={String(level.description || '')}
-            textStyle={styles.descriptionText}
+            textStyle={typography.styles.body}
             type="paragraph"
           />
           <ContentBuilder
@@ -223,19 +181,16 @@ export default function LevelDetailScreen() {
           />
         </View>
 
-        {/* Characteristics */}
-        <View style={styles.section}>
-          <EditableText
-            screen="level-detail"
-            section={levelId}
-            id="characteristics-title"
-            originalContent="You Might Notice"
-            textStyle={styles.sectionTitle}
-            type="title"
-          />
+        <GradientDivider opacity={0.3} />
+
+        {/* Characteristics - in GlassSurface */}
+        <GlassSurface style={styles.glassSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={typography.styles.h2}>You Might Notice</Text>
+          </View>
           {level.characteristics.map((char, index) => (
             <View key={index} style={styles.listItem}>
-              <View style={styles.bullet} />
+              <View style={[styles.bullet, { backgroundColor: accentColor }]} />
               <EditableText
                 screen="level-detail"
                 section={levelId}
@@ -246,25 +201,16 @@ export default function LevelDetailScreen() {
               />
             </View>
           ))}
-        </View>
+        </GlassSurface>
 
-        {/* Physical Signs */}
-        <View style={styles.section}>
-          <EditableText
-            screen="level-detail"
-            section={levelId}
-            id="physical-signs-title"
-            originalContent="In Your Body"
-            textStyle={styles.sectionTitle}
-            type="title"
-          />
+        {/* Physical Signs - in GlassSurface */}
+        <GlassSurface style={styles.glassSection}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="body-outline" size={22} color={accentColor} />
+            <Text style={typography.styles.h2}>In Your Body</Text>
+          </View>
           {level.physicalSigns.map((sign, index) => (
             <View key={index} style={styles.listItem}>
-              <Ionicons
-                name="body-outline"
-                size={16}
-                color={accentColor}
-              />
               <EditableText
                 screen="level-detail"
                 section={levelId}
@@ -275,132 +221,60 @@ export default function LevelDetailScreen() {
               />
             </View>
           ))}
-        </View>
+        </GlassSurface>
 
         {/* The Trap */}
-        <View style={[styles.section, styles.trapSection]}>
-          <View style={styles.trapHeader}>
-            <Ionicons name="alert-circle" size={20} color={accentColor} />
-            <EditableText
-              screen="level-detail"
-              section={levelId}
-              id="trap-title"
-              originalContent="The Trap"
-              textStyle={styles.sectionTitle}
-              type="title"
-            />
+        <GlassSurface
+          style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.3) }]}
+          intensity={20}
+        >
+          <View style={styles.sectionHeader}>
+            <Ionicons name="alert-circle-outline" size={22} color={accentColor} />
+            <Text style={[typography.styles.h2, { color: accentColor }]}>The Trap</Text>
           </View>
-          <EditableText
-            screen="level-detail"
-            section={levelId}
-            id="trap-description"
-            originalContent={String(level.trapDescription || '')}
-            textStyle={styles.trapText}
-            type="paragraph"
-          />
-        </View>
+          <Text style={[typography.styles.body, { fontStyle: 'italic', opacity: 0.9 }]}>
+            {String(level.trapDescription || '')}
+          </Text>
+        </GlassSurface>
 
         {/* The Way Through */}
-        <View style={[
-          styles.section,
-          styles.wayThroughSection,
-          glowEnabled && theme.mode === 'dark' && {
-            borderWidth: 2,
-            borderColor: toRgba(accentColor, 0.6),
-            shadowColor: accentColor,
-            shadowOpacity: 0.3,
-            shadowRadius: 16,
-            shadowOffset: { width: 0, height: 2 },
-            elevation: 0,
-          },
-          glowEnabled && theme.mode === 'light' && {
-            borderWidth: 2,
-            borderColor: toRgba(accentColor, 0.4),
-            shadowColor: accentColor,
-            shadowOpacity: 0.25,
-            shadowRadius: 14,
-            shadowOffset: { width: 0, height: 2 },
-            elevation: 0,
-          },
-        ]}>
-          <View style={styles.wayThroughHeader}>
-            <Ionicons name="compass" size={20} color={accentColor} />
-            <EditableText
-              screen="level-detail"
-              section={levelId}
-              id="way-through-title"
-              originalContent="The Way Through"
-              textStyle={styles.sectionTitle}
-              type="title"
-            />
+        <GlassSurface
+          style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.5) }]}
+          intensity={60}
+        >
+          <View style={styles.sectionHeader}>
+            <Ionicons name="compass-outline" size={22} color={accentColor} />
+            <Text style={[typography.styles.h2, { color: accentColor }]}>The Way Through</Text>
           </View>
-          <EditableText
-            screen="level-detail"
-            section={levelId}
-            id="way-through"
-            originalContent={level.wayThrough}
-            textStyle={styles.wayThroughText}
-            type="paragraph"
-          />
-        </View>
+          <Text style={typography.styles.body}>
+            {level.wayThrough}
+          </Text>
+        </GlassSurface>
 
-        {/* Practices Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Practices</Text>
-          <View style={styles.practicesPlaceholder}>
-            <Ionicons name="time-outline" size={32} color={theme.textMuted} />
-            <Text style={styles.placeholderText}>
-              {level.estimatedTime} minutes of guided practice
-            </Text>
-            <Text style={styles.placeholderSubtext}>
-              Meditation scripts are being crafted with care and integrity
-            </Text>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
+        {/* Actions */}
         <View style={styles.actionsContainer}>
-          {!isCurrentLevel && (
-            <TouchableOpacity
-              style={styles.secondaryButton}
-              onPress={handleSetAsCurrent}
-            >
-              <Ionicons
-                name="bookmark-outline"
-                size={20}
-                color={accentColor}
-              />
-              <Text style={styles.secondaryButtonText}>
-                Set as My Current Focus
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {isCurrentLevel && (
-            <View style={[styles.currentFocusBadge, {
-              backgroundColor: `${accentColor}20`,
-              borderColor: accentColor,
-            }]}>
-              <Ionicons name="bookmark" size={20} color={accentColor} />
-              <Text style={[styles.currentFocusText, { color: accentColor }]}>Your Current Focus</Text>
-            </View>
-          )}
-
           <PrimaryButton
-            label="Begin Practice (Coming Soon)"
+            label="Begin Practice"
             onPress={handleBeginPractice}
             backgroundColor={buttonColor}
             textColor={theme.white}
           />
+          {!isCurrentLevel && (
+            <TouchableOpacity onPress={handleSetAsCurrent} style={styles.secondaryAction}>
+              <Text style={styles.secondaryActionText}>Set as Current Focus</Text>
+            </TouchableOpacity>
+          )}
         </View>
+
+        <View style={{ height: 100 }} />
       </ScrollView>
-      
+
       <WhyFeelingSheet
         visible={showWhyFeelingSheet}
         onClose={() => setShowWhyFeelingSheet(false)}
         prefillEmotion={level.name}
       />
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -418,370 +292,121 @@ const toRgba = (color: string, alpha = 1): string => {
   const expand = (value: string) =>
     parseInt(value.length === 1 ? value + value : value, 16);
   const r = expand(hex.substring(0, hex.length >= 6 ? 2 : 1));
-  const g = expand(
-    hex.substring(
-      hex.length >= 6 ? 2 : 1,
-      hex.length >= 6 ? 4 : 2
-    )
-  );
-  const b = expand(
-    hex.substring(
-      hex.length >= 6 ? 4 : 2,
-      hex.length >= 6 ? 6 : 3
-    )
-  );
-  const clampedAlpha = Math.min(1, Math.max(0, alpha));
-  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+  const g = expand(hex.substring(hex.length >= 6 ? 2 : 1, hex.length >= 6 ? 4 : 2));
+  const b = expand(hex.substring(hex.length >= 6 ? 4 : 2, hex.length >= 6 ? 6 : 3));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 };
 
 const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: theme.background,
-    },
-    header: {
-      paddingTop: 60,
-      paddingBottom: spacing.xxl,
-      paddingHorizontal: spacing.lg,
-      position: 'relative',
-    },
-    backButton: {
-      width: 40,
-      height: 40,
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: spacing.md,
-    },
-    headerContent: {
-      alignItems: 'center',
-      gap: spacing.sm,
-      paddingTop: spacing.md,
-    },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: spacing.sm,
-      width: '100%',
-    },
-    infoButton: {
-      padding: spacing.xs,
-    },
-    levelTitle: {
-      flex: 1,
-      fontSize: typography.h1,
-      fontWeight: typography.bold,
-      color: theme.mode === 'dark' ? '#F9FAFB' : theme.white,
-      textAlign: 'center',
-      textShadowColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.5)
-          : 'rgba(167, 139, 250, 0.4)',
-      textShadowOffset: { width: 0, height: 3 },
-      textShadowRadius: 14,
-    },
-    antithesisContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-    },
-    antithesisText: {
-      fontSize: typography.h3,
-      color:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.9)
-          : theme.white,
-      fontWeight: typography.medium,
-    },
-    thresholdBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.xs,
-      backgroundColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.22)
-          : 'rgba(167, 139, 250, 0.15)',
-      paddingHorizontal: spacing.md,
-      paddingVertical: spacing.sm,
-      borderRadius: borderRadius.md,
-      marginTop: spacing.sm,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.45)
-          : toRgba(accent, 0.6),
-      ...(glowEnabled && theme.mode === 'dark' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.5),
-        shadowColor: accent,
-        shadowOpacity: 0.25,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
-      ...(glowEnabled && theme.mode === 'light' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.35),
-        shadowColor: accent,
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
-    },
-    thresholdText: {
-      fontSize: typography.small,
-      color:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.95)
-          : accent,
-      fontWeight: typography.semibold,
+      backgroundColor: theme.background, // Skia covers this, but good fallback
     },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      paddingHorizontal: spacing.lg,
-      paddingTop: spacing.lg,
-      paddingBottom: spacing.xxl,
+      paddingTop: 60,
+      paddingBottom: 40,
     },
-    section: {
+    header: {
+      paddingHorizontal: spacing.lg,
       marginBottom: spacing.xl,
     },
-    sectionTitle: {
-      fontSize: typography.h3,
-      fontWeight: typography.bold,
-      color: theme.textPrimary,
-      marginBottom: spacing.md,
+    backButton: {
+      marginBottom: spacing.lg,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: 'rgba(255,255,255,0.05)',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-    descriptionText: {
-      fontSize: typography.body,
-      color:
-        theme.mode === 'dark'
-          ? toRgba('#E8F4F4', 0.82)
-          : theme.textSecondary,
-      lineHeight: 24,
+    headerContent: {
+      alignItems: 'flex-start', // Left aligned editorial look
+    },
+    eyebrowContainer: {
+      marginBottom: spacing.xs,
+      opacity: 0.7,
+    },
+    levelTitle: {
+      marginBottom: spacing.sm,
+      // KineticText styles handle font
+    },
+    antithesisContainer: {
+      flexDirection: 'row',
+      gap: spacing.sm,
+      marginTop: spacing.xs,
+      alignItems: 'baseline'
+    },
+    thresholdBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.xs,
+      marginTop: spacing.md,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.xs,
+      backgroundColor: 'rgba(255, 215, 0, 0.1)',
+      borderRadius: borderRadius.full,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 215, 0, 0.3)',
+    },
+    thresholdText: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.gold,
+      letterSpacing: 1,
+      textTransform: 'uppercase',
+    },
+    editorialSection: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.xl,
+    },
+    glassSection: {
+      marginHorizontal: spacing.md,
+      marginBottom: spacing.lg,
+      padding: spacing.lg,
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      marginBottom: spacing.md,
     },
     listItem: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: spacing.sm,
-      marginBottom: spacing.sm,
+      gap: spacing.md,
+      marginBottom: spacing.md,
     },
     bullet: {
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: accent,
-      marginTop: 8,
+      marginTop: 10,
     },
     listText: {
       flex: 1,
-      fontSize: typography.body,
-      color:
-        theme.mode === 'dark'
-          ? toRgba('#E8F4F4', 0.78)
-          : theme.textSecondary,
-      lineHeight: 22,
-    },
-    trapSection: {
-      backgroundColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.14)
-          : 'rgba(139, 92, 246, 0.08)',
-      padding: spacing.lg,
-      borderRadius: borderRadius.lg,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.34)
-          : 'rgba(139, 92, 246, 0.2)',
-    },
-    trapHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-      marginBottom: spacing.md,
-    },
-    trapText: {
-      fontSize: typography.body,
-      color:
-        theme.mode === 'dark'
-          ? toRgba('#F8FAFC', 0.9)
-          : theme.textPrimary,
-      lineHeight: 24,
-      fontStyle: 'italic',
-    },
-    wayThroughSection: {
-      backgroundColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.18)
-          : 'rgba(167, 139, 250, 0.15)',
-      padding: spacing.lg,
-      borderRadius: borderRadius.lg,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.4)
-          : 'rgba(139, 92, 246, 0.3)',
-    },
-    wayThroughHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: spacing.sm,
-      marginBottom: spacing.md,
-    },
-    wayThroughText: {
-      fontSize: typography.body,
-      color:
-        theme.mode === 'dark'
-          ? toRgba('#F8FAFC', 0.88)
-          : theme.textPrimary,
-      lineHeight: 24,
-      fontWeight: typography.medium,
-    },
-    practicesPlaceholder: {
-      backgroundColor:
-        theme.mode === 'dark'
-          ? 'rgba(4, 14, 22, 0.8)'
-          : theme.cardBackground,
-      padding: spacing.xxl,
-      borderRadius: borderRadius.lg,
-      alignItems: 'center',
-      gap: spacing.sm,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.28)
-          : 'rgba(139, 92, 246, 0.15)',
-      ...(glowEnabled && theme.mode === 'dark' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.5),
-        shadowColor: accent,
-        shadowOpacity: 0.25,
-        shadowRadius: 14,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
-      ...(glowEnabled && theme.mode === 'light' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.3),
-        shadowColor: accent,
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
-    },
-    placeholderText: {
-      fontSize: typography.body,
-      color: theme.textSecondary,
-      textAlign: 'center',
-    },
-    placeholderSubtext: {
-      fontSize: typography.small,
-      color: theme.textMuted,
-      textAlign: 'center',
-      fontStyle: 'italic',
+      ...typography.styles.body,
+      fontSize: 16,
     },
     actionsContainer: {
-      gap: spacing.md,
-      marginTop: spacing.lg,
-    },
-    secondaryButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: spacing.sm,
-      backgroundColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.18)
-          : 'rgba(167, 139, 250, 0.12)',
-      paddingVertical: spacing.md,
       paddingHorizontal: spacing.lg,
-      borderRadius: borderRadius.md,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.38)
-          : toRgba(accent, 0.5),
-      ...(glowEnabled && theme.mode === 'dark' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.5),
-        shadowColor: accent,
-        shadowOpacity: 0.25,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
-      ...(glowEnabled && theme.mode === 'light' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.35),
-        shadowColor: accent,
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
+      marginTop: spacing.xl,
+      gap: spacing.lg,
     },
-    secondaryButtonText: {
-      fontSize: typography.body,
-      color:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.92)
-          : theme.primary,
-      fontWeight: typography.semibold,
-    },
-    currentFocusBadge: {
-      flexDirection: 'row',
+    secondaryAction: {
       alignItems: 'center',
-      justifyContent: 'center',
-      gap: spacing.sm,
-      backgroundColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.24)
-          : 'rgba(167, 139, 250, 0.15)',
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.lg,
-      borderRadius: borderRadius.md,
-      borderWidth: 1,
-      borderColor:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.52)
-          : toRgba(accent, 0.6),
-      ...(glowEnabled && theme.mode === 'dark' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.6),
-        shadowColor: accent,
-        shadowOpacity: 0.3,
-        shadowRadius: 14,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
-      ...(glowEnabled && theme.mode === 'light' && {
-        borderWidth: 2,
-        borderColor: toRgba(accent, 0.4),
-        shadowColor: accent,
-        shadowOpacity: 0.25,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 2 },
-        elevation: 0,
-      }),
+      padding: spacing.md,
     },
-    currentFocusText: {
-      fontSize: typography.body,
-      color:
-        theme.mode === 'dark'
-          ? toRgba(accent, 0.92)
-          : theme.primary,
-      fontWeight: typography.semibold,
+    secondaryActionText: {
+      color: toRgba(theme.textPrimary, 0.6),
+      fontSize: 14,
+      letterSpacing: 0.5,
     },
     errorText: {
-      fontSize: typography.body,
       color: theme.error,
       textAlign: 'center',
-      marginTop: spacing.xxl,
-    },
+      marginTop: 100,
+    }
   });
-
