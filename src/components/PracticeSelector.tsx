@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useThemeColors, ThemeColors } from '../theme/colors';
 
 export type PracticeType = 'breathing' | 'technique';
 
@@ -9,7 +10,7 @@ export interface Practice {
     type: PracticeType;
     name: string;
     description: string;
-    explanation: string; // Detailed context/research
+    explanation: string;
     bestFor: string;
     pattern?: {
         inhale: number;
@@ -17,7 +18,7 @@ export interface Practice {
         exhale: number;
         holdOut?: number;
     };
-    totalDuration: number; // in seconds
+    totalDuration: number;
     icon: keyof typeof Ionicons.glyphMap;
     instruction: string;
 }
@@ -115,6 +116,8 @@ interface PracticeSelectorProps {
 
 const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip }) => {
     const [activeTab, setActiveTab] = useState<PracticeType>('breathing');
+    const theme = useThemeColors();
+    const styles = useMemo(() => createStyles(theme), [theme]);
 
     const filteredPractices = PRACTICES.filter(p => p.type === activeTab);
 
@@ -174,7 +177,7 @@ const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip })
                                 </Text>
                             </View>
                         </View>
-                        <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.3)" />
+                        <Ionicons name="chevron-forward" size={20} color={theme.textMuted} />
                     </TouchableOpacity>
                 ))}
             </ScrollView>
@@ -188,30 +191,30 @@ const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip })
     );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (theme: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#0a0a0f',
+        backgroundColor: 'transparent', // Let parent control background
         padding: 24,
         paddingTop: 60,
     },
     title: {
         fontSize: 28,
         fontWeight: '600',
-        color: '#f0f0f5',
+        color: theme.textPrimary,
         textAlign: 'center',
         marginBottom: 8,
     },
     subtitle: {
         fontSize: 15,
-        color: 'rgba(255,255,255,0.5)',
+        color: theme.textSecondary,
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 24,
     },
     tabContainer: {
         flexDirection: 'row',
-        backgroundColor: 'rgba(255,255,255,0.05)',
+        backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
         borderRadius: 12,
         padding: 4,
         marginBottom: 24,
@@ -223,7 +226,7 @@ const styles = StyleSheet.create({
         borderRadius: 8,
     },
     activeTab: {
-        backgroundColor: 'rgba(255,255,255,0.1)',
+        backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.1,
@@ -232,26 +235,26 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 14,
         fontWeight: '600',
-        color: 'rgba(255,255,255,0.4)',
+        color: theme.textMuted,
     },
     activeTabText: {
-        color: '#f0f0f5',
+        color: theme.textPrimary,
     },
     scrollView: {
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 20,
+        paddingBottom: 100, // Extra padding for tab bar
     },
     practiceCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.05)',
+        backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
         borderRadius: 16,
         padding: 16,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
+        borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
     },
     iconContainer: {
         width: 50,
@@ -268,12 +271,12 @@ const styles = StyleSheet.create({
     practiceName: {
         fontSize: 17,
         fontWeight: '600',
-        color: '#f0f0f5',
+        color: theme.textPrimary,
         marginBottom: 4,
     },
     practiceDescription: {
         fontSize: 13,
-        color: 'rgba(255,255,255,0.5)',
+        color: theme.textSecondary,
         lineHeight: 18,
         marginBottom: 8,
     },
@@ -296,7 +299,7 @@ const styles = StyleSheet.create({
     },
     skipText: {
         fontSize: 15,
-        color: 'rgba(255,255,255,0.4)',
+        color: theme.textMuted,
     },
 });
 
