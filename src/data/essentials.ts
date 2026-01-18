@@ -1,3 +1,5 @@
+export type EssentialTier = 'foundation' | 'practice' | 'deep-dive';
+
 export interface EssentialItem {
   id: string;
   title: string;
@@ -9,6 +11,8 @@ export interface EssentialItem {
   icon?: keyof typeof import('@expo/vector-icons').Ionicons.glyphMap;
   /** Marks the 3 foundational items that new users should start with */
   isFoundation?: boolean;
+  /** Content tier classification: foundation (start here), practice (apply daily), deep-dive (advanced) */
+  tier: EssentialTier;
   /** IDs of related sections for "Related Next" navigation */
   related?: string[];
   /** Summary bullet points for the preview sheet */
@@ -31,6 +35,7 @@ export const essentialItems: EssentialItem[] = [
     },
     icon: 'person-outline',
     isFoundation: true,
+    tier: 'foundation',
     related: ['natural-happiness', 'feelings-explained', 'letting-go'],
     takeaways: [
       'The difference between your Body, Mind, and Awareness',
@@ -48,6 +53,7 @@ export const essentialItems: EssentialItem[] = [
     },
     icon: 'heart-outline',
     isFoundation: true,
+    tier: 'foundation',
     related: ['letting-go', 'tension', 'preventing-stress'],
     takeaways: [
       'Why emotions feel "heavy" or "stuck"',
@@ -65,6 +71,7 @@ export const essentialItems: EssentialItem[] = [
     },
     icon: 'leaf-outline',
     isFoundation: true,
+    tier: 'foundation',
     related: ['feelings-explained', 'relaxing', 'non-reactivity'],
     takeaways: [
       'The core technique of surrender',
@@ -81,6 +88,7 @@ export const essentialItems: EssentialItem[] = [
       params: { chapterId: 'stress' },
     },
     icon: 'shield-outline',
+    tier: 'practice',
     related: ['tension', 'letting-go', 'fatigue-vs-energy'],
   },
   {
@@ -91,6 +99,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'NaturalHappiness',
     },
     icon: 'sunny-outline',
+    tier: 'deep-dive',
     related: ['what-you-really-are', 'fulfillment-vs-satisfaction', 'addiction'],
   },
   {
@@ -101,6 +110,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'PowerVsForce',
     },
     icon: 'flash-outline',
+    tier: 'deep-dive',
     related: ['effort', 'non-reactivity', 'intention'],
   },
   {
@@ -111,6 +121,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'LevelsOfTruth',
     },
     icon: 'document-text-outline',
+    tier: 'deep-dive',
     related: ['intention', 'knowledge', 'what-you-really-are'],
   },
   {
@@ -121,6 +132,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Intention',
     },
     icon: 'compass-outline',
+    tier: 'deep-dive',
     related: ['music-as-tool', 'power-vs-force', 'effort'],
   },
   {
@@ -131,6 +143,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'MusicAsTool',
     },
     icon: 'musical-notes-outline',
+    tier: 'practice',
     related: ['intention', 'relaxing', 'fatigue-vs-energy'],
   },
   {
@@ -141,6 +154,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'FatigueVsEnergy',
     },
     icon: 'battery-charging-outline',
+    tier: 'deep-dive',
     related: ['tension', 'relaxing', 'preventing-stress'],
   },
   {
@@ -151,6 +165,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'FulfillmentVsSatisfaction',
     },
     icon: 'happy-outline',
+    tier: 'deep-dive',
     related: ['natural-happiness', 'addiction', 'letting-go'],
   },
   {
@@ -161,6 +176,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'PositiveReprogramming',
     },
     icon: 'refresh-outline',
+    tier: 'practice',
     related: ['mantras', 'shadow-work', 'letting-go'],
   },
   {
@@ -171,6 +187,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Effort',
     },
     icon: 'hand-right-outline',
+    tier: 'deep-dive',
     related: ['power-vs-force', 'letting-go', 'intention'],
   },
   {
@@ -181,6 +198,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'ShadowWork',
     },
     icon: 'moon-outline',
+    tier: 'deep-dive',
     related: ['feelings-explained', 'letting-go', 'positive-reprogramming'],
   },
   {
@@ -191,6 +209,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'NonReactivity',
     },
     icon: 'pause-circle-outline',
+    tier: 'practice',
     related: ['letting-go', 'power-vs-force', 'relaxing'],
   },
   {
@@ -201,6 +220,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Relaxing',
     },
     icon: 'bed-outline',
+    tier: 'practice',
     related: ['tension', 'letting-go', 'fatigue-vs-energy'],
   },
   {
@@ -211,6 +231,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Knowledge',
     },
     icon: 'book-outline',
+    tier: 'deep-dive',
     related: ['letting-go', 'levels-of-truth', 'effort'],
   },
   {
@@ -221,6 +242,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Addiction',
     },
     icon: 'warning-outline',
+    tier: 'deep-dive',
     related: ['natural-happiness', 'fulfillment-vs-satisfaction', 'letting-go'],
   },
   {
@@ -231,6 +253,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Tension',
     },
     icon: 'fitness-outline',
+    tier: 'practice',
     related: ['relaxing', 'preventing-stress', 'feelings-explained'],
   },
   {
@@ -241,6 +264,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'Mantras',
     },
     icon: 'chatbubbles-outline',
+    tier: 'practice',
     related: ['positive-reprogramming', 'relaxing', 'letting-go'],
   },
   {
@@ -251,6 +275,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'CommonTraps',
     },
     icon: 'sync-outline',
+    tier: 'deep-dive',
     related: ['knowledge', 'letting-go', 'shadow-work'],
   },
   {
@@ -261,6 +286,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'LossAndAbandonment',
     },
     icon: 'heart-dislike-outline',
+    tier: 'deep-dive',
     related: ['feelings-explained', 'letting-go', 'natural-happiness'],
   },
   {
@@ -271,6 +297,7 @@ export const essentialItems: EssentialItem[] = [
       screen: 'RoomOfLevels',
     },
     icon: 'cloud-outline',
+    tier: 'deep-dive',
     related: ['feelings-explained', 'shadow-work', 'letting-go'],
     takeaways: [
       'Transmuting dense energy into power',
