@@ -21,6 +21,7 @@ import SOSBottomSheet from '../components/SOSBottomSheet';
 import { Article } from '../types';
 import {
   useThemeColors,
+  useThemeToggle,
   typography,
   spacing,
   borderRadius,
@@ -36,6 +37,7 @@ export default function HomeScreen() {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showSOS, setShowSOS] = useState(false);
   const theme = useThemeColors();
+  const toggleTheme = useThemeToggle();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
   const lastLevelId = useUserStore((s) => s.lastAccessedLevel);
@@ -101,12 +103,24 @@ export default function HomeScreen() {
                 There's nothing wrong with this moment
               </Text>
             </View>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Profile')}
-              style={styles.profileIcon}
-            >
-              <Ionicons name="person-outline" size={24} color={theme.mode === 'dark' ? '#F8FAFC' : '#1E293B'} />
-            </TouchableOpacity>
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={toggleTheme}
+                style={styles.profileIcon}
+              >
+                <Ionicons
+                  name={theme.mode === 'dark' ? 'sunny-outline' : 'moon-outline'}
+                  size={22}
+                  color={theme.mode === 'dark' ? '#F8FAFC' : '#1E293B'}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.navigate('Profile')}
+                style={styles.profileIcon}
+              >
+                <Ionicons name="person-outline" size={24} color={theme.mode === 'dark' ? '#F8FAFC' : '#1E293B'} />
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </View>
@@ -627,6 +641,19 @@ const createStyles = (theme: ThemeColors) =>
       height: 50,
       borderRadius: 25,
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+    },
+    profileIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
       alignItems: 'center',
       justifyContent: 'center',
     },
