@@ -94,6 +94,69 @@ export const levelExplanations: Record<string, LevelExplanation> = {
     },
     thirdAngle: 'Pride is "Fear in a top hat." It protects a fragile core. Underneath the "better than" is usually a fear of being "not enough." Surrendering pride allows for true self-worth.',
   },
+
+  // === Higher Levels (200+) ===
+  courage: {
+    reservoir: 'The shift from negative to positive. Courage emerges when you stop waiting for external permission and realize "I can do it." It\'s the energy of self-empowerment.',
+    copingTraps: {
+      default: 'Forcing yourself through obstacles with willpower alone leads to exhaustion. True courage is not gritting your teeth—it\'s dropping the belief that life is against you.',
+      overthinking: 'Planning endlessly to "prepare" for action is often disguised avoidance. Courage acts despite uncertainty, not after it\'s resolved.',
+    },
+    thirdAngle: 'Courage (200) is the critical threshold where consciousness shifts from force to power. Problems are seen as challenges to grow from, not threats to survive.',
+  },
+  neutrality: {
+    reservoir: 'Release from the positionalities of lower levels. Neutral energy says "It\'s okay if it happens, and it\'s okay if it doesn\'t." The expectation that life will be okay if you roll with it.',
+    copingTraps: {
+      default: 'Confusing nonattachment with detachment. Detachment leads to indifference and flatness. True neutrality is engaged but not invested in specific outcomes.',
+      escape: 'Withdrawing from life and calling it "peace" is avoidance, not neutrality. Real neutrality participates fully without drivenness.',
+    },
+    thirdAngle: 'Neutrality is "wearing the world like a loose garment" (St. Francis). Life becomes like a cork in the sea—floating with events rather than fighting them.',
+  },
+  willingness: {
+    reservoir: 'The gateway to higher awareness. Willingness emerges from openness to life and commitment to participation. It\'s the energy of the "good Samaritan" and the Golden Rule.',
+    copingTraps: {
+      default: 'Burnout from over-giving without boundaries. Willingness serves from fullness, not depletion. It knows when to rest.',
+      venting: 'Complaining about how much you do for others undermines the gift. True generosity expects no reward and has no strings attached.',
+    },
+    thirdAngle: 'Willingness attracts abundance not by seeking but by being. "Like goes to like." The extra energy that would otherwise go to resistance now fuels contribution.',
+  },
+  acceptance: {
+    reservoir: 'The realization that "life is good" as it is. Acceptance doesn\'t mean approval—it means no longer fighting what has already happened. It meets life on life\'s terms.',
+    copingTraps: {
+      default: 'Passive resignation is not acceptance. True acceptance is active engagement with reality while releasing the demand that it be different.',
+      overthinking: 'Analyzing why things "should" be different keeps you stuck in judgment. Acceptance sees things as they are without needing them to change.',
+    },
+    thirdAngle: 'Acceptance ends the war with what is. Personal responsibility replaces blame. There is no need to control others when you are at peace with yourself.',
+  },
+  reason: {
+    reservoir: 'The emergence of abstract intelligence. Reason handles massive data and complexity. It\'s the energy of science, philosophy, and logical problem-solving.',
+    copingTraps: {
+      default: 'Getting trapped in intellect without heart. Reason alone cannot access love, joy, or transcendence—it can only understand them from outside.',
+      overthinking: 'Analysis paralysis. The mind believes that enough information will resolve uncertainty, but some answers lie beyond logic.',
+    },
+    thirdAngle: 'Reason is a powerful tool, but it cannot transcend itself. The limitation of level 400 is that it sees truth as objective and external rather than subjective and experiential.',
+  },
+  love: {
+    reservoir: 'A way of being that emanates from the heart, not the mind. Love focuses on the essence of things rather than details. It sees the intrinsic value and lovability of all that exists.',
+    copingTraps: {
+      default: 'Conditional love—loving only when conditions are met—is not love but desire wearing love\'s clothing. True love is unchanging regardless of circumstances.',
+    },
+    thirdAngle: 'At level 500, love becomes the dominant experience. The world is perceived through the lens of appreciation and care rather than judgment or analysis.',
+  },
+  joy: {
+    reservoir: 'Unconditional love that is unchanging despite external circumstances. Joy calibrates at 540—it\'s not dependent on what happens but arises from within regardless.',
+    copingTraps: {
+      default: 'Seeking joy externally through excitement or stimulation. True joy is quiet and arises from completion and self-sufficiency, not acquisition.',
+    },
+    thirdAngle: 'The world is illuminated by exquisite beauty at this level. Compassion for all beings emerges naturally. Joy is the nearness to unity and the discovery of Self.',
+  },
+  peace: {
+    reservoir: 'Perfection, bliss, effortlessness, and oneness. Peace is a state of non-duality beyond the intellect—the "peace that passeth all understanding." It calibrates at 600+.',
+    copingTraps: {
+      default: 'There are no traps at true Peace. If you find one, you\'re not yet there. Peace is the absence of inner conflict, not the suppression of it.',
+    },
+    thirdAngle: 'At the level of Peace, there is no individual "doing" anything. Actions happen through you rather than by you. The world is experienced as perfect exactly as it is.',
+  },
 };
 
 /**

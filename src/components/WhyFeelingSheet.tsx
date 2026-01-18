@@ -48,7 +48,17 @@ type SituationOption =
   | 'after-breakup'
   | 'body-tightness'
   | 'rumination'
-  | 'overwhelming';
+  | 'overwhelming'
+  // New situations
+  | 'work-deadline'
+  | 'financial-worry'
+  | 'health-anxiety'
+  | 'loneliness'
+  | 'family-conflict'
+  | 'existential'
+  | 'creative-block'
+  | 'rejection'
+  | 'boredom';
 
 const SITUATION_OPTIONS: { value: SituationOption; label: string; icon: string }[] = [
   { value: 'conflict', label: 'Conflict/Argument', icon: 'chatbubbles-outline' },
@@ -61,6 +71,16 @@ const SITUATION_OPTIONS: { value: SituationOption; label: string; icon: string }
   { value: 'after-breakup', label: 'After breakup', icon: 'heart-dislike-outline' },
   { value: 'urge-to-escape', label: 'Urge to escape/numb', icon: 'exit-outline' },
   { value: 'urge-to-vent', label: 'Urge to vent/complain', icon: 'megaphone-outline' },
+  // New common situations
+  { value: 'work-deadline', label: 'Work stress / deadline', icon: 'briefcase-outline' },
+  { value: 'financial-worry', label: 'Money / financial worry', icon: 'cash-outline' },
+  { value: 'health-anxiety', label: 'Health anxiety', icon: 'fitness-outline' },
+  { value: 'loneliness', label: 'Loneliness / isolation', icon: 'person-outline' },
+  { value: 'family-conflict', label: 'Family tension', icon: 'people-outline' },
+  { value: 'existential', label: 'Existential questioning', icon: 'help-circle-outline' },
+  { value: 'creative-block', label: 'Creative block / stuck', icon: 'color-palette-outline' },
+  { value: 'rejection', label: 'Rejection / exclusion', icon: 'close-circle-outline' },
+  { value: 'boredom', label: 'Boredom / emptiness', icon: 'sad-outline' },
 ];
 
 const LEVEL_INFO_MAP: Record<string, { icon: string; label: string }> = {
