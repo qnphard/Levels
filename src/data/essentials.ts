@@ -80,6 +80,35 @@ export const essentialItems: EssentialItem[] = [
     ],
   },
   {
+    id: 'common-traps',
+    title: 'Common Traps',
+    description: 'Subtle diversions and pitfalls on the path of awareness.',
+    route: {
+      screen: 'CommonTraps',
+    },
+    icon: 'sync-outline',
+    tier: 'foundation',
+    isFoundation: true,
+    related: ['knowledge', 'letting-go', 'shadow-work'],
+  },
+  {
+    id: 'room-of-levels',
+    title: 'The Room of Levels',
+    description: 'A dedicated space for the densest emotions (Shame, Guilt, Apathy, Grief).',
+    route: {
+      screen: 'RoomOfLevels',
+    },
+    icon: 'cloud-outline',
+    tier: 'foundation',
+    isFoundation: true,
+    related: ['feelings-explained', 'shadow-work', 'letting-go'],
+    takeaways: [
+      'Transmuting dense energy into power',
+      'The relationship between lower levels and your worth',
+      'Direct navigation to localized healing spaces',
+    ],
+  },
+  {
     id: 'preventing-stress',
     title: 'Preventing Stress at the Source',
     description: 'Why fixing symptoms isn\'t enough—and how to reduce stress reactivity from within.',
@@ -270,18 +299,6 @@ export const essentialItems: EssentialItem[] = [
     related: ['positive-reprogramming', 'relaxing', 'letting-go'],
   },
   {
-    id: 'common-traps',
-    title: 'Common Traps',
-    description: 'Subtle diversions and pitfalls on the path of awareness.',
-    route: {
-      screen: 'CommonTraps',
-    },
-    icon: 'sync-outline',
-    tier: 'foundation',
-    isFoundation: true,
-    related: ['knowledge', 'letting-go', 'shadow-work'],
-  },
-  {
     id: 'loss-and-abandonment',
     title: 'Loss & Abandonment',
     description: 'Understanding the finite nature of grief and the source of happiness.',
@@ -291,22 +308,5 @@ export const essentialItems: EssentialItem[] = [
     icon: 'heart-dislike-outline',
     tier: 'deep-dive',
     related: ['feelings-explained', 'letting-go', 'natural-happiness'],
-  },
-  {
-    id: 'room-of-levels',
-    title: 'The Room of Levels',
-    description: 'A dedicated space for the densest emotions (Shame, Guilt, Apathy, Grief).',
-    route: {
-      screen: 'RoomOfLevels',
-    },
-    icon: 'cloud-outline',
-    tier: 'foundation',
-    isFoundation: true,
-    related: ['feelings-explained', 'shadow-work', 'letting-go'],
-    takeaways: [
-      'Transmuting dense energy into power',
-      'The relationship between lower levels and your worth',
-      'Direct navigation to localized healing spaces',
-    ],
   },
 ];
