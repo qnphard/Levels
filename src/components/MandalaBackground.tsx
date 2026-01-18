@@ -1,13 +1,14 @@
 import React, { useMemo, useEffect, useRef } from 'react';
 import { View, StyleSheet, Dimensions, Animated, Easing, Platform } from 'react-native';
 import Svg, { Circle, Path, Defs, RadialGradient, Stop, G, Text as SvgText, Line, Filter, FeGaussianBlur, FeMerge, FeMergeNode } from 'react-native-svg';
-
+import type { EssentialTier } from '../data/essentials';
 const AnimatedG = Animated.createAnimatedComponent(G);
 
 interface SegmentItem {
     id: string;
     title: string;
     isFoundation?: boolean;
+    tier?: EssentialTier;
 }
 
 interface MandalaBackgroundProps {
@@ -48,6 +49,13 @@ const segmentColors = [
     { fill: 'rgba(232, 121, 249, 0.12)', stroke: '#e879f9' },
     { fill: 'rgba(45, 212, 191, 0.12)', stroke: '#14b8a6' },
 ];
+
+// Tier-based colors matching TierChip
+const tierColors: Record<EssentialTier, { fill: string; stroke: string; textColor: string }> = {
+    'foundation': { fill: 'rgba(251, 191, 36, 0.18)', stroke: '#fbbf24', textColor: '#fef3c7' },
+    'practice': { fill: 'rgba(16, 185, 129, 0.18)', stroke: '#10B981', textColor: '#ECFDF5' },
+    'deep-dive': { fill: 'rgba(139, 92, 246, 0.18)', stroke: '#8B5CF6', textColor: '#F5F3FF' },
+};
 
 const degToRad = (deg: number) => (deg * Math.PI) / 180;
 
@@ -178,7 +186,7 @@ const MandalaBackground: React.FC<MandalaBackgroundProps> = ({
             return {
                 ...item,
                 path: createWedgePath(cx, cy, innerR0, innerR1, a0, a1),
-                color: segmentColors[(i + 1) % segmentColors.length],
+                color: item.tier ? tierColors[item.tier] : segmentColors[(i + 1) % segmentColors.length],
                 isSelected,
                 isRecommended,
                 isCompleted,
@@ -205,7 +213,7 @@ const MandalaBackground: React.FC<MandalaBackgroundProps> = ({
             return {
                 ...item,
                 path: createWedgePath(cx, cy, outerR0, outerR1, a0, a1),
-                color: segmentColors[i % segmentColors.length],
+                color: item.tier ? tierColors[item.tier] : segmentColors[i % segmentColors.length],
                 isSelected,
                 isRecommended,
                 isCompleted,
@@ -283,8 +291,9 @@ const MandalaBackground: React.FC<MandalaBackgroundProps> = ({
 
                 {/* OUTER RING */}
                 {outerSegments.map((seg, i) => {
-                    const strokeColor = seg.isSelected ? COLORS.activeGlow : seg.isFoundation ? COLORS.gold : seg.color.stroke;
-                    const strokeWidth = seg.isSelected ? 3.5 : seg.isFoundation ? 2 : 1;
+                    const tierColor = seg.tier ? tierColors[seg.tier] : null;
+                    const strokeColor = seg.isSelected ? COLORS.activeGlow : tierColor?.stroke || seg.color.stroke;
+                    const strokeWidth = seg.isSelected ? 3.5 : tierColor ? 1.5 : 1;
 
                     return (
                         <G key={`outer-${i}`}>
@@ -338,29 +347,33 @@ const MandalaBackground: React.FC<MandalaBackgroundProps> = ({
                                 </AnimatedG>
                             )}
 
-                            {seg.lines.map((line, li) => (
-                                <SvgText
-                                    key={`ot-${i}-${li}`}
-                                    x={seg.textX}
-                                    y={seg.textY + (li - (seg.lines.length - 1) / 2) * 12}
-                                    textAnchor="middle"
-                                    alignmentBaseline="middle"
-                                    fill={seg.isFoundation ? COLORS.goldLight : COLORS.textLight}
-                                    fontSize={9.5}
-                                    fontWeight={seg.isFoundation || seg.isSelected ? "700" : "500"}
-                                    opacity={seg.isSelected ? 1 : 0.85}
-                                >
-                                    {line}
-                                </SvgText>
-                            ))}
+                            {seg.lines.map((line, li) => {
+                                const tierColor = seg.tier ? tierColors[seg.tier] : null;
+                                return (
+                                    <SvgText
+                                        key={`ot-${i}-${li}`}
+                                        x={seg.textX}
+                                        y={seg.textY + (li - (seg.lines.length - 1) / 2) * 12}
+                                        textAnchor="middle"
+                                        alignmentBaseline="middle"
+                                        fill={tierColor?.textColor || COLORS.textLight}
+                                        fontSize={9.5}
+                                        fontWeight={tierColor || seg.isSelected ? "700" : "500"}
+                                        opacity={seg.isSelected ? 1 : 0.85}
+                                    >
+                                        {line}
+                                    </SvgText>
+                                );
+                            })}
                         </G>
                     );
                 })}
 
                 {/* INNER RING */}
                 {innerSegments.map((seg, i) => {
-                    const strokeColor = seg.isSelected ? COLORS.activeGlow : seg.isFoundation ? COLORS.gold : seg.color.stroke;
-                    const strokeWidth = seg.isSelected ? 3.5 : seg.isFoundation ? 2 : 1;
+                    const tierColor = seg.tier ? tierColors[seg.tier] : null;
+                    const strokeColor = seg.isSelected ? COLORS.activeGlow : tierColor?.stroke || seg.color.stroke;
+                    const strokeWidth = seg.isSelected ? 3.5 : tierColor ? 1.5 : 1;
 
                     return (
                         <G key={`inner-${i}`}>
@@ -414,21 +427,24 @@ const MandalaBackground: React.FC<MandalaBackgroundProps> = ({
                                 </AnimatedG>
                             )}
 
-                            {seg.lines.map((line, li) => (
-                                <SvgText
-                                    key={`it-${i}-${li}`}
-                                    x={seg.textX}
-                                    y={seg.textY + (li - (seg.lines.length - 1) / 2) * 11}
-                                    textAnchor="middle"
-                                    alignmentBaseline="middle"
-                                    fill={seg.isFoundation ? COLORS.goldLight : COLORS.textLight}
-                                    fontSize={9}
-                                    fontWeight={seg.isFoundation || seg.isSelected ? "700" : "500"}
-                                    opacity={seg.isSelected ? 1 : 0.85}
-                                >
-                                    {line}
-                                </SvgText>
-                            ))}
+                            {seg.lines.map((line, li) => {
+                                const textTierColor = seg.tier ? tierColors[seg.tier] : null;
+                                return (
+                                    <SvgText
+                                        key={`it-${i}-${li}`}
+                                        x={seg.textX}
+                                        y={seg.textY + (li - (seg.lines.length - 1) / 2) * 11}
+                                        textAnchor="middle"
+                                        alignmentBaseline="middle"
+                                        fill={textTierColor?.textColor || COLORS.textLight}
+                                        fontSize={9}
+                                        fontWeight={textTierColor || seg.isSelected ? "700" : "500"}
+                                        opacity={seg.isSelected ? 1 : 0.85}
+                                    >
+                                        {line}
+                                    </SvgText>
+                                )
+                            })}
                         </G>
                     );
                 })}

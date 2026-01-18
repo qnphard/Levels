@@ -61,12 +61,14 @@ const RadialMenuLayout: React.FC<RadialMenuLayoutProps> = ({
         id: item.id,
         title: item.title,
         isFoundation: item.isFoundation,
+        tier: item.tier,
     })), [innerItems]);
 
     const outerSegmentData = useMemo(() => outerItems.map(item => ({
         id: item.id,
         title: item.title,
         isFoundation: item.isFoundation,
+        tier: item.tier,
     })), [outerItems]);
 
     const renderHotspot = useCallback((item: EssentialItem, x: number, y: number, size: number) => {
