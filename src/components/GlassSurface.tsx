@@ -42,10 +42,11 @@ export const GlassSurface: React.FC<GlassSurfaceProps> = ({
 
             {/* 3. Specular Highlight (Top edge sheen) */}
             <LinearGradient
-                colors={[
-                    'rgba(255,255,255,0.15)',
-                    'transparent'
-                ]}
+                colors={
+                    mode === 'dark'
+                        ? ['rgba(255,255,255,0.15)', 'transparent']
+                        : ['rgba(255,255,255,0.5)', 'transparent']
+                }
                 start={{ x: 0.5, y: 0 }}
                 end={{ x: 0.5, y: 0.15 }}
                 style={StyleSheet.absoluteFill}
@@ -53,7 +54,14 @@ export const GlassSurface: React.FC<GlassSurfaceProps> = ({
             />
 
             {/* 4. Content */}
-            <View style={[styles.content, { borderColor: `rgba(255,255,255,${borderOpacity})` }]}>
+            <View style={[
+                styles.content,
+                {
+                    borderColor: mode === 'dark'
+                        ? `rgba(255,255,255,${borderOpacity})`
+                        : `rgba(0,0,0,${borderOpacity * 0.8})`
+                }
+            ]}>
                 {children}
             </View>
         </View>
