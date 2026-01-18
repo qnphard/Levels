@@ -68,7 +68,7 @@ const getCategoryColor = (category: string, theme: ThemeColors): string => {
     'Be Present': '#E8E2D8', // sand200
     'Rest Deeply': '#3E7C75', // teal700
   };
-  
+
   // Dark mode colors - keep cards muted, but use vibrant colors for glows
   const darkColors: Record<string, string> = {
     'Find Peace': '#2E4A3F', // dark sage - muted card color
@@ -77,8 +77,8 @@ const getCategoryColor = (category: string, theme: ThemeColors): string => {
     'Be Present': '#3A3732', // dark sand - muted card color
     'Rest Deeply': '#1C3A35', // darker teal - muted card color
   };
-  
-  return theme.mode === 'dark' 
+
+  return theme.mode === 'dark'
     ? (darkColors[category] || '#5FB5A9')
     : (lightColors[category] || theme.accentTeal);
 };
@@ -103,35 +103,35 @@ export default function MeditationCard({
 
   // Get category color for card background (muted in dark mode)
   const categoryColor = getCategoryColor(meditation.category, theme);
-  
+
   // Get vibrant glow color (separate from card color) - diverse colors like journey cards
   const getGlowColor = (category: string, theme: ThemeColors): string => {
     // Use the vibrant glow colors that match journey card diversity
-    return theme.mode === 'dark' 
+    return theme.mode === 'dark'
       ? (glowColors[category] || '#5FB5A9')
       : categoryColor;
   };
-  
+
   const glowColor = getGlowColor(meditation.category, theme);
-  
+
   // For dark mode, keep card background muted/dark
   // For light mode, use neutral card background
   const darkBaseHex = '#091C1C'; // Dark background color
   const baseGradient = theme.mode === 'dark'
     ? ([
-        darkBaseHex, // Start with dark base
-        adjustColor(categoryColor, -20), // Muted category tint
-      ] as const)
+      darkBaseHex, // Start with dark base
+      adjustColor(categoryColor, -20), // Muted category tint
+    ] as const)
     : ([theme.cardBackground, theme.cardBackground] as const);
-  
+
   // Glow color: use vibrant glow color, make it even brighter for maximum impact
   const glowBase = theme.mode === 'dark'
     ? adjustColor(glowColor, 20) // Make glow color even brighter
     : categoryColor;
-  const glowTint = theme.mode === 'dark' 
+  const glowTint = theme.mode === 'dark'
     ? glowBase // Use bright glow color directly
     : adjustColor(glowBase, -12);
-  
+
   // Determine if text should be light (for dark cards in dark mode)
   const useLightText = theme.mode === 'dark';
 
@@ -157,60 +157,60 @@ export default function MeditationCard({
           style,
           theme.mode === 'dark'
             ? (glowEnabled
-                ? {
-                    borderWidth: 2,
-                    borderColor: toRgba(glowTint, 0.8), // Focused border glow (like journey cards)
-                    shadowColor: glowTint,
-                    shadowOpacity: 0.34, // Match journey cards
-                    backgroundColor: 'rgba(9, 19, 28, 0.75)', // Match journey cards
-                    boxShadow: [
-                      `0 0 30px ${toRgba(glowTint, 0.53)}`, // Tighter glow (like journey cards)
-                      `0 0 60px ${toRgba(glowTint, 0.27)}`, // Outer glow
-                      `inset 0 0 20px ${toRgba(glowTint, 0.13)}`, // Subtle inset glow
-                    ].join(', '),
-                  }
-                : {
-                    borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.08)',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.2,
-                    backgroundColor: 'rgba(9, 19, 28, 0.7)', // More transparent to show gradient
-                  })
+              ? {
+                borderWidth: 2,
+                borderColor: toRgba(glowTint, 0.64), // Reduced from 0.8
+                shadowColor: glowTint,
+                shadowOpacity: 0.27, // Reduced from 0.34
+                backgroundColor: 'rgba(9, 19, 28, 0.75)',
+                boxShadow: [
+                  `0 0 30px ${toRgba(glowTint, 0.42)}`, // Reduced from 0.53
+                  `0 0 60px ${toRgba(glowTint, 0.22)}`, // Reduced from 0.27
+                  `inset 0 0 20px ${toRgba(glowTint, 0.1)}`, // Reduced from 0.13
+                ].join(', '),
+              }
+              : {
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.08)',
+                shadowColor: '#000',
+                shadowOpacity: 0.2,
+                backgroundColor: 'rgba(9, 19, 28, 0.7)',
+              })
             : (glowEnabled
-                ? {
-                    borderWidth: 2,
-                    borderColor: toRgba(glowTint, 0.95), // Focused border glow
-                    shadowColor: glowTint,
-                    shadowOpacity: 0.4, // Reduced for tighter glow
-                    shadowRadius: 24, // Smaller radius for focused glow
-                    shadowOffset: { width: 0, height: 10 }, // Less offset
-                    elevation: 6, // Reduced elevation
-                    backgroundColor: theme.cardBackground,
-                    boxShadow: [
-                      `0 18px 50px rgba(2, 6, 23, 0.22)`,
-                      `0 2px 8px rgba(2, 6, 23, 0.10)`,
-                      `0 0 3px ${toRgba(glowTint, 0.8)}`, // Tighter edge glow
-                      `0 0 30px ${toRgba(glowTint, 0.5)}`, // Focused glow
-                      `0 0 60px ${toRgba(glowTint, 0.25)}`, // Subtle outer glow
-                    ].join(', '),
-                    transform: pressed ? [{ translateY: -3 }] : [],
-                  }
-                : {
-                    borderWidth: 1,
-                    borderColor: 'rgba(2,6,23,0.08)',
-                    shadowColor: 'rgba(2,6,23,0.32)',
-                    shadowOpacity: 1,
-                    shadowRadius: 22,
-                    shadowOffset: { width: 0, height: 12 },
-                    elevation: 6,
-                    backgroundColor: theme.cardBackground,
-                    boxShadow: [
-                      `0 12px 24px rgba(15, 23, 42, 0.10)`,
-                      `0 8px 20px rgba(15, 23, 42, 0.08)`,
-                      `0 1px 2px rgba(2, 6, 23, 0.06)`,
-                    ].join(', '),
-                    transform: pressed ? [{ translateY: -3 }] : [],
-                  }),
+              ? {
+                borderWidth: 2,
+                borderColor: toRgba(glowTint, 0.76), // Reduced from 0.95
+                shadowColor: glowTint,
+                shadowOpacity: 0.32, // Reduced from 0.4
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 10 },
+                elevation: 6,
+                backgroundColor: theme.cardBackground,
+                boxShadow: [
+                  `0 18px 50px rgba(2, 6, 23, 0.18)`, // Slightly reduced base shadows
+                  `0 2px 8px rgba(2, 6, 23, 0.08)`,
+                  `0 0 3px ${toRgba(glowTint, 0.64)}`, // Reduced from 0.8
+                  `0 0 30px ${toRgba(glowTint, 0.4)}`, // Reduced from 0.5
+                  `0 0 60px ${toRgba(glowTint, 0.2)}`, // Reduced from 0.25
+                ].join(', '),
+                transform: pressed ? [{ translateY: -3 }] : [],
+              }
+              : {
+                borderWidth: 1,
+                borderColor: 'rgba(2,6,23,0.08)',
+                shadowColor: 'rgba(2,6,23,0.32)',
+                shadowOpacity: 1,
+                shadowRadius: 22,
+                shadowOffset: { width: 0, height: 12 },
+                elevation: 6,
+                backgroundColor: theme.cardBackground,
+                boxShadow: [
+                  `0 12px 24px rgba(15, 23, 42, 0.10)`,
+                  `0 8px 20px rgba(15, 23, 42, 0.08)`,
+                  `0 1px 2px rgba(2, 6, 23, 0.06)`,
+                ].join(', '),
+                transform: pressed ? [{ translateY: -3 }] : [],
+              }),
         ]}
       >
         <LinearGradient
@@ -227,11 +227,11 @@ export default function MeditationCard({
                 style={[
                   styles.cardGlow,
                   {
-                    backgroundColor: toRgba(glowTint, 0.15), // Reduced opacity for tighter glow
-                    shadowColor: toRgba(glowTint, 0.6), // Reduced shadow brightness
+                    backgroundColor: toRgba(glowTint, 0.12), // Reduced from 0.15
+                    shadowColor: toRgba(glowTint, 0.48), // Reduced from 0.6
                     boxShadow: [
-                      `0 0 25px ${toRgba(glowTint, 0.4)}`, // Tighter glow layer
-                      `0 0 50px ${toRgba(glowTint, 0.2)}`, // Subtle outer glow
+                      `0 0 25px ${toRgba(glowTint, 0.32)}`, // Reduced from 0.4
+                      `0 0 50px ${toRgba(glowTint, 0.16)}`, // Reduced from 0.2
                     ].join(', '),
                   },
                 ]}
@@ -243,100 +243,100 @@ export default function MeditationCard({
                   styles.lightHalo,
                   {
                     boxShadow: [
-                      `0 0 40px ${toRgba(glowTint, 0.3)}`, // Tighter glow
-                      `0 0 80px ${toRgba(glowTint, 0.15)}`, // Subtle outer glow
+                      `0 0 40px ${toRgba(glowTint, 0.24)}`, // Reduced from 0.3
+                      `0 0 80px ${toRgba(glowTint, 0.12)}`, // Reduced from 0.15
                     ].join(', '),
                   },
                 ]}
               />
             )
           )}
-        <View style={styles.iconContainer}>
-          <View
-            style={[
-              styles.iconCircle,
-              useLightText && {
-                backgroundColor: toRgba(glowBase, 0.25),
-                opacity: 0.6,
-              },
-            ]}
-          >
-            <Ionicons
-              name="play"
-              size={24}
-              color={
-                useLightText
-                  ? (glowEnabled
-                      ? toRgba(glowBase, 0.95)
-                      : theme.textLight || '#E8F1F2')
-                  : theme.primary
-              }
-            />
-          </View>
-        </View>
-
-        <View style={styles.content}>
-          <View style={styles.header}>
-            <EditableText
-              screen="meditation"
-              section={meditation.id}
-              id="title"
-              originalContent={meditation.title}
-              textStyle={[
-                styles.title,
-                useLightText && { color: theme.textLight || '#E8F1F2' },
-              ]}
-              type="title"
-            />
-            {meditation.isPremium && (
-              <View style={styles.premiumBadge}>
-                <Ionicons name="star" size={10} color={theme.accentGold} />
-              </View>
-            )}
-          </View>
-
-          <EditableText
-            screen="meditation"
-            section={meditation.id}
-            id="description"
-            originalContent={meditation.description}
-            textStyle={[
-              styles.description,
-              useLightText && { color: theme.textLight || '#C7D2D4' },
-            ]}
-            type="description"
-          />
-
-          <View style={styles.footer}>
+          <View style={styles.iconContainer}>
             <View
               style={[
-                styles.categoryBadge,
-                {
-                  backgroundColor: chipColors.background,
-                  borderColor: chipColors.border ?? 'transparent',
+                styles.iconCircle,
+                useLightText && {
+                  backgroundColor: toRgba(glowBase, 0.25),
+                  opacity: 0.6,
                 },
               ]}
             >
-              <Text
+              <Ionicons
+                name="play"
+                size={24}
+                color={
+                  useLightText
+                    ? (glowEnabled
+                      ? toRgba(glowBase, 0.95)
+                      : theme.textLight || '#E8F1F2')
+                    : theme.primary
+                }
+              />
+            </View>
+          </View>
+
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <EditableText
+                screen="meditation"
+                section={meditation.id}
+                id="title"
+                originalContent={meditation.title}
+                textStyle={[
+                  styles.title,
+                  useLightText && { color: theme.textLight || '#E8F1F2' },
+                ]}
+                type="title"
+              />
+              {meditation.isPremium && (
+                <View style={styles.premiumBadge}>
+                  <Ionicons name="star" size={10} color={theme.accentGold} />
+                </View>
+              )}
+            </View>
+
+            <EditableText
+              screen="meditation"
+              section={meditation.id}
+              id="description"
+              originalContent={meditation.description}
+              textStyle={[
+                styles.description,
+                useLightText && { color: theme.textLight || '#C7D2D4' },
+              ]}
+              type="description"
+            />
+
+            <View style={styles.footer}>
+              <View
                 style={[
-                  styles.categoryText,
-                  { color: chipColors.text },
+                  styles.categoryBadge,
+                  {
+                    backgroundColor: chipColors.background,
+                    borderColor: chipColors.border ?? 'transparent',
+                  },
                 ]}
               >
-                {meditation.category}
+                <Text
+                  style={[
+                    styles.categoryText,
+                    { color: chipColors.text },
+                  ]}
+                >
+                  {meditation.category}
+                </Text>
+              </View>
+              <Text
+                style={[
+                  styles.duration,
+                  useLightText && { color: theme.textLight || '#B7C7C9' },
+                ]}
+              >
+                {formatDuration(meditation.duration)}
               </Text>
             </View>
-            <Text
-              style={[
-                styles.duration,
-                useLightText && { color: theme.textLight || '#B7C7C9' },
-              ]}
-            >
-              {formatDuration(meditation.duration)}
-            </Text>
           </View>
-        </View>
-      </LinearGradient>
+        </LinearGradient>
       </Pressable>
     </View>
   );

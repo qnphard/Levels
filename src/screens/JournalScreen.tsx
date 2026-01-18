@@ -23,6 +23,8 @@ import {
   spacing,
   borderRadius,
   ThemeColors,
+  palette,
+  toRgba,
 } from '../theme/colors';
 import PasscodeScreen from '../components/PasscodeScreen';
 import { useContentEdit } from '../context/ContentEditContext';
@@ -33,15 +35,9 @@ import { useOnboardingStore } from '../store/onboardingStore';
 import { useUserStore, JournalEntry } from '../store/userStore';
 import { consciousnessLevels } from '../data/levels';
 import { emotionClusters } from '../data/emotions';
+import { AestheticAlert } from '../components/AestheticAlert';
 
-// Helper to convert hex to rgba
-const toRgba = (hex: string, alpha: number): string => {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  const clampedAlpha = Math.min(1, Math.max(0, alpha));
-  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
-};
+/** toRgba is now imported from ../theme/colors */
 
 interface JournalPrompt {
   id: string;
@@ -57,6 +53,15 @@ const DEFAULT_PROMPTS: JournalPrompt[] = [
   { id: 'prompt-4', text: 'What\'s weighing on my heart?', icon: 'cloud-outline', order: 3 },
   { id: 'prompt-5', text: 'What brings me peace?', icon: 'water-outline', order: 4 },
   { id: 'prompt-6', text: 'Free writing...', icon: 'create-outline', order: 5 },
+];
+
+const PROMPT_COLORS = [
+  '#C4B5FD', // Violet
+  '#B8D7E4', // Mist
+  '#F3D7C6', // Peach
+  '#E6CFA8', // Gold
+  '#A9CABB', // Sage
+  '#5FB5A9', // Teal
 ];
 
 const STORAGE_KEYS = {
@@ -93,6 +98,17 @@ export default function JournalScreen() {
   const [editingPrompt, setEditingPrompt] = useState<JournalPrompt | undefined>(undefined);
   const [showPromptModal, setShowPromptModal] = useState(false);
   const [showJournalExplanation, setShowJournalExplanation] = useState(false);
+  const [alertConfig, setAlertConfig] = useState<{
+    visible: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    visible: false,
+    title: '',
+    message: '',
+    onConfirm: () => { },
+  });
   const fadeAnim = useState(new Animated.Value(0))[0];
 
   const seenExplanations = useOnboardingStore((s) => s.seenExplanations);
@@ -231,16 +247,37 @@ export default function JournalScreen() {
     }
   };
 
-  const handleDeletePrompt = async (promptId: string) => {
-    try {
-      const updatedPrompts = prompts.filter(p => p.id !== promptId);
-      setPrompts(updatedPrompts);
-      await AsyncStorage.setItem(STORAGE_KEY_PROMPTS, JSON.stringify(updatedPrompts));
-      setShowPromptModal(false);
-      setEditingPrompt(undefined);
-    } catch (error) {
-      console.error('Error deleting prompt:', error);
-    }
+  const handleDeletePrompt = (promptId: string) => {
+    setAlertConfig({
+      visible: true,
+      title: "Delete prompt?",
+      message: "Are you sure you want to delete this prompt? This cannot be undone.",
+      onConfirm: async () => {
+        try {
+          const updatedPrompts = prompts.filter(p => p.id !== promptId);
+          setPrompts(updatedPrompts);
+          await AsyncStorage.setItem(STORAGE_KEY_PROMPTS, JSON.stringify(updatedPrompts));
+          setShowPromptModal(false);
+          setEditingPrompt(undefined);
+          setAlertConfig(prev => ({ ...prev, visible: false }));
+        } catch (error) {
+          console.error('Error deleting prompt:', error);
+          setAlertConfig(prev => ({ ...prev, visible: false }));
+        }
+      }
+    });
+  };
+
+  const handleDeleteEntry = (entryId: string) => {
+    setAlertConfig({
+      visible: true,
+      title: "Delete journal entry?",
+      message: "Are you sure you want to delete this reflection? You can never retrieve it again.",
+      onConfirm: () => {
+        deleteJournalEntry(entryId);
+        setAlertConfig(prev => ({ ...prev, visible: false }));
+      }
+    });
   };
 
   const formatDate = (timestamp: number) => {
@@ -380,68 +417,128 @@ export default function JournalScreen() {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={styles.promptsContainer}
                   >
-                    {prompts.map((prompt) => (
-                      <View key={prompt.id} style={styles.promptCardWrapper}>
-                        <TouchableOpacity
-                          style={[
-                            styles.promptCard,
-                            selectedPrompt === prompt.text && styles.promptCardSelected,
-                          ]}
-                          onPress={() => handlePromptSelect(prompt.text)}
-                        >
-                          <Ionicons
-                            name={prompt.icon}
-                            size={20}
-                            color={
-                              selectedPrompt === prompt.text
-                                ? theme.primary
-                                : theme.textSecondary
-                            }
-                          />
-                          <Text
-                            style={[
-                              styles.promptText,
-                              selectedPrompt === prompt.text && styles.promptTextSelected,
-                            ]}
-                          >
-                            {prompt.text}
-                          </Text>
-                        </TouchableOpacity>
-                        {editModeEnabled && (
+                    {prompts.map((prompt, index) => {
+                      const cardColor = PROMPT_COLORS[index % PROMPT_COLORS.length];
+                      const isSelected = selectedPrompt === prompt.text;
+
+                      return (
+                        <View key={prompt.id} style={styles.promptCardWrapper}>
                           <TouchableOpacity
-                            style={styles.editPromptButton}
-                            onPress={() => handleEditPrompt(prompt)}
+                            style={[
+                              styles.promptCard,
+                              isSelected && styles.promptCardSelected,
+                              {
+                                borderColor: glowEnabled
+                                  ? (isSelected ? cardColor : toRgba(cardColor, 0.64))
+                                  : (isSelected ? cardColor : toRgba(cardColor, 0.2)),
+                                backgroundColor: theme.mode === 'dark'
+                                  ? (isSelected ? toRgba(cardColor, 0.15) : 'rgba(255, 255, 255, 0.06)')
+                                  : (isSelected ? toRgba(cardColor, 0.15) : toRgba(cardColor, 0.08)),
+                                borderWidth: isSelected ? 2 : 1.5,
+                              },
+                              glowEnabled && isSelected && {
+                                shadowColor: cardColor,
+                                shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                                shadowRadius: 24,
+                                shadowOffset: { width: 0, height: 4 },
+                                backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+                                borderColor: toRgba(cardColor, 0.64),
+                                boxShadow: [
+                                  `0 0 30px ${theme.mode === 'dark' ? toRgba(cardColor, 0.42) : toRgba(cardColor, 0.32)}`,
+                                  `0 0 60px ${theme.mode === 'dark' ? toRgba(cardColor, 0.22) : toRgba(cardColor, 0.16)}`,
+                                  `inset 0 0 20px ${toRgba(cardColor, 0.1)}`,
+                                ].join(', '),
+                              }
+                            ]}
+                            onPress={() => handlePromptSelect(prompt.text)}
                           >
-                            <Ionicons name="create-outline" size={16} color={theme.white} />
+                            {glowEnabled && isSelected && (
+                              <View
+                                pointerEvents="none"
+                                style={{
+                                  position: 'absolute',
+                                  top: -8,
+                                  left: -8,
+                                  right: -8,
+                                  bottom: -8,
+                                  borderRadius: borderRadius.lg + 8,
+                                  opacity: 0.8,
+                                  backgroundColor: toRgba(cardColor, theme.mode === 'dark' ? 0.12 : 0.04),
+                                }}
+                              />
+                            )}
+                            <Ionicons
+                              name={prompt.icon}
+                              size={20}
+                              color={isSelected ? (theme.mode === 'dark' ? '#FFFFFF' : cardColor) : cardColor}
+                            />
+                            <Text
+                              style={[
+                                styles.promptText,
+                                isSelected && { color: theme.mode === 'dark' ? '#FFFFFF' : '#1E293B', fontWeight: '800' },
+                                !isSelected && { color: theme.mode === 'dark' ? toRgba(cardColor, 0.9) : '#475569', fontWeight: '500' }
+                              ]}
+                            >
+                              {prompt.text}
+                            </Text>
                           </TouchableOpacity>
-                        )}
-                      </View>
-                    ))}
+                          {editModeEnabled && (
+                            <TouchableOpacity
+                              style={styles.editPromptButton}
+                              onPress={() => handleEditPrompt(prompt)}
+                            >
+                              <Ionicons name="create-outline" size={16} color={theme.white} />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                      );
+                    })}
                   </ScrollView>
                 </View>
 
                 {/* Writing Area */}
                 <View style={[
                   styles.writingSection,
-                  glowEnabled && theme.mode === 'dark' && {
+                  glowEnabled && {
+                    borderColor: selectedMood ? toRgba(selectedMood.color, 0.64) : toRgba(theme.primary, 0.64),
+                    shadowColor: selectedMood ? selectedMood.color : theme.primary,
+                    shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                    shadowRadius: 24,
+                    shadowOffset: { width: 0, height: 4 },
                     borderWidth: 2,
-                    borderColor: toRgba(theme.primary, 0.6),
-                    shadowColor: theme.primary,
-                    shadowOpacity: 0.3,
-                    shadowRadius: 16,
-                    shadowOffset: { width: 0, height: 2 },
-                    elevation: 0, // Remove elevation to prevent square shadow
-                  },
-                  glowEnabled && theme.mode === 'light' && {
-                    borderWidth: 2,
-                    borderColor: toRgba(theme.primary, 0.5),
-                    shadowColor: theme.primary,
-                    shadowOpacity: 0.25,
-                    shadowRadius: 14,
-                    shadowOffset: { width: 0, height: 2 },
-                    elevation: 0, // Remove elevation to prevent square shadow
+                    backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+                    // No elevation for dark mode
+                    ...(theme.mode !== 'dark' && { elevation: 6 }),
+                    boxShadow: [
+                      `0 0 30px ${selectedMood
+                        ? (theme.mode === 'dark' ? toRgba(selectedMood.color, 0.42) : toRgba(selectedMood.color, 0.32))
+                        : (theme.mode === 'dark' ? toRgba(theme.primary, 0.42) : toRgba(theme.primary, 0.32))}`,
+                      `0 0 60px ${selectedMood
+                        ? (theme.mode === 'dark' ? toRgba(selectedMood.color, 0.22) : toRgba(selectedMood.color, 0.16))
+                        : (theme.mode === 'dark' ? toRgba(theme.primary, 0.22) : toRgba(theme.primary, 0.16))}`,
+                      `inset 0 0 20px ${selectedMood
+                        ? toRgba(selectedMood.color, 0.1)
+                        : toRgba(theme.primary, 0.1)}`,
+                    ].join(', '),
                   },
                 ]}>
+                  {glowEnabled && (
+                    <View
+                      pointerEvents="none"
+                      style={{
+                        position: 'absolute',
+                        top: -8,
+                        left: -8,
+                        right: -8,
+                        bottom: -8,
+                        borderRadius: borderRadius.lg + 8,
+                        opacity: 0.8,
+                        backgroundColor: selectedMood
+                          ? toRgba(selectedMood.color, theme.mode === 'dark' ? 0.12 : 0.04)
+                          : toRgba(theme.primary, theme.mode === 'dark' ? 0.12 : 0.04),
+                      }}
+                    />
+                  )}
                   {/* Mood Selector integration */}
                   <View style={styles.moodSection}>
                     <Text style={styles.moodTitle}>How are you?</Text>
@@ -567,14 +664,50 @@ export default function JournalScreen() {
                   </Text>
 
                   {journalEntries.map((entry) => (
-                    <View key={entry.id} style={styles.entryCard}>
+                    <View
+                      key={entry.id}
+                      style={[
+                        styles.entryCard,
+                        glowEnabled && entry.mood && {
+                          borderColor: toRgba(entry.mood.color, 0.64),
+                          shadowColor: entry.mood.color,
+                          shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                          shadowRadius: 24,
+                          shadowOffset: { width: 0, height: 4 },
+                          borderWidth: 2,
+                          backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+                          // No elevation for dark mode
+                          ...(theme.mode !== 'dark' && { elevation: 6 }),
+                          boxShadow: [
+                            `0 0 30px ${theme.mode === 'dark' ? toRgba(entry.mood.color, 0.42) : toRgba(entry.mood.color, 0.32)}`,
+                            `0 0 60px ${theme.mode === 'dark' ? toRgba(entry.mood.color, 0.22) : toRgba(entry.mood.color, 0.16)}`,
+                            `inset 0 0 20px ${toRgba(entry.mood.color, 0.1)}`,
+                          ].join(', '),
+                        }
+                      ]}
+                    >
+                      {glowEnabled && entry.mood && (
+                        <View
+                          pointerEvents="none"
+                          style={{
+                            position: 'absolute',
+                            top: -8,
+                            left: -8,
+                            right: -8,
+                            bottom: -8,
+                            borderRadius: borderRadius.lg + 8,
+                            opacity: 0.8,
+                            backgroundColor: toRgba(entry.mood.color, theme.mode === 'dark' ? 0.12 : 0.04),
+                          }}
+                        />
+                      )}
                       <View style={styles.entryHeader}>
                         <View style={styles.entryHeaderMain}>
                           <Ionicons name="calendar-outline" size={16} color={theme.textMuted} />
                           <Text style={styles.entryDate}>{formatDate(entry.timestamp)}</Text>
                         </View>
                         <TouchableOpacity
-                          onPress={() => deleteJournalEntry(entry.id)}
+                          onPress={() => handleDeleteEntry(entry.id)}
                           style={styles.deleteButton}
                         >
                           <Ionicons name="trash-outline" size={18} color={toRgba(theme.error || '#EF4444', 0.6)} />
@@ -752,13 +885,21 @@ export default function JournalScreen() {
 
       <FeatureExplanationOverlay
         visible={showJournalExplanation}
-        title="Your Safe Space"
-        description="This journal is password-protected, so you can feel completely safe sharing your deepest feelings. Writing helps you realize that your feelings are just thoughts passing through. By laying them down here, you discharge their weight, learn to distance yourself from them, and stop identifying with the temporary waves of emotion."
+        title="Journaling"
+        description="A sacred space to express your inner world without judgment. Link your entries to your current level or choose a mood to track your energetic journey."
         icon="journal-outline"
         onClose={() => {
           setShowJournalExplanation(false);
           markExplanationAsSeen('journal');
         }}
+      />
+
+      <AestheticAlert
+        visible={alertConfig.visible}
+        title={alertConfig.title}
+        message={alertConfig.message}
+        onConfirm={alertConfig.onConfirm}
+        onCancel={() => setAlertConfig(prev => ({ ...prev, visible: false }))}
       />
     </KeyboardAvoidingView>
   );
@@ -837,6 +978,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
         ? 'rgba(255, 255, 255, 0.08)'
         : 'rgba(203, 213, 225, 0.5)',
       marginRight: spacing.sm,
+      overflow: 'hidden',
     },
     promptCardSelected: {
       backgroundColor: 'rgba(139, 92, 246, 0.1)',
@@ -882,20 +1024,15 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     writingSection: {
       backgroundColor: theme.mode === 'dark'
         ? 'rgba(139, 92, 246, 0.08)' // Premium violet tint
-        : 'rgba(255, 255, 255, 0.7)',
+        : 'rgba(255, 255, 255, 0.8)',
       borderRadius: borderRadius.xl,
       padding: spacing.lg,
-      borderWidth: 1.5,
+      borderWidth: 2,
       borderColor: theme.mode === 'dark'
-        ? 'rgba(139, 92, 246, 0.25)' // Soft violet border
-        : 'rgba(203, 213, 225, 0.4)',
+        ? 'rgba(139, 92, 246, 0.3)'
+        : 'rgba(139, 92, 246, 0.25)',
       marginBottom: spacing.xl,
-      ...(glowEnabled && theme.mode === 'dark' && {
-        shadowColor: theme.primary,
-        shadowOpacity: 0.15,
-        shadowRadius: 20,
-        shadowOffset: { width: 0, height: 4 },
-      }),
+      overflow: 'hidden',
     },
     writingHeader: {
       flexDirection: 'row',
@@ -1008,6 +1145,7 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       borderColor: theme.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.08)'
         : 'rgba(203, 213, 225, 0.4)',
+      overflow: 'hidden',
     },
     entryHeader: {
       flexDirection: 'row',
@@ -1133,12 +1271,19 @@ const getStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     purposeCard: {
       backgroundColor: theme.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.03)'
-        : 'rgba(255, 255, 255, 0.5)',
+        : 'rgba(139, 92, 246, 0.05)', // Subtle violet tint in light mode
       borderRadius: borderRadius.lg,
       padding: spacing.lg,
       marginBottom: spacing.xl,
-      borderWidth: 1,
-      borderColor: theme.border,
+      borderWidth: 2,
+      borderColor: theme.mode === 'dark' ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.3)',
+      ...(glowEnabled && {
+        shadowColor: palette.violet400,
+        shadowOpacity: theme.mode === 'dark' ? 0.2 : 0.15,
+        shadowRadius: 15,
+        shadowOffset: { width: 0, height: 4 },
+        elevation: 0,
+      }),
     },
     purposeHeader: {
       flexDirection: 'row',

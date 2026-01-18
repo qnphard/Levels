@@ -1,7 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useThemeColors, ThemeColors } from '../theme/colors';
+import {
+    useThemeColors,
+    typography,
+    borderRadius,
+    ThemeColors,
+    toRgba,
+    useGlowEnabled
+} from '../theme/colors';
 
 export type PracticeType = 'breathing' | 'technique';
 
@@ -117,7 +124,8 @@ interface PracticeSelectorProps {
 const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip }) => {
     const [activeTab, setActiveTab] = useState<PracticeType>('breathing');
     const theme = useThemeColors();
-    const styles = useMemo(() => createStyles(theme), [theme]);
+    const glowEnabled = useGlowEnabled();
+    const styles = useMemo(() => createStyles(theme, glowEnabled), [theme, glowEnabled]);
 
     const filteredPractices = PRACTICES.filter(p => p.type === activeTab);
 
@@ -151,10 +159,51 @@ const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip })
                 {filteredPractices.map((practice) => (
                     <TouchableOpacity
                         key={practice.id}
-                        style={styles.practiceCard}
+                        style={[
+                            styles.practiceCard,
+                            glowEnabled && {
+                                borderColor: practice.type === 'breathing' ? 'rgba(167, 139, 250, 0.64)' : 'rgba(244, 114, 182, 0.64)',
+                                shadowColor: practice.type === 'breathing' ? '#A78BFA' : '#F472B6',
+                                shadowOffset: { width: 0, height: 4 },
+                                shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                                shadowRadius: 24,
+                                borderWidth: 2,
+                                // No elevation for dark mode to match MeditationCard style
+                                ...(theme.mode !== 'dark' && { elevation: 6 }),
+                                backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.85)' : theme.cardBackground, // Dark Glass: Blocks bleed but keeps depth
+                                boxShadow: [
+                                    `0 0 25px ${practice.type === 'breathing'
+                                        ? (theme.mode === 'dark' ? toRgba('#A78BFA', 0.48) : toRgba('#A78BFA', 0.32))
+                                        : (theme.mode === 'dark' ? toRgba('#F472B6', 0.48) : toRgba('#F472B6', 0.32))}`,
+                                    `0 0 50px ${practice.type === 'breathing'
+                                        ? (theme.mode === 'dark' ? toRgba('#A78BFA', 0.2) : toRgba('#A78BFA', 0.16))
+                                        : (theme.mode === 'dark' ? toRgba('#F472B6', 0.2) : toRgba('#F472B6', 0.16))}`,
+                                    `inset 0 0 20px ${practice.type === 'breathing'
+                                        ? toRgba('#A78BFA', 0.12)
+                                        : toRgba('#F472B6', 0.12)}`,
+                                ].join(', '),
+                            }
+                        ]}
                         onPress={() => onSelect(practice)}
                         activeOpacity={0.8}
                     >
+                        {glowEnabled && (
+                            <View
+                                pointerEvents="none"
+                                style={{
+                                    position: 'absolute',
+                                    top: -8,
+                                    left: -8,
+                                    right: -8,
+                                    bottom: -8,
+                                    borderRadius: borderRadius.lg + 8,
+                                    opacity: 0.8,
+                                    backgroundColor: practice.type === 'breathing'
+                                        ? toRgba('#A78BFA', theme.mode === 'dark' ? 0.12 : 0.04)
+                                        : toRgba('#F472B6', theme.mode === 'dark' ? 0.12 : 0.04),
+                                }}
+                            />
+                        )}
                         <View style={[
                             styles.iconContainer,
                             practice.type === 'technique' && { backgroundColor: 'rgba(244, 114, 182, 0.15)' }
@@ -191,11 +240,10 @@ const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip })
     );
 };
 
-const createStyles = (theme: ThemeColors) => StyleSheet.create({
+const createStyles = (theme: ThemeColors, glowEnabled: boolean) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'transparent', // Let parent control background
-        padding: 24,
+        backgroundColor: 'transparent',
         paddingTop: 60,
     },
     title: {
@@ -204,6 +252,7 @@ const createStyles = (theme: ThemeColors) => StyleSheet.create({
         color: theme.textPrimary,
         textAlign: 'center',
         marginBottom: 8,
+        paddingHorizontal: 24,
     },
     subtitle: {
         fontSize: 15,
@@ -211,6 +260,7 @@ const createStyles = (theme: ThemeColors) => StyleSheet.create({
         textAlign: 'center',
         lineHeight: 22,
         marginBottom: 24,
+        paddingHorizontal: 24,
     },
     tabContainer: {
         flexDirection: 'row',
@@ -218,6 +268,7 @@ const createStyles = (theme: ThemeColors) => StyleSheet.create({
         borderRadius: 12,
         padding: 4,
         marginBottom: 24,
+        marginHorizontal: 24,
     },
     tab: {
         flex: 1,
@@ -244,7 +295,8 @@ const createStyles = (theme: ThemeColors) => StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        paddingBottom: 100, // Extra padding for tab bar
+        paddingHorizontal: 32,
+        paddingBottom: 120,
     },
     practiceCard: {
         flexDirection: 'row',
@@ -252,9 +304,10 @@ const createStyles = (theme: ThemeColors) => StyleSheet.create({
         backgroundColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
         borderRadius: 16,
         padding: 16,
-        marginBottom: 12,
+        marginBottom: 40,
         borderWidth: 1,
         borderColor: theme.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
+        overflow: 'hidden',
     },
     iconContainer: {
         width: 50,

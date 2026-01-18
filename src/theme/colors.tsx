@@ -10,6 +10,15 @@ import { useColorScheme } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { typography as typographyFull } from './typography';
 
+// Helper to convert hex to rgba
+export const toRgba = (hex: string, alpha: number): string => {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  const clampedAlpha = Math.min(1, Math.max(0, alpha));
+  return `rgba(${r}, ${g}, ${b}, ${clampedAlpha})`;
+};
+
 // Palette tuned for the Settle -> Notice -> Release -> Rest arc.
 // Each hue carries a psychological intent (sage = safety, sand = groundedness, gold/peach = gentle humanity).
 export const palette = {

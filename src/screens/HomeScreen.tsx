@@ -22,10 +22,13 @@ import { Article } from '../types';
 import {
   useThemeColors,
   useThemeToggle,
+  useGlowEnabled,
+  useGlowToggle,
   typography,
   spacing,
   borderRadius,
   ThemeColors,
+  toRgba,
 } from '../theme/colors';
 import { useUserStore } from '../store/userStore';
 import { getLevelById } from '../data/levels';
@@ -38,7 +41,9 @@ export default function HomeScreen() {
   const [showSOS, setShowSOS] = useState(false);
   const theme = useThemeColors();
   const toggleTheme = useThemeToggle();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const glowEnabled = useGlowEnabled();
+  const toggleGlow = useGlowToggle();
+  const styles = useMemo(() => createStyles(theme, glowEnabled), [theme, glowEnabled]);
 
   const lastLevelId = useUserStore((s) => s.lastAccessedLevel);
   const lastLevel = useMemo(() => (lastLevelId ? getLevelById(lastLevelId) : null), [lastLevelId]);
@@ -115,6 +120,16 @@ export default function HomeScreen() {
                 />
               </TouchableOpacity>
               <TouchableOpacity
+                onPress={toggleGlow}
+                style={styles.profileIcon}
+              >
+                <Ionicons
+                  name={glowEnabled ? 'sparkles' : 'sparkles-outline'}
+                  size={20}
+                  color={glowEnabled ? (theme.mode === 'dark' ? '#C4B5FD' : theme.primary) : (theme.mode === 'dark' ? '#F8FAFC' : '#1E293B')}
+                />
+              </TouchableOpacity>
+              <TouchableOpacity
                 onPress={() => navigation.navigate('Profile')}
                 style={styles.profileIcon}
               >
@@ -133,7 +148,30 @@ export default function HomeScreen() {
         <View style={styles.journeyModule}>
           {lastLevel ? (
             <TouchableOpacity
-              style={styles.journeyCard}
+              style={[
+                styles.journeyCard,
+                glowEnabled && {
+                  borderWidth: 2,
+                  borderColor: theme.mode === 'dark'
+                    ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.64)
+                    : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.48),
+                  shadowColor: (lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary,
+                  shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                  shadowRadius: 24,
+                  shadowOffset: { width: 0, height: 4 },
+                  backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+                  ...(theme.mode !== 'dark' && { elevation: 6 }),
+                  boxShadow: [
+                    `0 0 30px ${theme.mode === 'dark'
+                      ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.42)
+                      : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.32)}`,
+                    `0 0 60px ${theme.mode === 'dark'
+                      ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.22)
+                      : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.16)}`,
+                    `inset 0 0 20px ${toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.1)}`,
+                  ].join(', '),
+                }
+              ]}
               onPress={() => navigation.navigate('LevelChapter', { levelId: lastLevel.id })}
               activeOpacity={0.9}
             >
@@ -143,6 +181,19 @@ export default function HomeScreen() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
+                {glowEnabled && (
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      styles.cardGlow,
+                      {
+                        backgroundColor: theme.mode === 'dark'
+                          ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.12)
+                          : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.04),
+                      },
+                    ]}
+                  />
+                )}
                 <View style={styles.journeyContent}>
                   <View>
                     <Text style={styles.journeyLabel}>Continue Journey</Text>
@@ -164,6 +215,19 @@ export default function HomeScreen() {
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
               >
+                {glowEnabled && (
+                  <View
+                    pointerEvents="none"
+                    style={[
+                      styles.cardGlow,
+                      {
+                        backgroundColor: theme.mode === 'dark'
+                          ? toRgba(theme.primary, 0.12)
+                          : toRgba(theme.primary, 0.04),
+                      },
+                    ]}
+                  />
+                )}
                 <View style={styles.journeyContent}>
                   <View>
                     <Text style={styles.journeyLabel}>New Beginning</Text>
@@ -179,7 +243,24 @@ export default function HomeScreen() {
         {/* Room of Levels Entrance */}
         <View style={styles.roomModule}>
           <TouchableOpacity
-            style={styles.roomCard}
+            style={[
+              styles.roomCard,
+              glowEnabled && {
+                borderWidth: 2,
+                borderColor: theme.mode === 'dark' ? toRgba('#4F46E5', 0.64) : toRgba('#4F46E5', 0.48),
+                shadowColor: '#4F46E5',
+                shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 4 },
+                backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+                ...(theme.mode !== 'dark' && { elevation: 6 }),
+                boxShadow: [
+                  `0 0 30px ${theme.mode === 'dark' ? toRgba('#4F46E5', 0.42) : toRgba('#4F46E5', 0.32)}`,
+                  `0 0 60px ${theme.mode === 'dark' ? toRgba('#4F46E5', 0.22) : toRgba('#4F46E5', 0.16)}`,
+                  `inset 0 0 20px ${toRgba('#4F46E5', 0.1)}`,
+                ].join(', '),
+              }
+            ]}
             onPress={() => navigation.navigate('RoomOfLevels')}
             activeOpacity={0.9}
           >
@@ -189,6 +270,19 @@ export default function HomeScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
+              {glowEnabled && (
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.cardGlow,
+                    {
+                      backgroundColor: theme.mode === 'dark'
+                        ? toRgba('#4F46E5', 0.12)
+                        : toRgba('#4F46E5', 0.04),
+                    },
+                  ]}
+                />
+              )}
               <View style={styles.roomContent}>
                 <View style={styles.roomTextSection}>
                   <Text style={styles.roomLabel}>Portal</Text>
@@ -233,6 +327,19 @@ export default function HomeScreen() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
+              {glowEnabled && (
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.cardGlow,
+                    {
+                      backgroundColor: theme.mode === 'dark'
+                        ? toRgba('#EC4899', 0.12)
+                        : toRgba('#EC4899', 0.04),
+                    },
+                  ]}
+                />
+              )}
               <View style={styles.generatorContent}>
                 <View style={styles.generatorTextSection}>
                   <Text style={styles.generatorLabel}>Custom Practice</Text>
@@ -345,7 +452,7 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (theme: ThemeColors) =>
+const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -381,41 +488,6 @@ const createStyles = (theme: ThemeColors) =>
       color: theme.mode === 'dark' ? '#CBD5E1' : '#475569',
       fontWeight: '400',
       opacity: 0.9,
-      fontStyle: 'italic',
-    },
-    todaysPracticeCard: {
-      backgroundColor: theme.cardBackground,
-      marginHorizontal: spacing.lg,
-      marginBottom: spacing.lg,
-      padding: spacing.lg,
-      borderRadius: borderRadius.lg,
-      shadowColor: theme.shadowSoft,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.12,
-      shadowRadius: 16,
-      elevation: 5,
-      borderWidth: 1,
-      borderColor: theme.border,
-    },
-    todaysPracticeLabel: {
-      fontSize: typography.small,
-      color: '#D97706', // Darker Amber/Gold for better contrast on light & dark
-      fontWeight: '600',
-      textTransform: 'uppercase',
-      letterSpacing: 1.2,
-      marginBottom: spacing.sm,
-    },
-    todaysPracticeTitle: {
-      fontSize: typography.h3,
-      color: theme.textPrimary,
-      fontWeight: 'bold',
-      marginBottom: spacing.xs,
-    },
-    todaysPracticeDescription: {
-      fontSize: typography.body,
-      color: theme.textSecondary,
-      lineHeight: 24,
-      marginBottom: spacing.lg,
       fontStyle: 'italic',
     },
     categoryContainer: {
@@ -479,6 +551,51 @@ const createStyles = (theme: ThemeColors) =>
       marginTop: spacing.lg,
       fontStyle: 'italic',
     },
+    todaysPracticeCard: {
+      borderRadius: borderRadius.lg,
+      padding: spacing.lg,
+      backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+      marginBottom: spacing.lg,
+      marginHorizontal: spacing.lg,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      ...(glowEnabled && {
+        borderWidth: 2,
+        borderColor: theme.mode === 'dark' ? toRgba('#F59E0B', 0.64) : toRgba('#F59E0B', 0.48),
+        shadowColor: '#F59E0B',
+        shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 4 },
+        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+        ...(theme.mode !== 'dark' && { elevation: 6 }),
+        boxShadow: [
+          `0 0 30px ${theme.mode === 'dark' ? toRgba('#F59E0B', 0.42) : toRgba('#F59E0B', 0.32)}`,
+          `0 0 60px ${theme.mode === 'dark' ? toRgba('#F59E0B', 0.22) : toRgba('#F59E0B', 0.16)}`,
+          `inset 0 0 20px ${toRgba('#F59E0B', 0.1)}`,
+        ].join(', '),
+      }),
+      overflow: 'hidden',
+    },
+    todaysPracticeLabel: {
+      fontSize: 10,
+      color: '#F59E0B',
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      letterSpacing: 1.5,
+      marginBottom: 4,
+    },
+    todaysPracticeTitle: {
+      fontSize: 20,
+      color: theme.textPrimary,
+      fontWeight: 'bold',
+      marginBottom: 8,
+    },
+    todaysPracticeDescription: {
+      fontSize: 14,
+      color: theme.textSecondary,
+      marginBottom: 16,
+      lineHeight: 20,
+    },
     journeyModule: {
       paddingHorizontal: spacing.lg,
       marginTop: spacing.md,
@@ -487,11 +604,25 @@ const createStyles = (theme: ThemeColors) =>
     journeyCard: {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
-      elevation: 8,
-      shadowColor: theme.primary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
-      shadowRadius: 12,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      ...(glowEnabled && {
+        borderWidth: 2,
+        borderColor: theme.mode === 'dark' ? toRgba(theme.primary, 0.8) : toRgba(theme.primary, 0.6),
+        shadowColor: theme.primary,
+        shadowOpacity: theme.mode === 'dark' ? 0.34 : 0.25,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 4 },
+        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+        ...(theme.mode !== 'dark' && { elevation: 6 }),
+      }),
+      ...(!glowEnabled && {
+        elevation: 8,
+        shadowColor: theme.primary,
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 12,
+      }),
     },
     journeyGradient: {
       padding: spacing.lg,
@@ -547,11 +678,39 @@ const createStyles = (theme: ThemeColors) =>
     generatorCard: {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
-      elevation: 6,
-      shadowColor: '#EC4899',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 10,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      ...(glowEnabled && {
+        borderWidth: 2,
+        borderColor: theme.mode === 'dark' ? 'rgba(139, 92, 246, 0.64)' : 'rgba(139, 92, 246, 0.48)', // Using bioGlow/Violet to match generator
+        shadowColor: '#8B5CF6',
+        shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 4 },
+        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+        ...(theme.mode !== 'dark' && { elevation: 6 }),
+        boxShadow: [
+          `0 0 30px ${theme.mode === 'dark' ? toRgba('#8B5CF6', 0.42) : toRgba('#8B5CF6', 0.32)}`,
+          `0 0 60px ${theme.mode === 'dark' ? toRgba('#8B5CF6', 0.22) : toRgba('#8B5CF6', 0.16)}`,
+          `inset 0 0 20px ${toRgba('#8B5CF6', 0.1)}`,
+        ].join(', '),
+      }),
+      ...(!glowEnabled && {
+        elevation: 6,
+        shadowColor: '#EC4899',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+      }),
+    },
+    cardGlow: {
+      position: 'absolute',
+      top: -8,
+      left: -8,
+      right: -8,
+      bottom: -8,
+      borderRadius: borderRadius.lg + 8,
+      opacity: 0.8,
     },
     generatorGradient: {
       padding: spacing.lg,
@@ -599,11 +758,25 @@ const createStyles = (theme: ThemeColors) =>
     roomCard: {
       borderRadius: borderRadius.lg,
       overflow: 'hidden',
-      elevation: 6,
-      shadowColor: '#1e1b4b',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 10,
+      borderWidth: 1,
+      borderColor: 'rgba(255, 255, 255, 0.1)',
+      ...(glowEnabled && {
+        borderWidth: 2,
+        borderColor: theme.mode === 'dark' ? toRgba('#4F46E5', 0.8) : toRgba('#4F46E5', 0.6),
+        shadowColor: '#4F46E5',
+        shadowOpacity: theme.mode === 'dark' ? 0.34 : 0.25,
+        shadowRadius: 24,
+        shadowOffset: { width: 0, height: 4 },
+        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+        ...(theme.mode !== 'dark' && { elevation: 6 }),
+      }),
+      ...(!glowEnabled && {
+        elevation: 6,
+        shadowColor: '#1e1b4b',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+      }),
     },
     roomGradient: {
       padding: spacing.lg,

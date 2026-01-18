@@ -176,11 +176,20 @@ export default function MantrasScreen() {
                   style={[
                     styles.mantraCard,
                     glowEnabled && {
-                      borderWidth: 1,
-                      borderColor: toRgba(glowColor, 0.3),
+                      borderWidth: 2,
+                      borderColor: theme.mode === 'dark' ? toRgba(glowColor, 0.64) : toRgba(glowColor, 0.48),
                       shadowColor: glowColor,
-                      shadowOpacity: 0.1,
-                      shadowRadius: 10,
+                      shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
+                      shadowRadius: 24,
+                      shadowOffset: { width: 0, height: 4 },
+                      backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+                      // No elevation for dark mode
+                      ...(theme.mode !== 'dark' && { elevation: 6 }),
+                      boxShadow: [
+                        `0 0 30px ${theme.mode === 'dark' ? toRgba(glowColor, 0.42) : toRgba(glowColor, 0.32)}`,
+                        `0 0 60px ${theme.mode === 'dark' ? toRgba(glowColor, 0.22) : toRgba(glowColor, 0.16)}`,
+                        `inset 0 0 20px ${toRgba(glowColor, 0.1)}`,
+                      ].join(', '),
                     },
                   ]}
                 >
