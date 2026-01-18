@@ -110,7 +110,7 @@ export const PRACTICES: Practice[] = [
 
 interface PracticeSelectorProps {
     onSelect: (practice: Practice) => void;
-    onSkip: () => void;
+    onSkip?: () => void;
 }
 
 const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip }) => {
@@ -179,9 +179,11 @@ const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip })
                 ))}
             </ScrollView>
 
-            <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
-                <Text style={styles.skipText}>Skip for now</Text>
-            </TouchableOpacity>
+            {onSkip && (
+                <TouchableOpacity style={styles.skipButton} onPress={onSkip}>
+                    <Text style={styles.skipText}>Skip for now</Text>
+                </TouchableOpacity>
+            )}
         </View>
     );
 };

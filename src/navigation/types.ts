@@ -38,6 +38,7 @@ export type RootStackParamList = {
     RoomOfLevels3D: undefined;
     AnimationShowcase: undefined;
     LevelContentMenu: { levelId: string };
+    PracticePlayer: { practiceId: string };
 };
 
 export type MainTabParamList = {
@@ -45,4 +46,5 @@ export type MainTabParamList = {
     Journey: undefined;
     Explore: undefined;
     Journal: undefined;
+    Practices: undefined;
 };

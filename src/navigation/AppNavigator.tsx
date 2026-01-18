@@ -47,6 +47,8 @@ import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
 import RoomOfLevelsScreen from '../screens/RoomOfLevelsScreen';
 import AnimationShowcaseScreen from '../screens/AnimationShowcaseScreen';
 import LevelContentMenuScreen from '../screens/LevelContentMenuScreen';
+import TechniquesScreen from '../screens/TechniquesScreen';
+import PracticePlayerScreen from '../screens/PracticePlayerScreen';
 
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
@@ -74,6 +76,8 @@ function MainTabs() {
             iconName = focused ? 'compass' : 'compass-outline';
           } else if (route.name === 'Journal') {
             iconName = focused ? 'journal' : 'journal-outline';
+          } else if (route.name === 'Practices') {
+            iconName = focused ? 'fitness' : 'fitness-outline';
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -124,6 +128,11 @@ function MainTabs() {
         name="Journal"
         component={JournalScreen}
         options={{ title: 'Journal' }}
+      />
+      <Tab.Screen
+        name="Practices"
+        component={TechniquesScreen}
+        options={{ title: 'Practices' }}
       />
     </Tab.Navigator>
   );
@@ -331,6 +340,11 @@ export default function AppNavigator() {
           name="LevelContentMenu"
           component={LevelContentMenuScreen}
           options={{ headerShown: false, animation: 'fade' }}
+        />
+        <Stack.Screen
+          name="PracticePlayer"
+          component={PracticePlayerScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>
