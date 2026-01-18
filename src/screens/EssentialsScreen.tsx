@@ -32,6 +32,7 @@ import FeatureExplanationOverlay from '../components/FeatureExplanationOverlay';
 import { useOnboardingStore } from '../store/onboardingStore';
 import { useUserStore } from '../store/userStore';
 import TopicPreviewSheet from '../components/TopicPreviewSheet';
+import TierLegend from '../components/TierLegend';
 import { getRecommendedMandalaId } from '../services/recommendationEngine';
 import { EssentialItem } from '../data/essentials';
 
@@ -175,6 +176,9 @@ export default function EssentialsScreen() {
         onItemPress={handleEssentialPress}
         onInfoPress={() => setShowHowToUse(true)}
       />
+
+      {/* Tier Legend */}
+      <TierLegend />
 
       {/* Floating Subtitle */}
       <View style={styles.floatingSubtitleContainer}>
