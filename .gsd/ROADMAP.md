@@ -36,22 +36,36 @@
 
 ---
 
-### Phase 3: Immersive Level Rooms
+### Phase 3: Level Room Visual Redesign
 **Status**: ⬜ Not Started
-**Objective**: Transform Level Rooms from flat articles into themed environments.
+**Objective**: Replace the cartoonish stickman/stairs UI with a premium, immersive aesthetic.
+**Problem**: Current "Room of Levels" uses a flat stickman figure and simple pill-shaped stairs. It feels too cartoonish and breaks immersion.
 **Deliverables**:
+- Research visual alternatives (parallax scene, 3D environment, abstract energy representation)
+- Remove stickman avatar or replace with abstract/silhouette representation
+- Upgrade level "stairs" to feel like portals/doors with atmospheric glow
 - Persistent atmosphere (background/vignette remains on subpages)
-- "Chamber" navigation model (Felt Sense Hall → Thoughts Chamber → etc.)
-- Depth indicator / breadcrumbs
-- Portal/zoom transitions into nodes
+- Depth indicator / breadcrumbs for navigation
 
 ---
 
-### Phase 4: TTS & Meditation Polish
+### Phase 4: TTS Solution Research & Implementation
 **Status**: ⬜ Not Started
-**Objective**: Reliable, fast meditation audio generation.
+**Objective**: Find and implement a fast, cheap TTS solution with voice cloning OR premium meditation voices.
+**Problem**: Modal/Hugging Face implementations are too slow. Need <5s latency.
+**Requirements**:
+- Voice cloning capability (provide sample) OR built-in calm/slow/persuasive voice
+- Fast inference (<5s, ideally <2s)
+- Free or very cheap (open-source preferred)
+**Research Candidates**:
+- **F5-TTS**: Open-source, RTF 0.15, 10-15s sample for cloning, emotion synthesis
+- **XTTS-v2 (Coqui)**: Open-source, <150ms streaming, 6s sample for cloning
+- **Chatterbox (Resemble AI)**: Open-source, <200ms, emotion control
+- **Orpheus**: Open-weights, ~200ms, tag-based emotion control
+- **CAMB.AI**: Free tier, 2-3s sample cloning, pitch/speed/emotion adjustment
 **Deliverables**:
-- Modal TTS endpoint optimized for <10s response
+- Evaluate top 3 candidates with voice sample
+- Implement chosen solution
 - 20-track meditation library scripts finalized
 - Binaural + background mixing spec implemented
 
@@ -65,3 +79,4 @@
 - Glow Budget audit (remove decorative glow noise)
 - Final QA pass
 - App store metadata prepared
+
