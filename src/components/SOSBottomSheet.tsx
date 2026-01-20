@@ -140,52 +140,171 @@ const SOSBottomSheet: React.FC<SOSBottomSheetProps> = ({ visible, onClose }) => 
 
     const getRecommendations = (): Recommendation[] => {
         const recommendations: Recommendation[] = [];
+        const isHighIntensity = intensity && intensity >= 3;
 
-        // Always offer quick breathing
-        if (intensity && intensity >= 3) {
+        // ANXIOUS - fear-based, racing thoughts
+        if (feeling === 'anxious') {
+            if (isHighIntensity) {
+                recommendations.push({
+                    title: 'Physiological Sigh',
+                    description: 'Double inhale + long exhale to calm panic in seconds.',
+                    icon: 'flash-outline',
+                    color: '#F472B6',
+                    action: () => {
+                        closeSheet();
+                        setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'sigh' }), 300);
+                    },
+                });
+            }
             recommendations.push({
-                title: '90 Second Reset',
-                description: 'Quick breathing to calm your nervous system immediately.',
-                icon: 'pulse-outline',
+                title: '4-7-8 Breathing',
+                description: 'Long exhale activates your calm nervous system.',
+                icon: 'moon-outline',
                 color: '#60A5FA',
                 action: () => {
                     closeSheet();
-                    setTimeout(() => navigation.navigate('Tension', { initialTab: 'releasing' }), 300);
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: '478' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Shaking Release',
+                description: 'Release pent-up fear energy through movement.',
+                icon: 'body-outline',
+                color: '#34D399',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'shaking' }), 300);
                 },
             });
         }
 
-        // Based on feeling
-        if (feeling === 'anxious' || feeling === 'overwhelmed') {
+        // ANGRY - hot, explosive energy
+        if (feeling === 'angry') {
             recommendations.push({
-                title: 'Grounding Exercise',
-                description: '5-4-3-2-1 senses to anchor you in the present moment.',
+                title: 'Physiological Sigh',
+                description: 'Rapid calm-down for acute anger in seconds.',
+                icon: 'flash-outline',
+                color: '#F87171',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'sigh' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Core Letting Go',
+                description: 'Surrender resistance to the feeling and let it dissolve.',
+                icon: 'heart-outline',
+                color: '#A78BFA',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'letting-go-basic' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Shaking Release',
+                description: 'Move the anger energy out of your body.',
+                icon: 'body-outline',
+                color: '#FBBF24',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'shaking' }), 300);
+                },
+            });
+        }
+
+        // SAD - heavy, low energy
+        if (feeling === 'sad') {
+            recommendations.push({
+                title: 'Core Letting Go',
+                description: 'Be with the sadness fully until it transforms.',
+                icon: 'heart-outline',
+                color: '#818CF8',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'letting-go-basic' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Through the Eyes',
+                description: 'Clear grief through focused, unwavering gaze.',
+                icon: 'eye-outline',
+                color: '#60A5FA',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'eyes' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Simple Belly Breath',
+                description: 'Gentle breathing to soothe and ground yourself.',
                 icon: 'leaf-outline',
                 color: '#34D399',
                 action: () => {
                     closeSheet();
-                    setTimeout(() => navigation.navigate('Mantras'), 300);
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'belly' }), 300);
                 },
             });
         }
 
-        if (feeling === 'angry') {
+        // OVERWHELMED - too much at once
+        if (feeling === 'overwhelmed') {
             recommendations.push({
-                title: 'Release Anger',
-                description: 'Learn to let go of anger through the Letting Go technique.',
-                icon: 'flame-outline',
-                color: '#F87171',
+                title: 'Box Breathing',
+                description: 'Equal counts to reset your nervous system.',
+                icon: 'cube-outline',
+                color: '#60A5FA',
                 action: () => {
                     closeSheet();
-                    setTimeout(() => navigation.navigate('Chapter', { chapterId: 'letting-go' }), 300);
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'box' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Physiological Sigh',
+                description: 'Quick reset when everything feels like too much.',
+                icon: 'flash-outline',
+                color: '#F472B6',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'sigh' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Core Letting Go',
+                description: 'Stop fighting the overload and let it pass.',
+                icon: 'heart-outline',
+                color: '#A78BFA',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'letting-go-basic' }), 300);
                 },
             });
         }
 
-        if (feeling === 'sad' || feeling === 'hopeless') {
+        // HOPELESS - apathy, lack of energy
+        if (feeling === 'hopeless') {
+            recommendations.push({
+                title: 'Core Letting Go',
+                description: 'Surrender to the feeling fully - it is temporary.',
+                icon: 'heart-outline',
+                color: '#94A3B8',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'letting-go-basic' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Simple Belly Breath',
+                description: 'Gentle, nurturing breaths to restore energy.',
+                icon: 'leaf-outline',
+                color: '#34D399',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'belly' }), 300);
+                },
+            });
             recommendations.push({
                 title: 'Natural Happiness',
-                description: 'Remember: happiness is your natural state, not something to achieve.',
+                description: 'Remember: peace is your natural state.',
                 icon: 'sunny-outline',
                 color: '#FBBF24',
                 action: () => {
@@ -195,17 +314,53 @@ const SOSBottomSheet: React.FC<SOSBottomSheetProps> = ({ visible, onClose }) => 
             });
         }
 
-        // Always offer tension release
-        recommendations.push({
-            title: 'Release Tension',
-            description: 'Let go of physical and emotional tension held in your body.',
-            icon: 'water-outline',
-            color: '#A78BFA',
-            action: () => {
-                closeSheet();
-                setTimeout(() => navigation.navigate('Tension'), 300);
-            },
-        });
+        // RESTLESS - agitated, can't settle
+        if (feeling === 'restless') {
+            recommendations.push({
+                title: 'Shaking Release',
+                description: 'Channel restless energy into movement.',
+                icon: 'body-outline',
+                color: '#34D399',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'shaking' }), 300);
+                },
+            });
+            recommendations.push({
+                title: '4-7-8 Breathing',
+                description: 'Long exhale to slow down your system.',
+                icon: 'moon-outline',
+                color: '#60A5FA',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: '478' }), 300);
+                },
+            });
+            recommendations.push({
+                title: 'Box Breathing',
+                description: 'Structured rhythm to bring order to chaos.',
+                icon: 'cube-outline',
+                color: '#A78BFA',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'box' }), 300);
+                },
+            });
+        }
+
+        // Fallback if no feeling selected (shouldn't happen in normal flow)
+        if (recommendations.length === 0) {
+            recommendations.push({
+                title: 'Core Letting Go',
+                description: 'The fundamental practice of surrendering resistance.',
+                icon: 'heart-outline',
+                color: '#A78BFA',
+                action: () => {
+                    closeSheet();
+                    setTimeout(() => navigation.navigate('PracticePlayer', { practiceId: 'letting-go-basic' }), 300);
+                },
+            });
+        }
 
         return recommendations.slice(0, 3);
     };
