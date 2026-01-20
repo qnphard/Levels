@@ -351,16 +351,16 @@ export default function JourneyMapScreen() {
               ? (glowEnabled
                 ? {
                   borderWidth: 2,
-                  borderColor: toRgba(glowTint, 0.8),
+                  borderColor: toRgba(glowTint, 0.64),
                   backgroundColor: 'rgba(9, 19, 28, 0.75)',
                   shadowColor: glowTint,
-                  shadowOpacity: 0.34,
+                  shadowOpacity: 0.27,
                   shadowRadius: 25,
                   shadowOffset: { width: 0, height: 0 },
                   boxShadow: [
-                    `0 0 30px ${toRgba(glowTint, 0.53)}`,
-                    `0 0 60px ${toRgba(glowTint, 0.27)}`,
-                    `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
+                    `0 0 30px ${toRgba(glowTint, 0.42)}`,
+                    `0 0 60px ${toRgba(glowTint, 0.22)}`,
+                    `inset 0 0 20px ${toRgba(glowTint, 0.1)}`,
                   ].join(', '),
                 }
                 : {
@@ -371,16 +371,16 @@ export default function JourneyMapScreen() {
               : (glowEnabled
                 ? {
                   borderWidth: 2,
-                  borderColor: toRgba(glowTint, 0.6),
+                  borderColor: toRgba(glowTint, 0.48),
                   backgroundColor: theme.cardBackground,
                   shadowColor: glowTint,
-                  shadowOpacity: 0.25,
+                  shadowOpacity: 0.2,
                   shadowRadius: 20,
                   shadowOffset: { width: 0, height: 0 },
                   boxShadow: [
-                    `0 0 25px ${toRgba(glowTint, 0.4)}`,
-                    `0 0 50px ${toRgba(glowTint, 0.2)}`,
-                    `inset 0 0 15px ${toRgba(glowTint, 0.1)}`,
+                    `0 0 25px ${toRgba(glowTint, 0.32)}`,
+                    `0 0 50px ${toRgba(glowTint, 0.16)}`,
+                    `inset 0 0 15px ${toRgba(glowTint, 0.08)}`,
                   ].join(', '),
                 }
                 : {
@@ -467,24 +467,24 @@ export default function JourneyMapScreen() {
             pressed && styles.categoryHeroPressed,
             glowEnabled && theme.mode === 'dark' && {
               shadowColor: theme.primary,
-              shadowOpacity: 0.34,
+              shadowOpacity: 0.27,
               shadowRadius: 20,
               shadowOffset: { width: 0, height: 0 },
               boxShadow: [
-                `0 0 30px ${toRgba(theme.primary, 0.53)}`,
-                `0 0 60px ${toRgba(theme.primary, 0.27)}`,
-                `inset 0 0 20px ${toRgba(theme.primary, 0.13)}`,
+                `0 0 30px ${toRgba(theme.primary, 0.42)}`,
+                `0 0 60px ${toRgba(theme.primary, 0.22)}`,
+                `inset 0 0 20px ${toRgba(theme.primary, 0.1)}`,
               ].join(', '),
             },
             glowEnabled && theme.mode === 'light' && {
               shadowColor: theme.primary,
-              shadowOpacity: 0.25,
+              shadowOpacity: 0.2,
               shadowRadius: 18,
               shadowOffset: { width: 0, height: 0 },
               boxShadow: [
-                `0 0 25px ${toRgba(theme.primary, 0.4)}`,
-                `0 0 50px ${toRgba(theme.primary, 0.2)}`,
-                `inset 0 0 15px ${toRgba(theme.primary, 0.1)}`,
+                `0 0 25px ${toRgba(theme.primary, 0.32)}`,
+                `0 0 50px ${toRgba(theme.primary, 0.16)}`,
+                `inset 0 0 15px ${toRgba(theme.primary, 0.08)}`,
               ].join(', '),
             },
           ]}

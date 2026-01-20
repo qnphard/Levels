@@ -60,60 +60,60 @@ export default function FeelingsExplainedCard({
           styles.card,
           theme.mode === 'dark'
             ? (glowEnabled
-                ? {
-                    borderWidth: 2,
-                    borderColor: toRgba(glowTint, 0.8),
-                    shadowColor: glowTint,
-                    shadowOpacity: 0.34,
-                    backgroundColor: 'rgba(9, 19, 28, 0.75)',
-                    boxShadow: [
-                      `0 0 30px ${toRgba(glowTint, 0.53)}`,
-                      `0 0 60px ${toRgba(glowTint, 0.27)}`,
-                      `inset 0 0 20px ${toRgba(glowTint, 0.13)}`,
-                    ].join(', '),
-                  }
-                : {
-                    borderWidth: 1,
-                    borderColor: 'rgba(255,255,255,0.08)',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.2,
-                    backgroundColor: 'rgba(9, 19, 28, 0.7)',
-                  })
+              ? {
+                borderWidth: 2,
+                borderColor: toRgba(glowTint, 0.64),
+                shadowColor: glowTint,
+                shadowOpacity: 0.27,
+                backgroundColor: 'rgba(9, 19, 28, 0.75)',
+                boxShadow: [
+                  `0 0 30px ${toRgba(glowTint, 0.42)}`,
+                  `0 0 60px ${toRgba(glowTint, 0.22)}`,
+                  `inset 0 0 20px ${toRgba(glowTint, 0.1)}`,
+                ].join(', '),
+              }
+              : {
+                borderWidth: 1,
+                borderColor: 'rgba(255,255,255,0.08)',
+                shadowColor: '#000',
+                shadowOpacity: 0.2,
+                backgroundColor: 'rgba(9, 19, 28, 0.7)',
+              })
             : (glowEnabled
-                ? {
-                    borderWidth: 2,
-                    borderColor: toRgba(glowTint, 0.95),
-                    shadowColor: glowTint,
-                    shadowOpacity: 0.4,
-                    shadowRadius: 24,
-                    shadowOffset: { width: 0, height: 10 },
-                    elevation: 6,
-                    backgroundColor: theme.cardBackground,
-                    boxShadow: [
-                      `0 18px 50px rgba(2, 6, 23, 0.22)`,
-                      `0 2px 8px rgba(2, 6, 23, 0.10)`,
-                      `0 0 3px ${toRgba(glowTint, 0.8)}`,
-                      `0 0 30px ${toRgba(glowTint, 0.5)}`,
-                      `0 0 60px ${toRgba(glowTint, 0.25)}`,
-                    ].join(', '),
-                    transform: pressed ? [{ translateY: -3 }] : [],
-                  }
-                : {
-                    borderWidth: 1,
-                    borderColor: 'rgba(2,6,23,0.08)',
-                    shadowColor: 'rgba(2,6,23,0.32)',
-                    shadowOpacity: 1,
-                    shadowRadius: 22,
-                    shadowOffset: { width: 0, height: 12 },
-                    elevation: 6,
-                    backgroundColor: theme.cardBackground,
-                    boxShadow: [
-                      `0 12px 24px rgba(15, 23, 42, 0.10)`,
-                      `0 8px 20px rgba(15, 23, 42, 0.08)`,
-                      `0 1px 2px rgba(2, 6, 23, 0.06)`,
-                    ].join(', '),
-                    transform: pressed ? [{ translateY: -3 }] : [],
-                  }),
+              ? {
+                borderWidth: 2,
+                borderColor: toRgba(glowTint, 0.76),
+                shadowColor: glowTint,
+                shadowOpacity: 0.32,
+                shadowRadius: 24,
+                shadowOffset: { width: 0, height: 10 },
+                elevation: 6,
+                backgroundColor: theme.cardBackground,
+                boxShadow: [
+                  `0 18px 50px rgba(2, 6, 23, 0.18)`,
+                  `0 2px 8px rgba(2, 6, 23, 0.08)`,
+                  `0 0 3px ${toRgba(glowTint, 0.64)}`,
+                  `0 0 30px ${toRgba(glowTint, 0.4)}`,
+                  `0 0 60px ${toRgba(glowTint, 0.2)}`,
+                ].join(', '),
+                transform: pressed ? [{ translateY: -3 }] : [],
+              }
+              : {
+                borderWidth: 1,
+                borderColor: 'rgba(2,6,23,0.08)',
+                shadowColor: 'rgba(2,6,23,0.32)',
+                shadowOpacity: 1,
+                shadowRadius: 22,
+                shadowOffset: { width: 0, height: 12 },
+                elevation: 6,
+                backgroundColor: theme.cardBackground,
+                boxShadow: [
+                  `0 12px 24px rgba(15, 23, 42, 0.10)`,
+                  `0 8px 20px rgba(15, 23, 42, 0.08)`,
+                  `0 1px 2px rgba(2, 6, 23, 0.06)`,
+                ].join(', '),
+                transform: pressed ? [{ translateY: -3 }] : [],
+              }),
         ]}
       >
         <LinearGradient
@@ -253,7 +253,7 @@ const getStyles = (theme: ThemeColors) =>
       gap: spacing.sm,
     },
     ctaPrimary: {
-      backgroundColor: theme.mode === 'dark' 
+      backgroundColor: theme.mode === 'dark'
         ? toRgba(theme.primary, 0.65) // Further reduced opacity for dark theme
         : theme.primary,
     },

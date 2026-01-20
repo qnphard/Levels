@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { useOnboardingStore, Zone } from '../../store/onboardingStore';
+import Animated, { FadeIn } from 'react-native-reanimated';
+import { useOnboardingStore, Zone, Intention } from '../../store/onboardingStore';
 import { useUserStore } from '../../store/userStore';
 
 // Map Zone enum to level IDs from levels.ts
@@ -27,8 +27,39 @@ const LandingScreen = () => {
     const navigation = useNavigation<any>();
     const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
     const currentZone = useOnboardingStore((s) => s.currentZone);
+    const userName = useOnboardingStore((s) => s.name);
+    const intention = useOnboardingStore((s) => s.intention);
     const addCheckIn = useUserStore((s) => s.addCheckIn);
     const [feedbackState, setFeedbackState] = useState<FeedbackState>('asking');
+
+    // Personalized messages based on intention
+    const getLighterMessage = () => {
+        const greeting = userName ? `Nice work, ${userName}.` : "That's wonderful.";
+        switch (intention) {
+            case Intention.EmergencyRelief:
+                return `${greeting}\nYou found relief when you needed it most.`;
+            case Intention.DailyPractice:
+                return `${greeting}\nThis is your first step of many.`;
+            case Intention.Understanding:
+                return `${greeting}\nYour awareness is growing.`;
+            default:
+                return `${greeting}\nEven small shifts are powerful.`;
+        }
+    };
+
+    const getSameMessage = () => {
+        const greeting = userName ? `${userName}, that's okay.` : "That's okay.";
+        switch (intention) {
+            case Intention.EmergencyRelief:
+                return `${greeting}\nRelief builds with practice. Be gentle.`;
+            case Intention.DailyPractice:
+                return `${greeting}\nEvery practice is valuable, even the hard ones.`;
+            case Intention.Understanding:
+                return `${greeting}\nAwareness itself is progress.`;
+            default:
+                return `${greeting}\nPresence is the practice, not the outcome.`;
+        }
+    };
 
     const handleEnter = () => {
         // Persist the onboarding zone selection to userStore so JourneyMap can read it
@@ -91,9 +122,11 @@ const LandingScreen = () => {
             >
                 <View style={styles.content}>
                     <Ionicons name="sparkles" size={48} color="#A78BFA" style={styles.icon} />
-                    <Text style={styles.title}>That's wonderful.</Text>
+                    <Text style={styles.title}>
+                        {userName ? `Nice work, ${userName}.` : "That's wonderful."}
+                    </Text>
                     <Text style={styles.subtitle}>
-                        Even small shifts are powerful.{'\n'}Every moment of presence adds up.
+                        {getLighterMessage().split('\n')[1]}
                     </Text>
                 </View>
 
@@ -121,9 +154,11 @@ const LandingScreen = () => {
             >
                 <View style={styles.content}>
                     <Ionicons name="heart-outline" size={48} color="#F472B6" style={styles.icon} />
-                    <Text style={styles.title}>That's okay.</Text>
+                    <Text style={styles.title}>
+                        {userName ? `${userName}, that's okay.` : "That's okay."}
+                    </Text>
                     <Text style={styles.subtitle}>
-                        Presence is the practice, not the outcome.{'\n'}Just showing up is progress.
+                        {getSameMessage().split('\n')[1]}
                     </Text>
                 </View>
 

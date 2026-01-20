@@ -88,9 +88,9 @@ export default function PlayerScreen() {
           styles.thumbnailPlaceholder,
           glowEnabled && theme.mode === 'dark' && {
             borderWidth: 2,
-            borderColor: toRgba(theme.primary, 0.6),
+            borderColor: toRgba(theme.primary, 0.48),
             shadowColor: theme.primary,
-            shadowOpacity: 0.35,
+            shadowOpacity: 0.27,
             shadowRadius: 18,
             shadowOffset: { width: 0, height: 2 },
             elevation: 0, // Remove elevation to prevent hexagon shape

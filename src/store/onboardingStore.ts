@@ -16,10 +16,16 @@ export enum Zone {
     Source = 'Source',
 }
 
+export enum Intention {
+    EmergencyRelief = 'emergency_relief',
+    DailyPractice = 'daily_practice',
+    Understanding = 'understanding',
+}
+
 interface OnboardingState {
     name: string;
     currentZone: Zone | null;
-    intention: string;
+    intention: Intention | null;
     isComplete: boolean;
     showOnboarding: boolean; // Toggle to show/hide onboarding each launch (default: true)
     hasShownOverlay: boolean;
@@ -28,7 +34,7 @@ interface OnboardingState {
     seenExplanations: string[];
     setName: (name: string) => void;
     setZone: (zone: Zone) => void;
-    setIntention: (intention: string) => void;
+    setIntention: (intention: Intention) => void;
     completeOnboarding: () => void;
     setShowOnboarding: (show: boolean) => void;
     setHasShownOverlay: (shown: boolean) => void;
@@ -43,7 +49,7 @@ export const useOnboardingStore = create<OnboardingState>()(
         (set) => ({
             name: '',
             currentZone: null,
-            intention: '',
+            intention: null,
             isComplete: false,
             showOnboarding: true, // Show onboarding by default
             hasShownOverlay: false,
@@ -72,7 +78,7 @@ export const useOnboardingStore = create<OnboardingState>()(
             reset: () => set({
                 name: '',
                 currentZone: null,
-                intention: '',
+                intention: null,
                 isComplete: false,
                 showOnboarding: true, // Reset to default
                 hasShownOverlay: false,
