@@ -229,9 +229,10 @@ const SOSBottomSheet: React.FC<SOSBottomSheetProps> = ({ visible, onClose }) => 
             <TouchableOpacity
                 style={styles.skipLink}
                 onPress={() => {
-                    setStep('recommendation');
-                    setIntensity(2);
-                    setFeeling('anxious');
+                    mediumTap();
+                    closeSheet();
+                    // Navigate directly to Practices tab for quick relief
+                    setTimeout(() => (navigation as any).navigate('Main', { screen: 'Practices' }), 300);
                 }}
             >
                 <Text style={styles.skipText}>Just give me quick relief</Text>
