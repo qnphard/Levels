@@ -155,6 +155,58 @@ Optimize app performance, fix remaining bugs, prepare for production release.
 
 ---
 
+## Phase 7A: Content Audit & Completion
+**Status**: 🔄 In Progress
+**Priority**: High
+
+### Objective
+Verify and complete all level/essential content before building quizzes.
+
+### Approach
+- Level-by-level audit using source books as reference
+- Check completeness, Hawkins accuracy, and quiz-readiness
+- Flag items for user review before changes
+
+### Reference Material
+- Books/extracted/Transcending the Levels of Consciousness
+- Books/extracted/Truth vs. Falsehood
+
+### Deliverables
+1. Audit all 16 consciousness levels (Purpose, Felt Sense, Traps, Exits)
+2. Audit all 22 essentials topics
+3. Fill content gaps
+4. Fix inaccuracies
+5. Mark sections as quiz-ready
+
+### Tracking
+See `.gsd/CONTENT_AUDIT.md` for status.
+
+---
+
+## Phase 7B: Quiz Implementation
+**Status**: Planned (blocked by 7A)
+**Priority**: High
+
+### Objective
+Build the optional quiz system that reinforces learning without shame.
+
+### Deliverables
+1. Quiz type definitions
+2. Quiz components (QuizEntryCard, QuizContainer, QuizQuestion, QuizOption, AnswerFeedback, ReferencesList)
+3. Quiz persistence (AsyncStorage)
+4. Reanimated animations
+5. Write quizzes for all verified content
+6. Integration into content screens
+
+### Requirements
+- 3-tier feedback: ALIGNED / PARTIAL / DISTORTION
+- Compassionate framing (no shame, no scolding)
+- Truth anchors per question
+- Educational mode: tap other options to learn why wrong/right
+- References to deeper content
+
+---
+
 ## Phase Order Rationale
 
 1. **Phase 1** first — Users need clarity before anything else
@@ -162,3 +214,6 @@ Optimize app performance, fix remaining bugs, prepare for production release.
 3. **Phase 3** third — Visual polish enhances immersion
 4. **Phase 4** anytime — Independent of UX work, can parallel
 5. **Phase 5-6** later — Polish after core experience is solid
+6. **Phase 7A** now — Content must be verified before quizzes
+7. **Phase 7B** after 7A — Quiz system builds on verified content
+

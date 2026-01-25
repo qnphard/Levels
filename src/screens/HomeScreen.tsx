@@ -343,7 +343,7 @@ export default function HomeScreen() {
               <View style={styles.generatorContent}>
                 <View style={styles.generatorTextSection}>
                   <Text style={styles.generatorLabel}>Custom Practice</Text>
-                  <Text style={styles.generatorTitle}>AI Meditation Generator</Text>
+                  <Text style={styles.generatorTitle}>Personalized Meditation</Text>
                   <Text style={styles.generatorSubtitle}>Generate unique scripts & binaural beats</Text>
                 </View>
                 <View style={styles.generatorIconContainer}>

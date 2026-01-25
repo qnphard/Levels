@@ -6,10 +6,18 @@ export interface Meditation {
   description: string;
   duration: number; // in seconds
   audioUrl: string; // local or remote URL
+  // Optional playlist support (used for AI-generated meditations that return multiple segments)
+  audioUrls?: string[];
   category: Category;
   isPremium: boolean;
   thumbnailUrl?: string;
   instructor?: string;
+
+  // Optional layered audio (used by AI-generated meditations)
+  brainwave?: 'none' | 'delta' | 'theta' | 'alpha' | 'beta';
+  binauralVolume?: number;
+  ambient?: 'none' | 'rain' | 'ocean' | 'forest' | 'wind';
+  ambientVolume?: number;
 
   // Internal metadata (never displayed to users)
   _level?: number; // 200-600 consciousness range
@@ -168,4 +176,5 @@ export interface CategoryArticles {
     chips: (DossierArticle & { label: string })[];
   };
   feltSense?: DossierArticle;
+  deepDive?: DossierArticle; // Optional deep-dive content (karma, advanced topics)
 }

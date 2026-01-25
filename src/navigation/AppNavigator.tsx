@@ -44,6 +44,7 @@ import KnowledgeScreen from '../screens/KnowledgeScreen';
 import AddictionScreen from '../screens/AddictionScreen';
 import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
 import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
+import YourMeditationsScreen from '../screens/YourMeditationsScreen';
 import RoomOfLevelsScreen from '../screens/RoomOfLevelsScreen';
 import AnimationShowcaseScreen from '../screens/AnimationShowcaseScreen';
 import LevelContentMenuScreen from '../screens/LevelContentMenuScreen';
@@ -323,6 +324,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="MeditationGenerator"
           component={MeditationGeneratorScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="YourMeditations"
+          component={YourMeditationsScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen

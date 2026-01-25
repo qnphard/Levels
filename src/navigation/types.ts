@@ -32,6 +32,7 @@ export type RootStackParamList = {
     Addiction: undefined;
     LossAndAbandonment: { initialTab?: string } | undefined;
     MeditationGenerator: undefined;
+    YourMeditations: undefined;
     Profile: undefined;
     LevelRoom: { levelId: string; initialHotspot?: string };
     RoomOfLevels: undefined;

@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Levels Polly TTS backend (HTTP API -> Lambda -> Polly + S3)
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Timeout: 120
+    MemorySize: 1024
+    Architectures:
+      - x86_64
+
+Resources:
+  AudioBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowMethods: [POST, OPTIONS, HEAD]
+        AllowHeaders: [Content-Type]
+        AllowOrigins: ["*"]
+
+  PollyTtsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      # Deploy only the bundled output in dist/ (no node_modules)
+      CodeUri: dist
+      Handler: handler.handler
+      Runtime: nodejs20.x
+      Environment:
+        Variables:
+          AUDIO_BUCKET: !Ref AudioBucket
+          SIGNED_URL_TTL_SECONDS: "3600"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - polly:SynthesizeSpeech
+              Resource: "*"
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+              Resource:
+                - !Sub "${AudioBucket.Arn}/*"
+      Events:
+        PollyTts:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /tts/polly
+            Method: POST
+
+        Health:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: HEAD
+
+Outputs:
+  ApiUrl:
+    Description: "HTTP API base URL"
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+

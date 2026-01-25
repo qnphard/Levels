@@ -5,6 +5,7 @@ import os
 image = (
     modal.Image.debian_slim(python_version="3.10")
     .apt_install("git", "libsndfile1", "ffmpeg", "build-essential", "mecab", "libmecab-dev", "mecab-ipadic-utf8")
+
     .pip_install(
         "torch",
         "torchaudio",
@@ -21,12 +22,14 @@ image = (
         "transformers",
         "mecab-python3",
         "unidic-lite",  # Lightweight unidic dictionary
+        "rvc-python",   # ADDED: RVC Voice Conversion
     )
     # Install MeloTTS from GitHub
     .run_commands(
         "git clone https://github.com/myshell-ai/MeloTTS.git /root/MeloTTS",
         "cd /root/MeloTTS && pip install -e .",
-        "python -m unidecode.util download"
+        "python -m unidecode.util download",
+        "mkdir -p /root/models"  # Create dir for RVC models
     )
     # Download NLTK data
     .run_commands(
@@ -38,7 +41,7 @@ image = (
     )
 )
 
-app = modal.App("meditation-tts-fast", image=image)
+app = modal.App("meditation-tts-rvc", image=image)
 
 BRAINWAVES = {
     "none": 0,
@@ -48,12 +51,14 @@ BRAINWAVES = {
     "beta": 18,
 }
 
-@app.cls(gpu="T4", scaledown_window=300, timeout=600)
+@app.cls(gpu="T4", scaledown_window=300, timeout=600, secrets=[modal.Secret.from_name("huggingface-secret")])
 class Model:
     @modal.enter()
     def load_model(self):
         import torch
         from melo.api import TTS
+        from rvc_python.infer import RVCInference
+        import os
         
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print(f"Loading MeloTTS on {self.device}...")
@@ -62,6 +67,32 @@ class Model:
         self.tts = TTS(language='EN', device=self.device)
         self.speaker_ids = self.tts.hps.data.spk2id
         print(f"MeloTTS loaded. Speakers: {list(self.speaker_ids.keys())}")
+
+        # Initialize RVC
+        self.rvc_enabled = False
+        self.rvc = None
+        
+        # Check for RVC model (You typically download this on startup if not baked in image)
+        # For now, we'll look for it in /root/models or try to download if URL is env var
+        self.rvc_model_path = "/root/models/meditation_voice.pth"
+        
+        # Logic to download model if ENV provided (requires HF_TOKEN in secrets)
+        hf_token = os.environ.get("HF_TOKEN")
+        model_url = os.environ.get("RVC_MODEL_URL")
+        
+        if model_url and hf_token:
+            print(f"Downloading RVC model from {model_url}...")
+            # Ideally use huggingface_hub or wget with auth header
+            # Placeholder for future implementation once user provides URL
+            pass 
+            
+        if os.path.exists(self.rvc_model_path):
+            print("RVC Model found! Initializing...")
+            self.rvc = RVCInference(device=self.device)
+            self.rvc.load_model(self.rvc_model_path)
+            self.rvc_enabled = True
+        else:
+            print("No RVC model found in /root/models. Voice conversion disabled.")
 
     @modal.fastapi_endpoint(method="POST")
     def synthesize(self, item: dict):
@@ -78,19 +109,38 @@ class Model:
             brainwave = item.get("brainwave", "theta")
             binaural_vol = item.get("binaural_volume", 0.15)
             
+            # RVC params
+            use_voice_cloning = item.get("voice_conversion", False)
+            pitch_shift = item.get("pitch_shift", 0)
+            
             if not text:
                 return Response(content="No text provided", status_code=400)
             
-            print(f"Synthesizing {len(text)} chars...")
+            print(f"Synthesizing {len(text)} chars (RVC: {use_voice_cloning})...")
             
-            # Generate with MeloTTS
+            # 1. Generate with MeloTTS
             output_wav = "/tmp/output.wav"
             speaker_key = 'EN-Default' if 'EN-Default' in self.speaker_ids else list(self.speaker_ids.keys())[0]
             speaker_id = self.speaker_ids[speaker_key]
             
             self.tts.tts_to_file(text, speaker_id, output_wav, speed=speed)
             
-            # Add Binaural Beats
+            # 2. Apply RVC Voice Conversion (if enabled & available)
+            if use_voice_cloning:
+                if self.rvc_enabled:
+                    print(f"Converting voice (pitch: {pitch_shift})...")
+                    # Settings for RVC: f0_method='rmvpe' is best quality
+                    self.rvc.infer_file(
+                        input_path=output_wav, 
+                        output_path=output_wav, # Overwrite
+                        pitch=pitch_shift,
+                        f0_method="rmvpe",
+                        index_path=None # Optional .index path
+                    )
+                else:
+                    print("Voice conversion requested but RVC model not loaded.")
+
+            # 3. Add Binaural Beats
             data, sr = sf.read(output_wav)
             beat_freq = BRAINWAVES.get(brainwave, 0)
             
@@ -105,6 +155,12 @@ class Model:
                 if len(data.shape) == 1:
                     data = np.stack([data, data], axis=1)
                 
+                # Ensure compatibility
+                if data.shape[0] != beat.shape[0]:
+                   min_len = min(data.shape[0], beat.shape[0])
+                   data = data[:min_len]
+                   beat = beat[:min_len]
+
                 data = data + beat
                 max_val = np.max(np.abs(data))
                 if max_val > 1.0:
@@ -112,7 +168,7 @@ class Model:
                 
                 sf.write(output_wav, data, sr)
 
-            # Convert to MP3
+            # 4. Convert to MP3
             from pydub import AudioSegment
             audio = AudioSegment.from_wav(output_wav)
             output_mp3 = "/tmp/output.mp3"

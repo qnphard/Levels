@@ -304,7 +304,7 @@ export default function LevelRoomScreen() {
                                 label={`Transcending ${level.name}`}
                                 icon="sparkles-outline"
                                 color={theme.accentGold || '#FFD700'}
-                                onPress={() => navigation.navigate('LevelChapter' as any, { levelId: level.id, initialView: 'overview' })}
+                                onPress={() => navigation.navigate('LevelDetail' as any, { levelId: level.id })}
                             />
                         </View>
                     </View>

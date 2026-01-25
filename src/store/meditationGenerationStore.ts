@@ -1,28 +1,32 @@
 import { create } from 'zustand';
 import { Audio } from 'expo-av';
-import { geminiService } from '../services/geminiService';
+import { geminiService, MeditationPurpose, MeditationStyle, MeditationDuration, GeneratedScript } from '../services/geminiService';
 import * as voiceService from '../services/voiceTTSService';
 import { AI_CONFIG } from '../config/aiConfig';
-import { generateMeditationScript, sectionsToText, MeditationPurpose, MeditationDuration, MeditationVibe } from '../data/meditationScripts';
+import { generateMeditationScript, sectionsToText } from '../data/meditationScripts';
+import { useSavedMeditationsStore } from './savedMeditationsStore';
 
 interface GenerationParams {
     purpose: MeditationPurpose;
     duration: MeditationDuration;
-    vibe: MeditationVibe;
+    style: MeditationStyle;
     usePremiumVoice: boolean;
+    voiceId: string;
     speed: number;
     brainwave: string;
     binauralVolume: number;
     ambient: string;
     ambientVolume: number;
+    userGoal?: string;
 }
 
 interface MeditationGenerationState {
     isGenerating: boolean;
     progress: string; // 'brewing_script' | 'synthesizing_audio' | 'completed' | 'error' | 'idle'
     progressValue: number;
-    generatedScript: string | null;
-    audioUri: string | null;
+    generatedScript: GeneratedScript | null;
+    scriptText: string | null;
+    audioUris: string[] | null;
     error: string | null;
     sound: Audio.Sound | null;
 
@@ -38,12 +42,14 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
     progress: 'idle',
     progressValue: 0,
     generatedScript: null,
-    audioUri: null,
+    scriptText: null,
+    audioUris: null,
     error: null,
     sound: null,
 
     startGeneration: async (params) => {
-        set({ isGenerating: true, progress: 'brewing_script', progressValue: 5, error: null, generatedScript: null, audioUri: null });
+        console.log('[MeditationGen] Starting generation with params:', JSON.stringify(params));
+        set({ isGenerating: true, progress: 'brewing_script', progressValue: 5, error: null, generatedScript: null, scriptText: null, audioUris: null });
 
         let interval: NodeJS.Timeout | null = null;
 
@@ -70,41 +76,51 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
 
         try {
             // 1. Generate Script
-            let script = '';
+            let script: GeneratedScript | null = null;
+            let scriptText = '';
+
             if (AI_CONFIG.GEMINI_API_KEY) {
                 try {
                     script = await geminiService.generateScript({
                         purpose: params.purpose,
-                        durationMinutes: params.duration,
-                        vibe: params.vibe,
+                        duration: params.duration,
+                        style: params.style,
+                        binaural: params.brainwave,
+                        background: params.ambient,
+                        userGoal: params.userGoal,
                     });
+                    scriptText = geminiService.scriptToText(script);
                 } catch (err) {
                     console.warn('Gemini generation failed, falling back to templates:', err);
-                    const sections = generateMeditationScript(params.purpose, params.duration);
-                    script = sectionsToText(sections);
+                    // Fallback to old template system
+                    const sections = generateMeditationScript(params.purpose as any, params.duration as any);
+                    scriptText = sectionsToText(sections);
                 }
             } else {
-                const sections = generateMeditationScript(params.purpose, params.duration);
-                script = sectionsToText(sections);
+                const sections = generateMeditationScript(params.purpose as any, params.duration as any);
+                scriptText = sectionsToText(sections);
             }
 
-            set({ generatedScript: script, progress: 'synthesizing_audio', progressValue: 15 });
+            console.log('[MeditationGen] Script generated, length:', scriptText.length, 'chars');
+            set({ generatedScript: script, scriptText, progress: 'synthesizing_audio', progressValue: 15 });
 
             // 2. Synthesize Audio
-            // XTTS-v2 speed: ~15 chars/sec on CPU (approx)
-            // Estimation: 500 chars -> 35s. 
-            // Clamp betwen 10s and 90s.
-            const estimatedDurationMs = (script.length / 15) * 1000;
-            const clampedDuration = Math.max(10000, Math.min(estimatedDurationMs, 90000));
+            // MeloTTS speed: very fast on GPU
+            // Estimation: 500 chars -> 10s. 
+            // Clamp betwen 5s and 60s.
+            const estimatedDurationMs = (scriptText.length / 50) * 1000;
+            const clampedDuration = Math.max(5000, Math.min(estimatedDurationMs, 60000));
 
             animateProgress(15, 95, clampedDuration);
 
             // 2. Synthesize Audio
             if (params.usePremiumVoice) {
-                // Generate URI only
-                const uri = await voiceService.synthesize({
-                    text: script,
+                // Generate audio URLs (one or more segments)
+                const uris = await voiceService.synthesize({
+                    text: scriptText,
                     speed: params.speed,
+                    voiceId: params.voiceId,
+                    engine: 'neural',
                     brainwave: params.brainwave,
                     binauralVolume: params.binauralVolume,
                     ambient: params.ambient,
@@ -112,16 +128,40 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
                 });
 
                 // Store URI, mark complete.
+                console.log('[MeditationGen] TTS complete, got', uris.length, 'audio URIs');
                 if (interval) clearInterval(interval);
-                set({ audioUri: uri, progress: 'completed', isGenerating: false, progressValue: 100 });
+                set({ audioUris: uris, progress: 'completed', isGenerating: false, progressValue: 100 });
+
+                // Persist to "Your Meditations"
+                try {
+                    useSavedMeditationsStore.getState().addMeditation({
+                        purpose: params.purpose,
+                        duration: params.duration,
+                        style: params.style,
+                        voiceId: params.voiceId,
+                        speed: params.speed,
+                        brainwave: params.brainwave,
+                        binauralVolume: params.binauralVolume,
+                        ambient: params.ambient,
+                        ambientVolume: params.ambientVolume,
+                        userGoal: params.userGoal,
+                        scriptText,
+                        audioUris: uris,
+                    });
+                } catch (e) {
+                    console.warn('[MeditationGen] Failed to save meditation:', e);
+                }
             } else {
                 if (interval) clearInterval(interval);
                 set({ progress: 'completed', isGenerating: false, progressValue: 100 });
             }
 
         } catch (err: any) {
-            console.error('Generation failed:', err);
-            set({ error: err.message || 'Failed to generate', progress: 'error', isGenerating: false });
+            console.error('[MeditationGen] Generation failed:', err);
+            const errorMessage = err?.message || 'Failed to generate';
+            console.error('[MeditationGen] Error message:', errorMessage);
+            if (interval) clearInterval(interval);
+            set({ error: errorMessage, progress: 'error', isGenerating: false });
         }
     },
 
@@ -130,27 +170,33 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
         if (sound) {
             sound.unloadAsync();
         }
-        set({ isGenerating: false, progress: 'idle', generatedScript: null, audioUri: null, error: null, sound: null });
+        set({ isGenerating: false, progress: 'idle', generatedScript: null, audioUris: null, error: null, sound: null });
     },
 
     playResult: async () => {
-        const { sound, audioUri } = get();
+        const { sound, audioUris } = get();
+        console.log('[MeditationGen] playResult called, audioUris:', audioUris?.length, 'sound exists:', !!sound);
 
         if (sound) {
+            console.log('[MeditationGen] Resuming existing sound');
             await sound.playAsync();
             return;
         }
 
-        if (audioUri) {
+        if (audioUris && audioUris.length > 0) {
             try {
-                const { sound: newSound } = await Audio.Sound.createAsync(
-                    { uri: audioUri },
-                    { shouldPlay: true }
-                );
+                console.log('[MeditationGen] Creating new sound from URIs:', audioUris[0]?.substring(0, 100));
+                const newSound =
+                    audioUris.length === 1
+                        ? await voiceService.playAudio(audioUris[0])
+                        : await voiceService.playAudioSequence(audioUris);
+                console.log('[MeditationGen] Sound created successfully');
                 set({ sound: newSound });
             } catch (e) {
-                console.error("Failed to play audio", e);
+                console.error("[MeditationGen] Failed to play audio", e);
             }
+        } else {
+            console.warn('[MeditationGen] playResult called but no audioUris available');
         }
     },
 

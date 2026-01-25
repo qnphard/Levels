@@ -62,6 +62,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     body: "In primitive human societies, banishment was equivalent to a death sentence. Shame evolved as a radical survival mechanism: by forcing you to 'drop' your status, look down, and hide, it signals to the tribe that you are no longer a threat or a competitor. It is a desperate bid for safety through total submission."
                 },
                 {
+                    title: "The Danger of This Level",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "This level is perilously proximate to death. Death may be chosen consciously as suicide or more subtly elected through neglect, indifference, carelessness, or accident. The shame-based personality is shy, withdrawn, introverted, and self-deprecating.\n\nEarly life experiences—neglect, physical, emotional, or sexual abuse—lead to shame and can warp the personality for a lifetime unless resolved. Shame, as Freud determined, produces neurosis. It is destructive to emotional and psychological health and makes one prone to physical illness."
+                },
+                {
                     title: "Healthy vs. Toxic Shame",
                     importance: "core",
                     defaultExpanded: false,
@@ -72,6 +78,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "nuance",
                     defaultExpanded: false,
                     body: "At this level, the universe/God is perceived as a vindictive punisher who fundamentally despises you. This produces a state of 'Miserable' existence where one feels like a cosmic error that even the Creator wants eliminated."
+                },
+                {
+                    title: "Clinical Notes",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "**When Shame Becomes Depression**\n\nSevere shame often manifests as clinical depression—immobilizing and life-threatening. It is characterized by helplessness and hopelessness, a dispirited state that is hellish to endure.\n\n**Dangerous Consciousness at Level 20**\n\nThe behavior of people whose consciousness is only in the 20s is dangerous. They are prone to hallucinations of an accusatory nature, as well as paranoia; some become psychotic or commit bizarre crimes. This is an extremely fragile state where the line between inner torment and outer destructiveness can blur.\n\n**Brain Chemistry**\n\nDepression at this level is accompanied by major changes in brain physiology and low levels of critical neurotransmitters such as norepinephrine and serotonin. The propensity to depression includes strong genetic factors and is often familial.\n\n**The Suicide Paradox**\n\nParadoxically, as a person comes out of severe apathy and gains more energy, they may become capable of suicide. This explains the clinical paradox that 'improvement' can temporarily increase risk. When the apathetic depressive begins to improve, the phase of agitated depression emerges.\n\n**When to Seek Help**\n\nDepressions of a serious degree require professional help, protection, and support. The loss of hope and will to live frequently occurs in lonely, isolated persons, the elderly, and those who have gone through severe stress such as divorce, financial disaster, or loss of loved ones. If you recognize yourself here, please reach out for support."
                 }
             ],
             nextDoors: [
@@ -173,6 +185,54 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     nextDoors: [
                         { label: "Reclaim Worth", targetRoom: "HUB", hotspot: "exits" }
                     ]
+                },
+                {
+                    label: "Perfectionism",
+                    title: "The Trap: The Perfectionist Mask",
+                    spineBody: "Overcompensation through rigid perfectionism and moral crusading.",
+                    sections: [
+                        {
+                            title: "The Brittle Exterior",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Some shame-based individuals compensate by developing a perfectionist exterior—becoming driven, rigid, and intolerant. This mask creates the illusion of control but is brittle. Any crack in the facade triggers the underlying shame even more intensely.\n\nThe perfectionist believes: 'If I am flawless, no one can attack me.' But this strategy is exhausting and ultimately fails, because perfection is impossible and the inner 'bad self' is ever-present beneath the surface."
+                        }
+                    ],
+                    nextDoors: [
+                        { label: "The Way Out", targetRoom: "HUB", hotspot: "exits" }
+                    ]
+                },
+                {
+                    label: "Vigilante",
+                    title: "The Trap: The Vigilante",
+                    spineBody: "Projecting your hidden shame onto others and attacking them for it.",
+                    sections: [
+                        {
+                            title: "Righteous Projection",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "The ego may escape its own shame by projecting it outward. This creates 'moral extremists' who form vigilante groups, attacking in others the very 'badness' they cannot face in themselves. The projection feels righteous, but it is merely displaced self-hatred.\n\nNotorious examples include serial killers who acted out of shame, hate, and sexual moralism with the justification of punishing 'bad' people. The vigilante feels purified by destroying the 'evil' they see outside—never realizing it is their own shadow."
+                        }
+                    ],
+                    nextDoors: [
+                        { label: "The Way Out", targetRoom: "HUB", hotspot: "exits" }
+                    ]
+                },
+                {
+                    label: "Domino Effect",
+                    title: "The Trap: The Domino Effect",
+                    spineBody: "Shame destabilizes the entire personality, triggering other negative emotions.",
+                    sections: [
+                        {
+                            title: "Cascade of Negativity",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Because shame operates at such a fundamental level (identity), it pulls down the whole personality and makes you vulnerable to false pride, anger, guilt, and other negative emotions. One shame spiral can trigger a cascade of emotional instability.\n\nThis is why shame is one of the lowest levels on the Map of Consciousness—it undermines the foundation upon which all other emotions rest."
+                        }
+                    ],
+                    nextDoors: [
+                        { label: "The Way Out", targetRoom: "HUB", hotspot: "exits" }
+                    ]
                 }
             ]
         },
@@ -208,10 +268,84 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: true,
                             body: "In the depth of despair, the choice is either death or surrender. By surrendering the very idea that you are a separate, defective self to a higher power (Love/God/The Universe), the heavy weight of the 'Miserable Self' is lifted by Grace. You don't fix the shame; you let go of the one who is shamed."
+                        },
+                        {
+                            title: "The Dualities of Shame",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "To transcend shame, recognize the destructive pole and choose its opposite:\n\n• **Self-punitive** → Self-forgiveness\n• **Self as worthless** → Affirm the gift of life\n• **Condemn** → Forgive\n• **Self-hatred** → Self-compassion\n• **Unlovable** → Worth as a child of God\n• **Error unforgivable** → Error as lesson\n• **Focus on self** → Focus on others\n• **'I should have'** → 'I was not able to then'\n• **Shrink, hide** → Be visible\n• **End of the road** → Beginning of the new\n\nEach shift represents a small step from the pull of the negative to the choice of the positive."
+                        }
+                    ]
+                },
+                {
+                    label: "The Flip Point",
+                    title: "The Exit: The Flip Point",
+                    spineBody: "At the absolute bottom, heaven and hell are one-tenth of an inch apart.",
+                    sections: [
+                        {
+                            title: "The Moment of Transformation",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "At the bottom of despair, there is exhaustion of energy and even the will to survive. Paradoxically, it is often only in the very pits of Hell that the ego can finally be surrendered.\n\nIn that moment of complete hopelessness, the soul may cry: 'If there is a God, I ask for help'—and a great transformation occurs.\n\nThis confirms the Zen teaching: 'Heaven and hell are only one-tenth of an inch apart.' The door swings open not through effort, but through total surrender of the 'one who is suffering.'"
+                        }
+                    ]
+                },
+                {
+                    label: "Dark Night",
+                    title: "The Exit: The Dark Night of the Soul",
+                    spineBody: "Feeling abandoned by God is actually the ego's dark night, not the soul's.",
+                    sections: [
+                        {
+                            title: "The Ego's Last Stand",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "The state of feeling abandoned by God produces a hellish, timeless depression. But here is the crucial insight: what is described as 'the dark night of the soul' is actually the dark night FOR THE EGO.\n\nThis can be a sign of significant spiritual progress—the ego is fighting for its survival by making you believe that letting go means death. The ego's basic illusion is that it IS God and that without it, death will occur."
+                        },
+                        {
+                            title: "The Safety of Surrender",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "In the pits of spiritual despair and black hopelessness, the necessary Knowingness is this: spiritually, all fear is illusion.\n\nThe reason it is safe to let go completely of all that one holds dear, along with the belief that the inner core of the ego is the very source of life itself, is because IT IS NOT THE SOURCE—no matter how intensely the experience may seem.\n\nWith the surrender of what seems to be the irreducible core of one's existence, the door swings open and the Presence shines forth with the Radiance of Divinity."
                         }
                     ]
                 },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: Karma & Spiritual Accountability",
+            spineBody: "Understanding the karmic origins of shame and how spiritual accountability works across lifetimes.",
+            sections: [
+                {
+                    title: "Karmic Despair",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "Karmic despair is often experienced via major tragic events or catastrophes. There is also the collective human group karma that is merely the consequence of being human. It may be expressed as group conditions that are ethnic, religious, geographic, or aligned in other ways due to acts or agreements in the past.\n\nKarma is linear, propagates via the soul, and is inherited as the consequence of significant acts of the will. The likelihood of such seemingly negative consequences can readily be deduced from human history, which frequently involved slaughter of the innocent and willful acts of desecration."
+                },
+                {
+                    title: "The Nature of Karma",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "The term 'karma' is not used specifically in Western religions, but it is nevertheless a basic reality as spiritual accountability that determines the fate of the soul. Everyone already has a specific calibrated level of consciousness at birth.\n\nWithout an understanding of karma, individual circumstances would seem accidental or capricious. Consciousness research demonstrates that all Creation is a reflection of Divine Harmony, Justice, and Balance. Each individual has to proceed from wherever they find themselves in the evolutionary process."
+                },
+                {
+                    title: "Redemption Through Positive Karma",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Positive karma (good works, prayer, selfless service, benevolent acts) can compensate for and undo negative ('bad') karma. In this process, 'merit' accrues, which at times can even be drawn against when confronting vicissitudes.\n\nSpiritual progress ensues automatically from choosing good will, forgiveness, and lovingness as a way of being in the world at large—rather than viewing it as a gain-seeking transaction.\n\nThe key insight: karma really means accountability. Every entity is answerable to the universe."
+                },
+                {
+                    title: "The Luciferic Temptation",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "As people evolve spiritually, each ascended level has its corollary tests or temptations. The best known are wealth, power, and prestige ('pride goeth before the fall').\n\nThis is clinically described as the 'Luciferic Temptation' of power for its own sake or power over others. The source of the error is ascribing the source of power to the ego 'I' instead of to Divinity.\n\nShame can also be the consequence of the abuse of spiritual/religious status and influence, as seen in the catastrophes of fallen gurus who once had worldwide acclaim."
+                },
+                {
+                    title: "Optimal Conditions",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "From previous studies, it was learned that everyone is born under optimal conditions for karmic opportunities. Therefore, it is wise to judge not, for what appears as misery or catastrophe may be the doorway to liberation for those who have negative karma to undo.\n\nThus, seemingly catastrophic events may be the very essential and necessary elements for the evolution of the soul."
+                }
             ]
         }
     },
@@ -253,6 +387,24 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "The original purpose of guilt is to teach accountability. For a child or someone at an early stage of development, guilt acts as an externalized conscience, helping them realize that their actions have consequences for others. It keeps the primitive 'animal instincts' in check until true empathy and love can take over."
+                },
+                {
+                    title: "Guilt as Manipulation",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Guilt is often exploited for control. We see this in propaganda, which seeks to manipulate the public by artificial guilt induction—'white guilt,' 'colonial guilt,' 'class guilt.' This is a major tool of political and religious manipulation.\n\nRelationships also use guilt as currency: 'After all I've done for you...' or 'If you really loved me, you would...' The purpose of recognizing this is not to become cynical, but to see that guilt is a TOOL, not a truth."
+                },
+                {
+                    title: "Sin = Error",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Mistakes are 'sin' only because they represent evolutionary 'errors' in that they fail to serve life in a positive way. They are not intrinsically 'evil' or 'wicked' unless so contextualized.\n\nThe core teaching is that the judgmentalizing of error is optional. To be 'guilty' merely means one has made a mistake. One can then choose how to react to that information: with harsh self-condemnation, or with correction and growth."
+                },
+                {
+                    title: "Clinical Notes",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "**Guilt Provokes Rage**\nGuilt provokes rage, and killing is frequently its expression. Capital punishment is an example of how killing gratifies a guilt-ridden populace. The guilt-ridden person often becomes vindictive, harsh, intolerant, and condemning of others.\n\n**Hate from Guilt**\nThe most significant clinical aspect of guilt is that it gives rise to hate. Guilt-ridden people are often vindictive, harsh, intolerant, and condemning of others. They project onto the world the self-hatred they cannot face.\n\n**Psychosomatic Illness**\nGuilt is a major cause of psychosomatic disease. When the mind believes it 'deserves' to suffer, the body dutifully obliges. This includes 'accidental' injuries and 'bad luck' that seems to follow the guilt-ridden.\n\n**Important**: If you are stuck in a loop of self-punishment that is affecting your health or relationships, please seek support from a qualified therapist or counselor."
                 }
             ]
         },
@@ -297,6 +449,64 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             body: "To escape the pain of inner guilt, the ego projects it outward. This results in 'righteous' indignation and the demonization of others. The 'sin-hater' is often merely attacking in others the very thing they cannot forgive in themselves."
                         }
                     ]
+                },
+                {
+                    label: "The Superego",
+                    title: "The Trap: The Internalized Judge",
+                    spineBody: "The harsh, critical inner parent that was introjected in childhood.",
+                    sections: [
+                        {
+                            title: "The Borrowed Conscience",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "The superego is not your true conscience—it is a conglomerate of punitive, negative voices that were introjected (swallowed whole) during childhood from critical parents, teachers, and authority figures.\n\nIt speaks in absolute terms: 'You MUST,' 'You SHOULD,' 'You OUGHT TO.' It is the voice of shame, blame, and guilt, and it is not the voice of your true Self."
+                        },
+                        {
+                            title: "Distinguishing True Conscience",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "How to tell the superego from true conscience:\n\n• **Superego**: Harsh, punitive, shaming, absolute, comes from fear.\n• **True Conscience**: Gentle, corrective, encouraging, comes from love.\n\nThe superego says 'You're worthless for making that mistake.' True conscience says 'That action didn't serve you—let's grow from it.'"
+                        }
+                    ]
+                },
+                {
+                    label: "Gothic Penance",
+                    title: "The Trap: Suffering for Forgiveness",
+                    spineBody: "The belief that one must suffer enough to 'earn' forgiveness.",
+                    sections: [
+                        {
+                            title: "The Ego's Ledger",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "This is the trap of 'Gothic Penance'—the belief that by suffering intensely, one can balance out 'spiritual debts' and earn forgiveness.\n\nThe truth is that no amount of suffering 'pays off' guilt. God/Divinity does not keep a ledger of debts. The ego keeps the ledger, and it is the ego that refuses to forgive. The 'penance' is a kind of spiritual haggling that keeps the ego in control."
+                        }
+                    ]
+                },
+                {
+                    label: "Wallowing",
+                    title: "The Trap: Guilt as Indulgence",
+                    spineBody: "Using guilt as a substitute for real change.",
+                    sections: [
+                        {
+                            title: "The Illusion of Virtue",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "A nonobvious but common trap is wallowing—using the feeling of guilt as a substitute for actual change or restitution. The ego feels 'virtuous' for feeling bad, as if the emotion itself were an action.\n\n'Look how bad I feel—surely that counts for something!' But feeling guilty is not the same as making amends. The wallower stays stuck in the emotion to avoid the harder work of transformation."
+                        }
+                    ]
+                },
+                {
+                    label: "The Ego's Juice",
+                    title: "The Trap: Secret Pleasure in Pain",
+                    spineBody: "The hidden payoff of negative emotions.",
+                    sections: [
+                        {
+                            title: "Addiction to Suffering",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "A difficult truth: the ego gets 'juice' (a secret sense of aliveness and self-importance) from negative emotions. Guilt, resentment, and self-pity all provide a strange sense of identity and drama.\n\nTo let go of guilt would mean becoming 'nobody.' The ego would rather be a 'guilty sinner' than a neutral being at peace. Recognizing this hidden payoff is essential for true release."
+                        }
+                    ]
                 }
             ]
         },
@@ -319,10 +529,90 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: false,
                             body: "Let go of the 'I' that made the mistake. The person you were then is not the person you are now. By surrendering the past identity of the 'sinner,' you allow Grace to heal the present moment."
+                        },
+                        {
+                            title: "The Dualities of Guilt",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "For transcendence, identify and surrender the polarities that keep guilt in place:\n\n• **Attraction to**: Self-punishment, remorse, 'earning' forgiveness, moral superiority, being 'right' about being wrong.\n\n• **Aversion to**: Letting go of the past, forgiving self, being 'nobody,' accepting grace freely, not having control.\n\nSurrender both sides of each duality to find freedom."
+                        }
+                    ]
+                },
+                {
+                    label: "The Transformation",
+                    title: "The Exit: Spiritual Will",
+                    spineBody: "The transformation from hate to will is the pathway up from Guilt.",
+                    sections: [
+                        {
+                            title: "Will: The Antidote to Hate",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Research has confirmed that the transformation out of guilt (and its byproduct, hate) is primarily through spiritual Will—the choice to be forgiving, to see things differently, to prefer peace to being 'right.'\n\nThis is not willpower (forcing), but willingness—the gentle yet firm decision to let go of resentments and self-condemnation because holding them hurts more than releasing them."
+                        },
+                        {
+                            title: "The Mechanics of Will",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Will operates by choosing what to identify with. At each moment, you can ask: 'Do I want to be at peace, or do I want to be right about being guilty?'\n\nThe power of decision is the power of creation. By deciding to release the guilty self-image, you make space for a new self to arise. This is the spiritual 'born again' process—not a religious cliché, but a real psychological death and rebirth."
+                        }
+                    ]
+                },
+                {
+                    label: "No Justified Resentments",
+                    title: "The Exit: Releasing the 'Right to Hate'",
+                    spineBody: "The recognition that no resentment is ever truly justified.",
+                    sections: [
+                        {
+                            title: "The Price of Resentment",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "A core teaching is that there are no justified resentments—not because wrongdoing doesn't exist, but because holding resentment harms the holder far more than the offender.\n\nResentment is drinking poison and waiting for the other person to die. The willingness to let go of all resentments—even the 'justified' ones—is the fastest way out of the guilt/hate trap."
+                        },
+                        {
+                            title: "A Prayer for Release",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "A simple practice:\n\n'I am willing to see this differently. I am willing to release my grip on being right. I am willing to forgive, even if I don't feel it yet. I am willing to be at peace.'\n\nWillingness is enough. The actual feeling of forgiveness follows the decision to forgive, not the other way around."
                         }
                     ]
                 },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: The Politics of Guilt & Hate",
+            spineBody: "Understanding how unconscious guilt shapes collective behavior and how to transcend victim/perpetrator dynamics.",
+            sections: [
+                {
+                    title: "Unconscious Guilt",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "At this level, guilt is mostly unconscious and therefore not open to inspection or amelioration. This is critical: most guilt-driven behavior is invisible to the person doing it.\n\nPeople at this level don't think 'I feel guilty'; instead, they experience chronic anxiety, self-sabotage, bad luck, and a vague sense that something is 'wrong' with them. The guilt is the water they swim in—too pervasive to see."
+                },
+                {
+                    title: "The Perpetrator/Victim Split",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "A notable observation is that the perpetrator and victim feed off each other. They are two sides of the same coin.\n\nAt this level of consciousness, the roles are interchangeable: the victim gains a 'right' to hate (and thus feel powerful), while the perpetrator may secretly enjoy the guilt (feeling 'important' through being 'bad').\n\nBoth positions are traps. True healing requires stepping outside the entire victim/perpetrator paradigm."
+                },
+                {
+                    title: "Divine Justice",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "An important truth: The universe is self-balancing. Wrongdoing creates consequences automatically through the impersonal mechanism of karma/spiritual accountability.\n\nThis means that personal revenge and hatred are unnecessary—the universe handles justice far more precisely than any human ever could. The desire to punish oneself or others comes from a lack of faith in this self-correcting nature of reality."
+                },
+                {
+                    title: "The Balance of Guilt",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "An overlooked aspect is that guilt can sometimes prevent worse behavior. For those at very low consciousness levels, guilt may be the only thing stopping antisocial actions.\n\nAs one evolves, the motivator shifts from fear/guilt to love/service. But one should not try to 'transcend' guilt before the replacement values are in place. The goal is not to become a guiltless sociopath, but to evolve to a place where love motivates behavior more than fear of punishment."
+                },
+                {
+                    title: "Collective Guilt Manipulation",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "A sobering observation is that guilt is weaponized in politics. Propaganda often involves artificial guilt-induction to control populations.\n\n'White guilt,' 'colonial guilt,' 'class guilt,' 'environmental guilt'—these are often manufactured emotional states designed to manipulate behavior, rather than genuine expressions of conscience.\n\nRecognizing manipulation is not the same as denying real wrongdoing. The key is to distinguish between genuine conscience (which leads to positive action) and induced guilt (which leads to paralysis and resentment)."
+                }
             ]
         }
     },
@@ -364,6 +654,18 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "The evolutionary purpose of apathy is to signal absolute helplessness. By 'giving up,' the individual forces the environment or the tribe to intervene. It is a desperate cry for care that bypasses the ego's pride."
+                },
+                {
+                    title: "The Refusal of Life",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Apathy represents a rejection of the gift of existence itself—a form of self-indulgence without love or concern. In this state, there is no care for others or even appropriate concern for one's own quality of life.\n\nThis same attitude gets projected onto the Universe, which is then perceived as rejecting, uncaring, and unavailable. The withdrawal from life creates a perception that life has withdrawn from you."
+                },
+                {
+                    title: "The Hidden 'I Won't'",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Beneath what appears as 'I can't' often lies a concealed 'I won't.' There is a subtle but strong internal resistance—a disguised stubbornness and pride.\n\nThe ego is so persistent in this position that it often takes a major life crisis to shake it loose. The apathetic stance is paradoxically a very rigid one, dressed up as weakness."
                 }
             ]
         },
@@ -392,7 +694,52 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             title: "The Blame Payoff",
                             importance: "core",
                             defaultExpanded: true,
-                            body: "By staying in Apathy, the ego can blame God, society, or parents for its condition. This 'face-saving' maneuver prevents the shame of failure by claiming that one never even had a chance."
+                            body: "By staying in Apathy, the ego can blame the Universe, society, or parents for its condition. This 'face-saving' maneuver prevents the shame of failure by claiming that one never even had a chance."
+                        },
+                        {
+                            title: "The Dualistic Split",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Responsibility is rejected and replaced by a chronic victim mentality that projects the 'cause' onto external circumstances. The victim and perpetrator roles become interchangeable—both are positions that avoid true accountability and growth."
+                        }
+                    ]
+                },
+                {
+                    label: "The Hidden Pride",
+                    title: "The Trap: Concealed Stubbornness",
+                    spineBody: "What looks like helplessness is often disguised ego resistance.",
+                    sections: [
+                        {
+                            title: "The 'I Won't' Beneath 'I Can't'",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Behind the facade of helplessness lies a concealed stubbornness—a refusal to change that is dressed up as inability. The ego would rather maintain the 'poor me' position than risk the vulnerability of trying and possibly failing.\n\nThis is why apathy can be so resistant to help. It's not that the person CAN'T accept help—they often WON'T, because doing so would threaten their victim identity."
+                        }
+                    ]
+                },
+                {
+                    label: "The Downward Spiral",
+                    title: "The Trap: Progressive Collapse",
+                    spineBody: "Apathy breeds more apathy through a self-perpetuating cycle.",
+                    sections: [
+                        {
+                            title: "The Compound Effect",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "The apathetic condition tends to compound itself. It may lead to chronic invalidism, dependent relationships, and self-centered passivity. Substances or escapism may provide temporary relief from the inner barrenness.\n\nWhen the temporary escape wears off, the return of emptiness becomes even more intolerable, creating a lifestyle of avoidance. Each descent compounds until a severe crisis—job loss, broken relationships, health collapse—forces a confrontation."
+                        }
+                    ]
+                },
+                {
+                    label: "Infectious Indifference",
+                    title: "The Trap: Collective Apathy",
+                    spineBody: "Apathy spreads through communities and systems.",
+                    sections: [
+                        {
+                            title: "The 'What's The Use?' Contagion",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "'What's the use?' is an infectious attitude. Unrecognized apathy in the form of inertia underlies many social problems—the failure of systems to 'take care' and assume responsibility.\n\nThis can be endemic in regions, organizations, and relationships. Dead energy attracts more dead energy. The awareness of this contagion is the first step to breaking free from collective hopelessness."
                         }
                     ]
                 }
@@ -420,7 +767,100 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                         }
                     ]
                 },
+                {
+                    label: "Divine Will",
+                    title: "The Exit: Invoking a Higher Power",
+                    spineBody: "When personal willpower fails, spiritual Will can provide the power for transformation.",
+                    sections: [
+                        {
+                            title: "Beyond Personal Willpower",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "There is a crucial distinction between personal 'willpower' (which is mental and psychological) and spiritual Will (which is of a much higher order). In an apathetic state, personal willpower is weak and ineffectual—the tank is empty.\n\nSpiritual Will, however, operates at a level beyond the ego. It can be accessed through genuine surrender, prayer, or sincere entreaty to the Universe/Divinity. This is what makes 'man's calamity' into 'opportunity'—the very desperation that breaks the ego's grip."
+                        },
+                        {
+                            title: "The Paradox of Defeat",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "Sometimes what appears as defeat—loss, illness, catastrophe—is actually the sacrifice of the temporary for the permanent. To the soul's evolution, adversity may be the only way to break the ego's stranglehold.\n\nThis doesn't mean seeking suffering, but recognizing that suffering can be transformed into growth when surrendered rather than resisted."
+                        }
+                    ]
+                },
+                {
+                    label: "Surrender-Based Recovery",
+                    title: "The Exit: Admitting Powerlessness",
+                    spineBody: "The path that has helped millions recover from seemingly hopeless conditions.",
+                    sections: [
+                        {
+                            title: "The Paradox of Powerlessness",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "A proven path out of apathy begins with admitting: 'I am powerless over my life, and I need help from something greater than myself.'\n\nBy admitting personal powerlessness and turning away from the ego, a decision is made to surrender to a higher principle. This is followed by honest self-inventory and the establishment of daily spiritual practices.\n\nThis approach has brought about recovery from the most difficult human conditions in countless people worldwide for decades."
+                        },
+                        {
+                            title: "The Power of Spiritual Community",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Recovery from apathetic conditions is powerfully strengthened by participation in groups with high spiritual energy—specifically, groups operating from unconditional love rather than judgment.\n\nThe average person lacks sufficient energy alone, but spiritual groups provide a field of support that can lift consciousness. Self-honesty is difficult in isolation; it becomes possible in the presence of others who have walked the same path."
+                        }
+                    ]
+                },
+                {
+                    label: "Caring for Others",
+                    title: "The Exit: Service as Medicine",
+                    spineBody: "Helping others is one of the most effective cures for apathy.",
+                    sections: [
+                        {
+                            title: "The Outward Turn",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "One of the most reliable ways out of apathy is to help someone else. This works because it breaks the cycle of self-focused negativity and activates a different energy system.\n\nPeople recovered from addiction often credit helping newcomers with their continued sobriety. Discouraged athletes regain motivation by encouraging teammates. Even caring for animals works—studies show that apathetic elderly patients become more engaged when given pets to care for."
+                        },
+                        {
+                            title: "Small Steps Count",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "You don't need to save the world. Start small: hold a door, send a kind message, water a plant. The building of self-worth is usually best done step by step.\n\nThe key is that the help be genuine and not transactional. The goal is not to 'earn' something, but simply to participate in life again through caring for something outside yourself."
+                        }
+                    ]
+                },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: The Hidden Mechanics of Apathy",
+            spineBody: "Understanding the deeper dynamics that maintain apathetic states and how to work with them.",
+            sections: [
+                {
+                    title: "Nothing Is Accidental",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "A profound teaching: within the infinite field of existence, nothing happens by accident. Each person is born into circumstances that are optimal for their growth and evolution, even when those circumstances appear catastrophic.\n\nThis doesn't mean suffering is 'deserved' or 'wanted'—it means that what appears as random misfortune may actually hold unseen opportunities for the soul. Therefore, judgment of one's own or others' circumstances should be held lightly."
+                },
+                {
+                    title: "The Passive/Aggressive Core",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Apathy is not truly passive—it is a form of aggression turned inward. Self-hatred, self-accusation, and negative self-judgment are all active attacks on the self.\n\nWhen this mechanism flips outward, the same energy that created collapse can become external aggression—harsh criticism, blame, and vilification of others. Understanding that apathy and rage share the same root helps explain why apathetic people can suddenly become hostile."
+                },
+                {
+                    title: "Apathy in Everyday Life",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Periods of apathy are recurrent in almost everyone's life as temporary phenomena. This often applies to specific neglected areas—finances, health, relationships, career—that have been resisted or for which responsibility has been refused.\n\nThese 'zones of apathy' are based on aversions and attractions rooted in illusion. Almost any resistance can be dissolved through complete surrender and willingness to release illusory goals."
+                },
+                {
+                    title: "Crisis as Opportunity",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "The ego is so strong that it frequently takes a major life crisis to break its grip. War, disaster, illness, loss—these catastrophes can force a confrontation that the comfortable ego would otherwise avoid.\n\nThis is why crisis can be lifesaving: it forces the issue when gradual change has failed. The key is to use the crisis as a doorway to surrender rather than doubling down on victimhood."
+                },
+                {
+                    title: "The Dualities of Apathy",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "For transcendence, identify and surrender both sides of these polarities:\n\n• **Blame/project 'cause'** ↔ **Responsibility/own**\n• **'I can't'** ↔ **'I won't'**\n• **See self as victim** ↔ **See self as co-player**\n• **Indifference** ↔ **Caring**\n• **Defeatist** ↔ **Optimist**\n• **Justify, rationalize, excuse** ↔ **Take action**\n• **See self as helpless** ↔ **See self as able**\n• **Hopeless** ↔ **Hope**\n• **Negate self-worth** ↔ **Choose self-worth as gift from Divinity**\n• **See self as weak** ↔ **See self as potentially strong**\n• **Refuse solutions** ↔ **Willing, accept**\n• **Self-sabotage** ↔ **Self-endorsement**\n• **Pessimism, cynical** ↔ **Trust, faith, hope**\n• **See self as unworthy** ↔ **Accept value of life**\n• **Future looks bleak** ↔ **Future holds opportunity**\n• **Passive** ↔ **Active, put forth effort**\n• **Reject help** ↔ **Accept help**\n• **Self-pity** ↔ **Compassion, then move on**\n• **Self-indulgence** ↔ **Move on, 'get over it'**\n• **Succumb** ↔ **Resist, refuse, reject the downward pull**"
+                }
             ]
         }
     },
@@ -461,7 +901,19 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     title: "The Bridge to Feeling",
                     importance: "core",
                     defaultExpanded: true,
-                    body: "Grief is higher energy than Apathy (50). While Apathy is 'dead,' Grief is 'hurting.' This pain is a sign of life—it means you care enough to feel. By allowing the grief to process, the 'frozen' soul begins to thaw, eventually allowing for the return of Desire and Anger, which are steps toward Courage."
+                    body: "Grief has more energy than Apathy. While Apathy is 'dead,' Grief is 'hurting.' This pain is a sign of life—it means you care enough to feel. When traumatized, numb patients begin to cry, it's a sign of improvement—once they start to cry, they will eat again.\n\nBy allowing grief to process, the 'frozen' soul begins to thaw, eventually allowing for the return of Desire and Anger, which are steps toward Courage."
+                },
+                {
+                    title: "Vulnerability & Early Life",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Major losses in early life can make one vulnerable to a passive acceptance of grief later on, as though sorrow were the inevitable price of life. This level colors one’s entire vision of existence, leading to a generalization where the loss of a particular loved one is equated with the loss of love itself."
+                },
+                {
+                    title: "The Mechanism of Attachment",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "The universality of grief reveals something important about how the ego works: it misperceives the source of happiness as external. When we obtain something we desire, an internal reward mechanism activates—but we attribute that happiness to the thing itself.\n\nIn reality, the only source of happiness is from within. The value is in the eyes of the beholder, not intrinsic to the object or person. This is why the spiritually evolved person with few attachments is relatively immune to grief—their happiness originates from within and is not dependent on externals."
                 },
                 {
                     title: "The Cry for Help",
@@ -484,6 +936,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: true,
                             body: "Regret assumes that if you had chosen differently, the outcome would have been perfect. It ignores the reality of your limitations at the time. By wallowing in 'should haves,' the ego avoids the responsibility of the present moment."
+                        },
+                        {
+                            title: "The Fallacy of 'Could Have'",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "There is an inherent fallacy in 'I could have' or 'should have.' In reality, if you really COULD have done differently, you WOULD have—given your consciousness, knowledge, and circumstances at that time.\n\nRegret ignores that evolution happens on a learning curve. The very 'mistake' that causes regret was part of the learning that made the current realization possible."
                         }
                     ]
                 },
@@ -497,6 +955,44 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: true,
                             body: "Despondency tells you that because *this* person or *this* dream is gone, the *source* of all love and joy is gone. It identifies the infinite capacity for happiness with a single, finite object."
+                        },
+                        {
+                            title: "Seeing Sadness Everywhere",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "In deep grief, one begins to see sadness everywhere—in little children, in world conditions, in the nature of existence itself. This level colors one's entire vision of reality.\n\nThe loss of a particular loved one becomes equated with the loss of love itself. This generalization from the specific to the universal is a trap that deepens suffering beyond the original loss."
+                        }
+                    ]
+                },
+                {
+                    label: "The Illusion of 'Mine'",
+                    title: "The Trap: Ownership and Specialness",
+                    spineBody: "The magical transformation that turns 'a thing' into 'my thing' and creates the conditions for suffering.",
+                    sections: [
+                        {
+                            title: "The Magic of Possession",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Consider: a watch is merely an object. But with the claim of ownership, it becomes imbued with a unique quality called 'mine.' What was just 'a' watch becomes 'MY' watch—magically transformed. Emphasized, it becomes 'my FAVORITE watch.'\n\nBy this process, attachment, control, fear of loss, and sentiment are added to the composition. The stage is now set for grief if you lose 'MY watch' rather than just 'a watch.' The moment 'mine' is introduced, bondage arises."
+                        },
+                        {
+                            title: "Stewardship Instead of Ownership",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "The emotional charge can be loosened by recognizing that everything actually belongs to the Universe/Divinity, and humans only exercise temporary stewardship.\n\nOwnership is a transitory perception. Value and worth exist only in how we think about things, not in the things themselves. All relationships are temporary and arbitrary—legality only provides rights of control, not true 'having.'"
+                        }
+                    ]
+                },
+                {
+                    label: "Specialness Projection",
+                    title: "The Trap: Overvaluing What Is Lost",
+                    spineBody: "The more 'special' something is made, the greater the potential for grief.",
+                    sections: [
+                        {
+                            title: "The Specialness Investment",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Objects, qualities, or relationships become overvalued through the mechanism of attachment and projection. The more 'specialness' projected onto something—a person, a role, an object—the greater the potential for grief when it changes.\n\nFear of loss itself contributes to dependent attachments. We cling more tightly to what we fear losing, which increases the 'specialness' investment and thus the potential suffering."
                         }
                     ]
                 }
@@ -524,9 +1020,102 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                         }
                     ]
                 },
+                {
+                    label: "Processing Technique",
+                    title: "The Exit: Working Through Grief",
+                    spineBody: "A practical method for processing loss through surrender rather than resistance.",
+                    sections: [
+                        {
+                            title: "The Four Steps",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "**1. Stay with the feeling.** Focus on it without flinching. Recognize that all pain comes from resistance—the suffering stems from the attachment, not the loss itself.\n\n**2. Surrender to the waves.** Become willing to be immersed in the feelings without escaping. Notice that they come in waves, and surrendering to the intense ones decreases their severity.\n\n**3. Ask for help from your Higher Power.** Surrender personal will to Divinity/Universe. Reading meaningful spiritual passages can help.\n\n**4. Be willing to endure the process.** If not resisted, grief will process itself out and come to an end. Don't rush it."
+                        },
+                        {
+                            title: "Each Loss Contains All Loss",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "Although suffering is triggered by a specific event, the painful emotions have actually accumulated from multiple sources over time. There may be more below the surface than first suspected.\n\nEach loss actually represents ALL loss—the experience is of loss itself, not just the specific event. A helpful source of strength is to identify with all of humanity and realize that suffering is universal and innate to being human."
+                        }
+                    ]
+                },
+                {
+                    label: "Resolution Principles",
+                    title: "The Exit: Key Realizations",
+                    spineBody: "Philosophical truths that lighten the weight of grief.",
+                    sections: [
+                        {
+                            title: "Seven Truths About Loss",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "**1.** Everything in the human domain is temporary, transitional, and evolutionary.\n\n**2.** Nothing can truly be 'owned' or 'mine.' All relationships are temporary.\n\n**3.** Everything belongs to Divinity; what we consider 'ours' is a temporary condition, including the body.\n\n**4.** See all relationships and possessions as stewardships, not ownerships.\n\n**5.** Cling to principles rather than people, objects, or situations.\n\n**6.** Resolve to live with courage and dignity. Accept that mourning is normal.\n\n**7.** All beings live by faith—it is only a question of faith in 'what.'"
+                        },
+                        {
+                            title: "Faith in 'What'?",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "Despite claims to the contrary, everyone lives by faith in something—intellect, reason, science, progress, political power, or the ego. These faiths are fragile because they can be eclipsed at any moment. In the presence of Infinite Reality, these pretensions evaporate, and the dualistic nature of belief falls away into Identity."
+                        },
+                        {
+                            title: "Loss as Freedom",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "Paradoxically, loss is simultaneously freedom and the opening of new options. It forces inner adaptations that represent opportunities for growth.\n\nThe mind wants to undo change and return to comfort, but evolutionary growth is insistent. Change is a source of pleasure when chosen, and resentment when resisted. The only source of happiness that is realistically based is in the present—and that which is in the present is not subject to loss."
+                        }
+                    ]
+                },
+                {
+                    label: "Nonattachment",
+                    title: "The Exit: Love Without Clinging",
+                    spineBody: "The important distinction between nonattachment and cold detachment.",
+                    sections: [
+                        {
+                            title: "Nonattachment vs Detachment",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "This distinction matters: 'Detachment' as an ongoing process can unfortunately lead to apathy, emotional flatness, and indifference. It can result in passivity and loss of interest in life.\n\nSome misunderstand spirituality to teach that even love is an attachment. This is incorrect: love is an aspect of Divinity; possessiveness is an aspect of ego. The goal is not to care about nothing, but to love without clinging."
+                        },
+                        {
+                            title: "The Correct Path",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Nonattachment means holding everything lightly—enjoying without clutching, loving without possessing, caring without controlling.\n\nThe spiritually evolved person is not cold or indifferent. They may love deeply and feel losses keenly. But they do not mistake the form for the essence, or the temporary for the permanent."
+                        }
+                    ]
+                },
                 LETTING_GO_ARTICLE
             ]
-        }
+        },
+        deepDive: {
+            title: "Deep Dive: The Mechanics of Loss",
+            spineBody: "Understanding the deeper structures of attachment and how to work with grief at its source.",
+            sections: [
+                {
+                    title: "Symbolic Disassembly",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "The intensity of grief at loss is not really about the particular object, person, or role—it's about the abstract quality of which it's a symbol. To see through the particulars to their perceived essence facilitates the withdrawal of attachment.\n\n| Specific | Class | Abstract Value |\n| :--- | :--- | :--- |\n| **Mate** | Personal | Companion, affection, love |\n| **Parent** | Relationship | Family identity, the past |\n| **Child** | Relationship | Love, future potential |\n| **Lover** | Relationship | Sex, pride, security |\n| **Relative** | Tribal | Group identity |\n| **Old Rover** | Dogginess | Companionship |\n| **Health** | Physical | Survival as a body |\n| **Money/Wealth** | Asset/Means | Survival, prestige, comfort |\n| **Job/Title** | Economic | Status, identity, skills |\n| **Auto/House** | Possession | Transport, habitat, security |\n| **Youth** | Opportunity | Open future, vigor |\n| **'Valuables'** | Sentiment | Familiarity, 'mine-ness' |\n\nSeeing this allows for 'substitution'—the realization that the abstract value (which is internal) can be reinvested in new forms."
+                },
+                {
+                    title: "Blessing in Disguise",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "A loss can become a 'blessing in disguise,' though this takes time to ripen into discovery. Loss often turns a person from looking without for happiness to turning within for reevaluation.\n\nA limitation in one area of life simultaneously opens opportunities in other areas. Refusing this opportunity leads to bitterness and devolution. Accepting the vicissitudes of life leads to greater understanding and compassion.\n\nLove itself is the opportunity to surrender personal will to the Divine and reassess the overall purpose of the gift of human life."
+                },
+                {
+                    title: "Chronic Grief",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "While some degree of grief is inevitable in life, CHRONIC grief—grief that becomes a long-term identity or prevailing state—requires examination of the underlying positionalities.\n\nChronic grief often indicates an unwillingness to release dualistic positions: clinging vs letting go, living in the past vs the now, seeing as loss vs seeing as opportunity.\n\nThe chronically grieving person has made grief a home rather than a bridge."
+                },
+                {
+                    title: "The Dualities of Grief",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "For transcendence, identify and surrender both sides of these polarities:\n\n• **Cling to** ↔ **Let go of**\n• **Live in past** ↔ **Live in the now**\n• **Undo** ↔ **Accept**\n• **Bargain with Divinity** ↔ **Accept limitation/karma**\n• **Hope to change, entreat** ↔ **Surrender**\n• **See as loss** ↔ **See as opportunity to move on**\n• **Refuse, deny** ↔ **Work through**\n• **Anger, resentment** ↔ **Acceptance**\n• **Self-blame** ↔ **Accept limitation**\n• **Feel empty** ↔ **Replace with new values**\n• **Lessened** ↔ **Compensate**\n• **Equate external as source of happiness** ↔ **See happiness as internal**\n• **Dependent on externals** ↔ **Depend on self**\n• **Resist** ↔ **Transcend**\n• **Despondency** ↔ **Hope**\n• **Go back in time** ↔ **Move forward to options**\n• **Emotionalize** ↔ **Minimize**"
+                }
+            ]
+        },
     },
     fear: {
         feltSense: {
@@ -566,6 +1155,18 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "The original purpose of fear is to keep the organism alive by avoiding physical threats. It triggers the 'fight or flight' response, providing a surge of adrenaline that empowers you to escape danger or defend yourself. When calibrated correctly, it is a brief, useful signal that leads to protective action."
+                },
+                {
+                    title: "The Control Mechanism",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Fear is the easiest way to control people. Dictators, bad bosses, and abusive partners all use the same trick: they make you feel small and unsafe, so you look to them for protection.\n\nIf you are afraid, you stop thinking for yourself and just want to be 'saved.' This is why fear stops you from growing—it keeps you in a childlike state of dependency."
+                },
+                {
+                    title: "The Cost of 'Me'",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Fear only exists because you think you are separate from everything else. A wave in the ocean isn't afraid of crashing because it *is* the ocean. But if the wave thinks it's a 'separate object,' it becomes terrified of 'ending.'\n\nFear is the tax you pay for being an ego. The more you defend 'me,' the more you have to fear."
                 }
             ]
         },
@@ -586,6 +1187,25 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     ]
                 },
                 {
+                    label: "The Media Loop",
+                    title: "The Trap: The Horror Movie",
+                    spineBody: "Why the news makes you sick.",
+                    sections: [
+                        {
+                            title: "The 24-Hour Alarm",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Your brain has a filter called the Reticular Activating System (RAS). Its job is to spot what's important. If you watch scary news all day, you are training your RAS to say: 'DANGER IS EVERYWHERE.'"
+                        },
+                        {
+                            title: "Real Life: The Horror Movie Director",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Living in fear is like hiring a horror movie director to narrate your life. You're walking down a quiet street, but your mind is playing ominous music and zooming in on shadows. The street isn't dangerous; your *narration* is preventing you from seeing reality."
+                        }
+                    ]
+                },
+                {
                     label: "Paranoia",
                     title: "The Trap: Paranoia",
                     spineBody: "The belief that the world is inherently predatory and God is punitive.",
@@ -595,6 +1215,25 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: true,
                             body: "In this state, everyone is seen as a potential enemy or threat. This projection creates a lonely, guarded existence where love and connection are impossible because they require the very 'vulnerability' that the fearful ego is hiding."
+                        }
+                    ]
+                },
+                {
+                    label: "The Wall",
+                    title: "The Trap: Inhibition & Bravado",
+                    spineBody: "Fear doesn't just stop you from dying; it stops you from living.",
+                    sections: [
+                        {
+                            title: "The Shrinking World",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Fear makes your world smaller. First, you're afraid of flying, so you don't travel. Then you're afraid of driving, so you stay in town. Then you're afraid of crowds, so you stay home. Eventually, you are 'safe' in a prison of your own making."
+                        },
+                        {
+                            title: "The Counter-Phobe (The Daredevil)",
+                            importance: "nuance",
+                            defaultExpanded: false,
+                            body: "Some people fight fear by doing the opposite: they drive too fast or do dangerous stunts. This isn't courage; it's just fear in a mask. They are trying to prove they aren't afraid, which means fear is still running their life."
                         }
                     ]
                 }
@@ -622,7 +1261,76 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                         }
                     ]
                 },
+                {
+                    label: "Processing Technique",
+                    title: "The Exit: 'And Then What?'",
+                    spineBody: "A simple game to defeat the Boogeyman.",
+                    sections: [
+                        {
+                            title: "Identifying the Boogeyman",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Fear relies on the 'vague unknown.' It whispers, 'Something bad will happen,' but it refuses to say *what*. The way to beat it is to turn on the lights."
+                        },
+                        {
+                            title: "Real Life: The Job Loss Spiral",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "**Fear**: 'What if I get fired?'\n**You**: 'Okay, and then what?'\n**Fear**: 'I won't have money.'\n**You**: 'And then what?'\n**Fear**: 'I'll lose my house.'\n**You**: 'And then what?'\n**Fear**: 'I'll be homeless.'\n**You**: 'And then what?'\n**Fear**: 'I'll starve and die.'\n\nOnce you hit 'I'll die,' you realize that *all* fear is just the fear of death in a different costume. And since you are a spiritual being, death is just a transition. The monster loses its teeth."
+                        }
+                    ]
+                },
+                {
+                    label: "Rational Caution",
+                    title: "The Exit: Emotion vs. Calculation",
+                    spineBody: "You don't need to be terrified to be safe.",
+                    sections: [
+                        {
+                            title: "The Seatbelt Analogy",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Imagine putting on your seatbelt. Do you do it while screaming in terror, imagining a fiery crash? No. You just click it. It's calm, rational, and smart.\n\nThis is the difference between **Caution** (useful) and **Fear** (useless). Caution looks both ways before crossing the street. Fear stands on the sidewalk shivering. You can protect your life perfectly well without the emotional drama."
+                        }
+                    ]
+                },
+                {
+                    label: "Worst Case Scenario",
+                    title: "The Exit: Face the Ultimate Fear",
+                    spineBody: "Follow every fear to its final conclusion and discover it leads to the same place.",
+                    sections: [
+                        {
+                            title: "The Technique",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Every fear ultimately leads to the fear of death. If you follow any fear and keep asking 'Why am I afraid of that?' you will find it leads to another fear, and another, until you arrive at the worst-case scenario: physical death.\\n\\nThe technique is to sit with that worst-case scenario deliberately. Picture yourself in the casket. Let go of resisting the feelings that arise. When you have fully surrendered to the 'biggie,' what remains? Surprisingly, what people experience is that they have survived the worst possible scenario—and they are still here. The 'I' that feared death is still present.\\n\\nOnce you have faced and surrendered to the ultimate fear, all lesser fears lose their power. They were all just disguises for the same thing."
+                        },
+                        {
+                            title: "Clinical Insight: Pain vs. Suffering",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "A critical insight from clinical practice: pain and suffering are not the same thing. Pain is one thing, and it is quite possible to be with pain yet be totally indifferent to it.\\n\\nThe suffering is in the resistance, not in the sensation. When you stop fighting a feeling and totally surrender to it, saying 'More, more, more,' the suffering ends even though the sensation may continue. This is because you are no longer the victim—you are the master who is choosing to experience it.\\n\\nThis principle applies to all negative emotions, not just physical pain."
+                        }
+                    ]
+                },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: Fear and the Ego",
+            spineBody: "Understanding fear as the primary tool of the ego's control mechanisms.",
+            sections: [
+                {
+                    title: "The Last Barrier",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "Why is fear so hard to let go of? Because the ego thinks it *is* God. It thinks: 'If I stop worrying, who will keep me safe?'\n\nThe ego believes that its constant stress is the only thing holding the universe together. Letting go of fear means admitting that you are not in control of everything—and that is actually the most relaxing news in the world. It shifts you from 'Defending the Fortress' to 'Trusting the Universe.'"
+                },
+                {
+                    title: "The Dualities of Fear",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Surrender the aversion to the negative to realize the positive:\n\n• **Excitement of danger** ↔ **Stay 'cool'**\n• **Panic, overreact** ↔ **Self-control**\n• **Dramatize** ↔ **Handle calmly**\n• **Gain attention/help** ↔ **Self-sufficient**\n• **Protect** ↔ **Lose, loss**\n• **Control** ↔ **Surrender**\n• **Emotionalism** ↔ **Think clearly**\n• **Imagine/Project** ↔ **Live in the now**\n• **See enemies** ↔ **See safety**\n• **Resist, defend** ↔ **Accept**\n• **Justify** ↔ **View realistically**\n• **Project cause** ↔ **Own responsibly**\n• **Focus on body** ↔ **Focus on spirit**\n• **Depend on self** ↔ **Trust in Universe**"
+                }
             ]
         }
     },
@@ -664,6 +1372,18 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Desire is a necessary step up from the 'I can't' of lower levels. It provides the 'will to get,' which powers personal achievement and the economy. It at least represents a belief that happiness is possible, which is a significant improvement over the hopelessness of the pit."
+                },
+                {
+                    title: "The Engine of 'More'",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Imagine a single-celled organism swimming around. It doesn't generate its own energy; it has to *hunt* for food to survive. This is where desire comes from biologically: the need to go 'out there' to get what you need.\n\nIn humans, this manifests as a 'forward-leaning' energy. It's the feeling of 'I need that to be okay.' While this is much better than being paralyzed by fear, its trap is thinking that happiness is something you have to chase, catch, and consume."
+                },
+                {
+                    title: "Hunger vs. Ambition",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Think of Desire as 'emotional hunger.' When you are hungry, you can't think of anything else. But once you eat, you aren't 'happy'—you're just not hungry anymore. Desire works the same way: getting the thing doesn't give you lasting joy; it just temporarily relieves the itch of wanting it."
                 }
             ]
         },
@@ -685,14 +1405,46 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                 },
                 {
                     label: "Glamour",
-                    title: "The Trap: Glamour",
+                    title: "The Trap: The Illusion of Specialness",
                     spineBody: "The projection of magical qualities onto objects, people, or statuses.",
                     sections: [
                         {
-                            title: "Projected Perfection",
+                            title: "Real Life: The New Phone",
                             importance: "core",
                             defaultExpanded: true,
-                            body: "Glamour is the belief that 'Getting X will finally make me feel Y.' It imbues the object of desire with an unrealistic allure. When the object is finally acquired, the glamour fades, and the person is left with the same old internal void, leading to disappointment and the search for a new 'fix.'"
+                            body: "You see an ad for the latest phone. Suddenly, your current phone feels like trash. You imagine how organized, creative, and cool you'll be with the new one. You *obsess* over it.\n\nThen you buy it. For two days, it feels magical. By day three, it's just a phone. The 'glamour' has faded, and you're left with the same internal feelings you had before. The magic wasn't in the phone; it was a projection of your own mind."
+                        }
+                    ]
+                },
+                {
+                    label: "Insatiability",
+                    title: "The Trap: Insatiability",
+                    spineBody: "Why 'just one more' is never actually enough.",
+                    sections: [
+                        {
+                            title: "The Horizon Effect",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Trying to satisfy desire by 'getting things' is like walking toward the horizon. No matter how far you walk, the horizon is always the same distance away.\n\nThis is why billionaires often still feel poor. If your internal rule is 'I will be happy when I get *more*,' you have programmed yourself to never be happy, because 'more' is a moving target. The moment you get X, your mind immediately resets the goal to Y."
+                        }
+                    ]
+                },
+                {
+                    label: "Paradox of Wanting",
+                    title: "The Trap: The Paradox of Wanting",
+                    spineBody: "Why chasing something often pushes it away, and why 'needing' it creates a wall.",
+                    sections: [
+                        {
+                            title: "The Wall of Wanting",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Think of it like trying to recall a forgotten name. The harder you strain and reach for it ('I *need* to remember!'), the more it slips away. The moment you give up and relax, the name pops into your head.\n\nDesire works the same way. The energy of 'I need this' is actually the energy of 'I don't have this.' It creates a vibration of **lack**. This lack acts like a wall between you and the thing you want."
+                        },
+                        {
+                            title: "Real Life: The Desperate Dater",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Imagine someone on a first date who is desperate for a relationship. They *need* this to work. They analyze every text, over-laugh at jokes, and radiate anxiety. This 'heavy' energy pushes the other person away.\n\nNow imagine someone who wants a relationship but is happy being single. They are relaxed, present, and fun. They don't *need* the date to go perfectly. Paradoxically, this 'intention' without 'craving' makes them magnetic."
                         }
                     ]
                 }
@@ -716,11 +1468,55 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             title: "Gratitude",
                             importance: "core",
                             defaultExpanded: false,
-                            body: "Desire is based on 'I don't have.' Gratitude is based on 'I have enough.' Shifting your focus to what is already present in your life immediately raises your energy out of the craving of Level 125 into the satisfaction of higher states."
+                            body: "Desire is based on 'I don't have.' Gratitude is based on 'I have enough.' Shifting your focus to what is already present in your life immediately raises your energy out of craving into the satisfaction of higher states."
+                        }
+                    ]
+                },
+                {
+                    label: "Decision",
+                    title: "The Exit: Decision vs. Wanting",
+                    spineBody: "Stop 'craving' and start 'choosing.'",
+                    sections: [
+                        {
+                            title: "The Ordering Lunch Analogy",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "When you order lunch at a restaurant, you don't sit there sweating, thinking, 'Oh god, I *need* the salad, I hope I get the salad, what if I don't get the salad?' You simply look at the menu and choose. 'I'll have the salad.'\n\nThis is the difference between **Desire** and **Will**. You can achieve huge goals without the emotional burn of craving. You simply set the goal, do the work, and move towards it. It's a calm decision, not a desperate hunger."
+                        }
+                    ]
+                },
+                {
+                    label: "Perspective",
+                    title: "The Exit: The 'Space Probe' View",
+                    spineBody: "Seeing your body as a tool you use, not who you are.",
+                    sections: [
+                        {
+                            title: "The Astronaut Suit",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Imagine you are an astronaut exploring a new planet. You wear a high-tech suit to survive. You take care of the suit, you fuel it, and you repair it. But you never start thinking, 'I *am* this suit.'\n\nYour body is like that suit. It's a biological 'space probe' your consciousness is using to experience the physical world. When you realize this, the desperate obsession with the body's cravings (food, sensation, appearance) starts to relax. You are the pilot, not the machine."
                         }
                     ]
                 },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: The Anatomy of Craving",
+            spineBody: "Why the brain gets hooked on the chase, and how to surrender the 'have to have.'",
+            sections: [
+                {
+                    title: "The Brain Loop",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "Why is it so hard to stop wanting? Because the ego thinks 'wanting' is a survival skill. It fears that if you stop wanting, you'll stop doing.\n\nIn reality, addiction isn't about the object (the wine, the person, the money). It's an addiction to the *brain chemical reward* that comes from the chase. The ego gets a secret 'juice' even from negative things like feeling ignored or being the victim. It loves the drama because drama makes it feel 'real.'"
+                },
+                {
+                    title: "The Dualities of Desire",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Surrender the 'have to have' to realize the 'freedom to be':\n\n• **Special** ↔ **Common**\n• **Win, gain** ↔ **Lose**\n• **Wealth** ↔ **Poverty**\n• **Control** ↔ **Passive**\n• **Get** ↔ **Lose**\n• **Crave** ↔ **Frustrated**\n• **Force** ↔ **Weakness**\n• **Approval** ↔ **Criticism**\n• **Success** ↔ **Failure**\n• **Fame** ↔ **Anonymity**\n• **Stubborn** ↔ **Give in**\n• **Aggression** ↔ **Submission**\n• **Resist** ↔ **Change**\n• **Defend** ↔ **Surrender**\n• **Acquisition** ↔ **Poverty**\n• **Conquest** ↔ **Lose**\n• **Popularity** ↔ **Unnoticed**\n• **'Have to have'** ↔ **Prefer**\n• **Important** ↔ **Ordinary**\n• **Feel 'high'** ↔ **Just normal**\n• **Exceptional** ↔ **Average**\n• **Noticed** ↔ **Ignored**\n• **Excitement** ↔ **Boredom**\n• **Glamorous** ↔ **Common**\n• **Change world** ↔ **Change self**\n• **Possession** ↔ **Simplicity**\n• **Display** ↔ **Bland**\n• **Superior** ↔ **Common**"
+                }
             ]
         }
     },
@@ -762,6 +1558,18 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Anger is significantly higher energy than Apathy or Grief. It provides the 'fuel' to do something about an intolerable situation. Historically, the oppressed rise out of the pit through anger to seek freedom. It is the necessary biological 'No' that protects your integrity from violation."
+                },
+                {
+                    title: "The Volcano",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Imagine a volcano. It has enormous power. That power can create new islands (constructive) or destroy villages (destructive).\n\nAnger works the same way. It is a high-energy state that says 'NO.' It can fuel movements that change the world, or it can burn your relationships to the ground. The key insight: it was the *movements* that created lasting change, not the anger itself. Anger is rocket fuel—useful for launch, dangerous if you stay on it."
+                },
+                {
+                    title: "Frustration = Blocked Desire",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Anger almost always comes from frustrated desire. You wanted something ('They *should* respect me!'), you didn't get it, and now you're boiling.\n\nThe root is an expectation that reality didn't meet. We have a 'script' in our heads of how the world should be. When reality doesn't follow the script, we get angry at reality for 'being wrong.'"
                 }
             ]
         },
@@ -793,6 +1601,25 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             body: "The ego extracts a secret pleasure from feeling misunderstood or victimized. By making others 'bad,' the ego feels 'good' and 'superior.' This addiction to being right prevents real solutions and keeps you trapped in a cycle of conflict where winning is more important than peace."
                         }
                     ]
+                },
+                {
+                    label: "Injustice Collector",
+                    title: "The Trap: The Injustice Museum",
+                    spineBody: "Hoarding old hurts like treasures to justify anger today.",
+                    sections: [
+                        {
+                            title: "The Curator of Wrongs",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Some people are like museum curators; they walk around their mind, polishing old insults and hurts from years ago. They 'collect' injustices to justify being mean today. 'I can yell at you because my boss yelled at me in 2015.'\n\nThis is a way of avoiding responsibility for your own happiness. As long as you have a 'good reason' to be angry, you never have to change."
+                        },
+                        {
+                            title: "Real Life: The Holiday Grudge",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "You bring up a mistake your sibling made ten years ago during Christmas dinner. You've 'stored' this injustice for a decade, waiting for the perfect moment to discharge the energy of a hurt you never actually let go of."
+                        }
+                    ]
                 }
             ]
         },
@@ -818,7 +1645,50 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                         }
                     ]
                 },
+                {
+                    label: "The Hot Coal",
+                    title: "The Exit: Understanding Who Gets Burned",
+                    spineBody: "Anger punishes you, not them.",
+                    sections: [
+                        {
+                            title: "The Self-Burn",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "There is a famous saying: 'Holding onto anger is like grasping a hot coal with the intent of throwing it at someone else; you are the one who gets burned.'\n\nYour anger doesn't punish the other person (who is probably sleeping soundly). It punishes *you*. It floods *your* body with cortisol and destroys *your* peace. Letting go isn't a gift to them; it's a gift to yourself."
+                        },
+                        {
+                            title: "Dropping the 'Shoulds'",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Anger comes from the word 'should.' 'He *should* be on time.' 'They *should* be fair.'\n\nThe exit is replacing 'should' with 'is.' 'He *is* late.' When you stop fighting reality, you can deal with it. You can wait, leave, or speak up—but you can do it without the burning heat of rage."
+                        }
+                    ]
+                },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: The Addiction to Being Right",
+            spineBody: "Understanding why the ego clings to anger and how to break free.",
+            sections: [
+                {
+                    title: "The Weakness Disguised as Strength",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "Anger *feels* powerful. You puff up, raise your voice, dominate. But look closer: a person in a rage is shaking, red-faced, unable to think clearly. That's not strength—that's loss of control.\n\nA truly powerful person doesn't need to scream. True strength is the ability to stay calm when provoked. Anger is often just a sign that you feel threatened."
+                },
+                {
+                    title: "No Justified Resentment",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "In recovery programs, there's a famous dictum: 'There is no such thing as a justified resentment.'\n\nThe ego loves to find reasons to be angry. But every reason is just fuel for the fire that burns *you*. Even if your anger is 'justified,' it still corrodes your health and steals your peace."
+                },
+                {
+                    title: "The Dualities of Anger",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Surrender the 'pleasure' of being right to have the peace of being happy:\n\n• **Act out feeling** ↔ **Self-control**\n• **Intimidate** ↔ **Forgive**\n• **Hold on** ↔ **Let go**\n• **Punish, get even** ↔ **Let them go free**\n• **Dump on others** ↔ **Restraint**\n• **Excitement, 'stirred up'** ↔ **Stay cool**\n• **Emotionalize** ↔ **Think**\n• **Dramatize** ↔ **Ignore**\n• **Be right** ↔ **Be at peace**\n• **Puff up** ↔ **Appear calm**\n• **Threaten** ↔ **Compromise**\n• **Judgmentalism** ↔ **Acceptance**"
+                }
             ]
         }
     },
@@ -860,6 +1730,18 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Pride is the first level where you actually feel 'good' about yourself. It helps you rise out of the shame and fear of the pits by giving you a tribe, a status, and a name to defend. It drives the pursuit of excellence and the acculturation that turns a biological animal into a productive member of society."
+                },
+                {
+                    title: "The Balloon",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Pride is like a balloon: inflated, impressive-looking, but fragile. One pin and it pops. This is why 'pride goeth before a fall.'\n\nThe more you inflate your self-image, the more surface area you expose to attack. Every claim of specialness becomes a target. The truly powerful don't need to puff up—they have nothing to defend."
+                },
+                {
+                    title: "Pride vs. Self-Esteem",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Pride is based on comparison: 'I am better *than*.' Self-esteem is based on existence: 'I am enough.'\n\nPride needs constant feeding. It competes, compares, and collapses when it loses. Self-esteem doesn't need to win. It's already complete."
                 }
             ]
         },
@@ -875,7 +1757,7 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             title: "Scorn & Division",
                             importance: "core",
                             defaultExpanded: true,
-                            body: "Arrogance is the belief that your worth depends on being 'better' than someone else. This creates an eternal state of conflict and loneliness, as genuine love and connection are impossible while you are busy maintaining a position of superiority over those around you."
+                            body: "Arrogance is the belief that your worth depends on being 'better' than someone else. This creates an eternal state of conflict and loneliness, as genuine love and connection are impossible while you are busy maintaining a position of superiority over those around you.\n\nPride is divisive and gives rise to factionalism. Historically, man has habitually died for pridearmies still regularly slaughter each other for that aspect of pride called nationalism. Religious wars, political terrorism, and zealotry are all the price of pride."
                         }
                     ]
                 },
@@ -889,6 +1771,25 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: true,
                             body: "Pride's main defense is denial. Because it is terrified of 'shame,' it refuses to look at its own fallibility. If you 'already know' or are 'already right,' no further learning is possible. This makes Pride the final, massive block before the breakthrough into real Power (Courage)."
+                        }
+                    ]
+                },
+                {
+                    label: "Spiritual Pride",
+                    title: "The Trap: The Spiritual Ego",
+                    spineBody: "Being proud of your humility.",
+                    sections: [
+                        {
+                            title: "The Hidden Trap",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "You've meditated for years. You eat clean. You've 'done the work.' And now you look at 'ordinary' people with pity. You're 'awake' and they're 'asleep.'\n\nThis is the spiritual ego—the most cunning trap of all. It uses your growth as fuel for more pride. Even humility can become a display. Even poverty can be worn as a badge of superiority."
+                        },
+                        {
+                            title: "Real Life: The Humble Brag",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "'I just feel so peaceful now that I've let go of my ego.' (Said with obvious self-satisfaction.)\n\n'I don't care about money anymore.' (Posted on social media for approval.)\n\nThe moment you're proud of not being proud, you've fallen back into the trap."
                         }
                     ]
                 }
@@ -916,7 +1817,50 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                         }
                     ]
                 },
+                {
+                    label: "The Light Bulb",
+                    title: "The Exit: Channeling, Not Creating",
+                    spineBody: "You don't create the light; you transmit it.",
+                    sections: [
+                        {
+                            title: "The Electricity Analogy",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Imagine a light bulb claiming credit for the light it produces. 'Look how bright *I* am!' But the bulb doesn't create light—it channels electricity from a source far beyond itself.\n\nYou are like that bulb. Your talents, achievements, and gifts flow *through* you, not *from* you. When you realize this, pride dissolves into gratitude. You become a grateful channel, not a vain source."
+                        },
+                        {
+                            title: "Giving Credit",
+                            importance: "core",
+                            defaultExpanded: false,
+                            body: "Instead of puffing up after an achievement, try: 'Thank you for allowing this to happen through me.'\n\nThis isn't false modesty—it's accurate perception. You didn't choose your talents, your upbringing, or the circumstances that led to your success. Gratitude is simply honest accounting."
+                        }
+                    ]
+                },
                 LETTING_GO_ARTICLE
+            ]
+        },
+        deepDive: {
+            title: "Deep Dive: The Fragility of the Inflated Self",
+            spineBody: "Understanding why pride attracts attack and how humility provides invulnerability.",
+            sections: [
+                {
+                    title: "Humility as Armor",
+                    importance: "core",
+                    defaultExpanded: true,
+                    body: "In martial arts, a rigid stance is a weakness. A fixed position gives your opponent a pattern to attack. The master stays fluid, without positionality.\n\nPride is a rigid stance. 'I am THIS.' The humble person has no fixed position to attack. They can say 'I was wrong' without collapsing, because their worth doesn't depend on being right."
+                },
+                {
+                    title: "The Insatiable Hunger",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Pride is a statement of lack. It constantly needs feeding—more compliments, more status, more proof of superiority. But the more you feed it, the hungrier it gets. It's an appetite that can never be satisfied.\n\nThis is why wealthy, famous, 'successful' people can still feel empty. No external validation can fill an internal hole."
+                },
+                {
+                    title: "The Dualities of Pride",
+                    importance: "nuance",
+                    defaultExpanded: false,
+                    body: "Surrender the need to be 'special' to discover the peace of being 'enough':\n\n• **Vain, proud** ↔ **Humble**\n• **Be more** ↔ **Be enough**\n• **Important** ↔ **Nobody**\n• **Admired** ↔ **Looked down on**\n• **Status** ↔ **Common, ordinary**\n• **Noticed** ↔ **Ignored**\n• **Special** ↔ **Ordinary**\n• **Better than** ↔ **The same**\n• **Superior** ↔ **Inferior**\n• **Be right** ↔ **Be wrong**\n• **Opinionated** ↔ **Silent**\n• **Insider** ↔ **Excluded**\n• **Exclusive** ↔ **Common**\n• **Succeed** ↔ **Fail**"
+                }
             ]
         }
     },
@@ -929,7 +1873,7 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     title: "The Shift to Integrity",
                     importance: "core",
                     defaultExpanded: true,
-                    body: "At 200, the energy shifts from 'Force' (reactive, defensive, manipulative) to 'Power' (proactive, creative, authentic). It is the point where you stop blaming the world for your state and take total responsibility. This honesty provides the first real sense of lasting safety."
+                    body: "At 200, the energy shifts from 'Force' (reactive, defensive, manipulative) to 'Power' (proactive, creative, authentic). It is the point where you stop blaming the world for your state and take total responsibility. This honesty provides the first real sense of lasting safety.\\n\\n**Brain Physiology at 200+**\\nFrom calibration level 200 and up, there is a release of endorphins, which is accompanied by feelings of pleasure and happiness. Below consciousness level 200, there is a predominance of adrenaline and animal-instinct survival responses. This is why crossing the 200 threshold feels so dramatically different—it is literally a change in brain chemistry from stress hormones to pleasure hormones."
                 },
                 {
                     title: "The Somatic Grounding",
@@ -952,6 +1896,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Courage is the willingness to try new things, to fail, and to admit mistakes. It is the engine of the soul. Without Courage, spiritual work is impossible; with it, success is inevitable."
+                },
+                {
+                    title: "The 200 Threshold: Global Significance",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Research indicates that 78% of the world's population calibrates below consciousness level 200 (in America, 49%). This explains why the world appears as it does—with its endless conflicts, wars, poverty, and crime.\\n\\nThe critical step at Level 200 is the choice to accept personal responsibility and accountability instead of blame. The source of humanity's problems is primarily endogenous (internal) rather than exogenous (external). Courage to face this truth is what separates those who grow from those who remain stuck."
                 }
             ]
         },
@@ -1029,7 +1979,7 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
             ]
         },
         traps: {
-            body: "The danger of falling into indifference.",
+            body: "The danger of falling into indifference or mistaking withdrawal for freedom.",
             chips: [
                 {
                     label: "Indifference",
@@ -1041,6 +1991,19 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                             importance: "core",
                             defaultExpanded: true,
                             body: "True neutrality is warm and inclusive. Indifference is cold and exclusive. If you use 'neutrality' to avoid connection or responsibility, you have slipped into a subtler form of Apathy. True peace doesn't require closing the heart."
+                        }
+                    ]
+                },
+                {
+                    label: "Detachment vs Nonattachment",
+                    title: "The Trap: Confusing Detachment with Nonattachment",
+                    spineBody: "Withdrawal is not the same as freedom.",
+                    sections: [
+                        {
+                            title: "The Critical Distinction",
+                            importance: "core",
+                            defaultExpanded: true,
+                            body: "Nonattachment means freedom from projection and ego-investment in outcomes. Detachment, by contrast, indicates withdrawal and negation—a defense against the fear of attachment.\\n\\nProgressive detachment leads to ennui, flatness, and a decrease in aliveness and joy. If followed consistently, the pathway of negation leads to the Void—a state that can be mistaken for enlightenment but is actually devoid of Divine Love.\\n\\nThe true condition of Allness is experientially very different from nothingness. True nonattachment is alive, warm, and engaged; false detachment is cold, withdrawn, and spiritually deadening."
                         }
                     ]
                 }
@@ -1098,6 +2061,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Willingness is the energy of the 'Great Student' and the 'Great Servant.' It humbles itself to learn and rises up to help. It is the state where you become a valuable asset to the world."
+                },
+                {
+                    title: "The Golden Rule and Karma Yoga",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "The energy of Willingness is the level of the Golden Rule: 'Do unto others as you would have others do unto you.' In successful relationships, this results in mutuality rather than mere entanglement.\\n\\nWillingness is supportive rather than competitive. It expresses as the 'win-win' attitude instead of the lower levels' 'win-lose' zero-sum thinking.\\n\\nThe spiritual practice of selfless service is classically termed 'karma yoga', which, when combined with prayer and devotion, is transformative. It was the pathway of Mahatma Gandhi. True generosity expects no reward—the giving is its own reward."
                 }
             ]
         },
@@ -1171,6 +2140,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Acceptance ends the 'war' between what is and what we think 'should be.' It is the foundation for the clear, objective clarity of Reason and the unconditional warmth of Love."
+                },
+                {
+                    title: "The Major Transformation",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "At Level 350, a major transformation occurs: the realization that oneself is the source and creator of one's experience of life. Below 200, there is the tendency to see oneself as a victim at the mercy of life—believing the source of happiness (or problems) is 'out there.'\\n\\nThe enormous jump at Acceptance is taking back one's own power with the realization that the source of happiness is within. Nothing 'out there' has the capacity to make you happy. Love is not something given or taken away by another but is created from within."
                 }
             ]
         },
@@ -1244,6 +2219,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Reason brings order to chaos. It provides the intellectual framework that allows for the safe and effective navigation of complex systems. It is the final stage before the breakthrough into the Heart (Love)."
+                },
+                {
+                    title: "The 4% Threshold",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "Although Reason is highly effective in a technical world where logic dominates, Reason itself is paradoxically the major block to reaching higher levels of consciousness—because it attracts identification of the self as mind.\\n\\nTranscending this level is relatively uncommon: only 4% of people do so. It requires a paradigm shift from the descriptive to the subjective and experiential. The happiness level at Reason is approximately 80%, in marked contrast to its low percentages below level 200 (1-22%). But to go higher requires surrendering the identity 'I am my thoughts.'"
                 }
             ]
         },
@@ -1317,6 +2298,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Love is the ultimate healer. By including everything in its warm embrace, it dissolves conflict and brings about a state of profound peace. It is the energy of the saint and the higher spiritual teacher."
+                },
+                {
+                    title: "Infatuation vs True Love",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "At lower levels, what is perceived as 'love' is often conditional—identified with possession, passion, romance, and desire. Infatuations calibrate at 145, revealing their origin as primarily the mating instinct from our animal nature.\\n\\n**The contrast:**\\n• Infatuation: Left-brain, adrenaline/sex hormones, frantic/fearful, addiction/craving, impaired judgment\\n• True Love (500+): Right-brain, endorphins, calm/balanced, fulfillment/content, improved judgment\\n\\nTrue love emanates from the heart, not the mind. It is forgiving, nurturing, and supportive. At 500, approximately 90% of people experience happiness as a basic quality of life."
                 }
             ]
         },
@@ -1390,6 +2377,12 @@ export const LEVEL_DOSSIER_DATA: Record<string, CategoryArticles> = {
                     importance: "core",
                     defaultExpanded: true,
                     body: "Joy shows that the fruit of the spiritual path is not a somber 'holiness,' but a vibrant, innocent, and total 'Yes' to life. It is the final stage before the subject-object duality dissolves into Peace."
+                },
+                {
+                    title: "The Domain of Saints",
+                    importance: "core",
+                    defaultExpanded: false,
+                    body: "From level 540 upward is the domain of saints, spiritual healers, and advanced spiritual students. This level is reached by only 0.4% of the world's population—yet in spiritually-committed groups (12-step, monastics, ashrams), 50-55% reach this goal.\\n\\nAt this level is a capacity for enormous patience and persistence in the face of prolonged adversity. The hallmark is compassion. People here have a notable effect on others and are capable of a prolonged, open visual gaze that induces states of love and peace in those around them."
                 }
             ]
         },

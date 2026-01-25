@@ -41,14 +41,14 @@ const useStepProjection = (index: number, scrollPos: SharedValue<number>) => {
     return useDerivedValue(() => {
         const relativeStep = index - scrollPos.value;
 
-        // Wide angle (1.4 rad ~ 80 deg) to distribute steps around stickman
+        // Wide angle (1.4 rad ~ 80 deg) to distribute steps around orb
         const pitch = 75;
         const angle = 1.4;
 
         const theta = relativeStep * angle;
         const yWorld = relativeStep * pitch;
 
-        // Helix coordinates (wider radius to clear stickman)
+        // Helix coordinates (wider radius to clear orb)
         const r = 160;
         const x = r * Math.cos(theta + Math.PI / 1.6);
         const z = r * Math.sin(theta + Math.PI / 1.6);
@@ -172,12 +172,11 @@ const AtmosphereBackground = () => {
     );
 };
 
-// --- Enhanced Stickman with Glow and Breathing Animation ---
-const SkiaStickman = () => {
-    const scale = 2.4;
+// --- Glowing Orb of Consciousness ---
+const ConsciousnessOrb = () => {
     const center = vec(CENTER_X, (CENTER_Y * 1.2) - 40);
 
-    // Breathing animation - slow 4 second cycle
+    // Breathing animation - slow 4 second cycle (same as stickman)
     const breathingProgress = useSharedValue(0);
 
     useEffect(() => {
@@ -188,7 +187,7 @@ const SkiaStickman = () => {
         );
     }, []);
 
-    // Derived values for breathing effect
+    // Derived values for breathing effect (same pattern as stickman)
     const breathOffset = useDerivedValue(() => {
         return Math.sin(breathingProgress.value * Math.PI) * 3;
     });
@@ -197,72 +196,84 @@ const SkiaStickman = () => {
         return 0.4 + Math.sin(breathingProgress.value * Math.PI) * 0.2;
     });
 
-    // Main body paint - slightly softer stroke
-    const paint = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(Skia.Color('#ffffff'));
-        p.setStrokeWidth(6);
-        p.setStrokeCap(StrokeCap.Round);
-        p.setStrokeJoin(StrokeJoin.Round);
-        p.setStyle(PaintStyle.Stroke);
-        return p;
-    }, []);
+    // Add pulsing scale animation (faster than breathing)
+    const pulseScale = useDerivedValue(() => {
+        return 1 + Math.sin(breathingProgress.value * Math.PI * 2) * 0.1;
+    });
 
-    // Glow paint for outer glow effect
-    const glowPaint = useMemo(() => {
-        const p = Skia.Paint();
-        p.setColor(Skia.Color('#a5b4fc'));
-        p.setStrokeWidth(14);
-        p.setStrokeCap(StrokeCap.Round);
-        p.setStrokeJoin(StrokeJoin.Round);
-        p.setStyle(PaintStyle.Stroke);
-        p.setMaskFilter(Skia.MaskFilter.MakeBlur(1, 8, true));
-        return p;
-    }, []);
+    // Inner core pulse (even faster for energy effect)
+    const innerPulse = useDerivedValue(() => {
+        return 0.8 + Math.sin(breathingProgress.value * Math.PI * 3) * 0.2;
+    });
 
-    const baseY = center.y + (50 * (1 - scale));
-
-    // Compute breathing offset position
-    const animatedBaseY = useDerivedValue(() => baseY - breathOffset.value);
+    // Compute breathing offset position (same as stickman)
+    const animatedCenterY = useDerivedValue(() => center.y - breathOffset.value);
 
     return (
         <Group>
             {/* Outer ethereal glow - creates soft halo effect */}
             <Group opacity={glowOpacity} blendMode="plus">
-                <Circle cx={center.x} cy={baseY + 20 * scale} r={60} opacity={0.3}>
+                <Circle cx={center.x} cy={animatedCenterY.value} r={80} opacity={0.3}>
                     <RadialGradient
-                        c={vec(center.x, baseY + 20 * scale)}
-                        r={60}
+                        c={vec(center.x, animatedCenterY.value)}
+                        r={80}
                         colors={['#a5b4fc', '#6366f1', 'transparent']}
                     />
                 </Circle>
             </Group>
 
-            {/* Glow layer - blurred larger strokes */}
-            <Group opacity={0.3}>
-                <Line p1={vec(center.x, animatedBaseY.value)} p2={vec(center.x, animatedBaseY.value + 25 * scale)} paint={glowPaint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x - 8 * scale, animatedBaseY.value + 48 * scale)} paint={glowPaint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x + 8 * scale, animatedBaseY.value + 48 * scale)} paint={glowPaint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x - 11 * scale, animatedBaseY.value + 21 * scale)} paint={glowPaint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x + 11 * scale, animatedBaseY.value + 21 * scale)} paint={glowPaint} />
-                <Circle cx={center.x} cy={animatedBaseY.value - 7 * scale} r={18} color="#a5b4fc" />
-            </Group>
-
-            {/* Main body - crisp white strokes */}
-            <Group>
-                <Line p1={vec(center.x, animatedBaseY.value)} p2={vec(center.x, animatedBaseY.value + 25 * scale)} paint={paint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x - 8 * scale, animatedBaseY.value + 48 * scale)} paint={paint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 25 * scale)} p2={vec(center.x + 8 * scale, animatedBaseY.value + 48 * scale)} paint={paint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x - 11 * scale, animatedBaseY.value + 21 * scale)} paint={paint} />
-                <Line p1={vec(center.x, animatedBaseY.value + 6 * scale)} p2={vec(center.x + 11 * scale, animatedBaseY.value + 21 * scale)} paint={paint} />
-                {/* Head with subtle gradient for depth */}
-                <Circle cx={center.x} cy={animatedBaseY.value - 7 * scale} r={13}>
+            {/* Middle glow layer */}
+            <Group opacity={0.6} blendMode="plus">
+                <Circle cx={center.x} cy={animatedCenterY.value} r={50} opacity={0.4}>
                     <RadialGradient
-                        c={vec(center.x - 3, animatedBaseY.value - 7 * scale - 3)}
-                        r={13}
-                        colors={['#ffffff', '#e0e7ff']}
+                        c={vec(center.x, animatedCenterY.value)}
+                        r={50}
+                        colors={['#ffffff', '#e0e7ff', '#a5b4fc', 'transparent']}
                     />
                 </Circle>
+            </Group>
+
+            {/* Main orb body with pulsing scale */}
+            <Group transform={[{ scale: pulseScale.value }]}>
+                <Circle cx={center.x} cy={animatedCenterY.value} r={25}>
+                    <RadialGradient
+                        c={vec(center.x - 5, animatedCenterY.value - 5)}
+                        r={25}
+                        colors={['#ffffff', '#f0f0ff', '#d1d5db']}
+                    />
+                </Circle>
+            </Group>
+
+            {/* Inner bright core with faster pulse */}
+            <Group transform={[{ scale: pulseScale.value }]} opacity={innerPulse.value}>
+                <Circle cx={center.x} cy={animatedCenterY.value} r={15}>
+                    <RadialGradient
+                        c={vec(center.x - 3, animatedCenterY.value - 3)}
+                        r={15}
+                        colors={['#ffffff', '#f8fafc']}
+                    />
+                </Circle>
+            </Group>
+
+            {/* Subtle energy rings */}
+            <Group opacity={0.4}>
+                <Circle 
+                    cx={center.x} 
+                    cy={animatedCenterY.value} 
+                    r={35} 
+                    style="stroke" 
+                    strokeWidth={1} 
+                    color="#a5b4fc" 
+                />
+                <Circle 
+                    cx={center.x} 
+                    cy={animatedCenterY.value} 
+                    r={55} 
+                    style="stroke" 
+                    strokeWidth={0.5} 
+                    color="#6366f1" 
+                    opacity={0.6}
+                />
             </Group>
         </Group>
     );
@@ -272,15 +283,60 @@ const SkiaStickman = () => {
 const LandingItem = ({
     index,
     color,
+    category,
     scrollPos,
     entranceProgress
 }: {
     index: number,
     color: string,
+    category: string,
     scrollPos: SharedValue<number>,
     entranceProgress: SharedValue<number>
 }) => {
     const projection = useStepProjection(index, scrollPos);
+
+    // Category-based effects
+    const getCategoryEffects = (cat: string) => {
+        switch (cat) {
+            case 'lower':
+                return {
+                    glowIntensity: 0.3,
+                    materialOpacity: 0.7,
+                    shadowIntensity: 0.8,
+                    edgeGlow: 0.4
+                };
+            case 'linear':
+                return {
+                    glowIntensity: 0.6,
+                    materialOpacity: 0.8,
+                    shadowIntensity: 0.4,
+                    edgeGlow: 0.6
+                };
+            case 'spiritual':
+                return {
+                    glowIntensity: 0.9,
+                    materialOpacity: 0.9,
+                    shadowIntensity: 0.1,
+                    edgeGlow: 0.8
+                };
+            case 'enlightenment':
+                return {
+                    glowIntensity: 1.2,
+                    materialOpacity: 0.95,
+                    shadowIntensity: 0,
+                    edgeGlow: 1.0
+                };
+            default:
+                return {
+                    glowIntensity: 0.6,
+                    materialOpacity: 0.8,
+                    shadowIntensity: 0.4,
+                    edgeGlow: 0.6
+                };
+        }
+    };
+
+    const effects = getCategoryEffects(category);
 
     const transform = useDerivedValue(() => {
         const { x, y, scale, focus } = projection.value;
@@ -298,12 +354,12 @@ const LandingItem = ({
     // Enhanced glow for focused step
     const glowRadius = useDerivedValue(() => {
         const { focus } = projection.value;
-        return focus < 0.5 ? 110 : 70;
+        return focus < 0.5 ? 110 * effects.glowIntensity : 70 * effects.glowIntensity;
     });
 
     const glowOpacity = useDerivedValue(() => {
         const { focus } = projection.value;
-        return focus < 0.5 ? 0.7 : 0.35;
+        return (focus < 0.5 ? 0.7 : 0.35) * effects.glowIntensity;
     });
 
     // Focus ring opacity
@@ -312,17 +368,19 @@ const LandingItem = ({
     // Inner glow intensity
     const innerGlowOpacity = useDerivedValue(() => {
         const { focus } = projection.value;
-        return focus < 0.5 ? 0.6 : 0.3;
+        return (focus < 0.5 ? 0.6 : 0.3) * effects.edgeGlow;
     });
 
     return (
         <Group transform={transform} opacity={opacity}>
-            {/* Floating shadow beneath stair */}
-            <Group opacity={0.4}>
-                <Circle cx={0} cy={25} r={45}>
-                    <RadialGradient c={vec(0, 25)} r={45} colors={['rgba(0,0,0,0.5)', 'transparent']} />
-                </Circle>
-            </Group>
+            {/* Floating shadow beneath stair - varies by category */}
+            {effects.shadowIntensity > 0 && (
+                <Group opacity={0.4 * effects.shadowIntensity}>
+                    <Circle cx={0} cy={25} r={45}>
+                        <RadialGradient c={vec(0, 25)} r={45} colors={['rgba(0,0,0,0.5)', 'transparent']} />
+                    </Circle>
+                </Group>
+            )}
 
             {/* Outer glow - enhanced for focused step */}
             <Group blendMode="plus">
@@ -343,8 +401,8 @@ const LandingItem = ({
             />
 
             {/* Glass effect base layer */}
-            <Path path={BLOCK_PATHS.side} color="black" opacity={0.3} />
-            <Path path={BLOCK_PATHS.top} opacity={0.25}>
+            <Path path={BLOCK_PATHS.side} color="black" opacity={0.3 * effects.shadowIntensity} />
+            <Path path={BLOCK_PATHS.top} opacity={0.25 * effects.materialOpacity}>
                 <LinearGradient
                     start={vec(-40, -20)} end={vec(40, 0)}
                     colors={[`${color}aa`, `${color}55`]}
@@ -352,7 +410,7 @@ const LandingItem = ({
             </Path>
 
             {/* Main glass/crystal body with transparency */}
-            <Path path={BLOCK_PATHS.main} opacity={0.85}>
+            <Path path={BLOCK_PATHS.main} opacity={0.85 * effects.materialOpacity}>
                 <LinearGradient
                     start={vec(-40, -15)} end={vec(40, 15)}
                     colors={[`${color}cc`, color, `${color}88`]}
@@ -368,26 +426,55 @@ const LandingItem = ({
             </Path>
 
             {/* Edge glow - soft lit edges */}
-            <Path path={BLOCK_PATHS.main} style="stroke" strokeWidth={1.5} opacity={0.8}>
+            <Path path={BLOCK_PATHS.main} style="stroke" strokeWidth={1.5} opacity={0.8 * effects.edgeGlow}>
                 <LinearGradient
                     start={vec(-40, 0)} end={vec(40, 0)}
                     colors={['rgba(255,255,255,0.8)', 'rgba(255,255,255,0.4)', 'rgba(255,255,255,0.8)']}
                 />
             </Path>
+
+            {/* Special effects for enlightenment level */}
+            {category === 'enlightenment' && (
+                <Group blendMode="plus">
+                    <Circle cx={0} cy={0} r={80} opacity={0.3}>
+                        <RadialGradient
+                            c={vec(0, 0)}
+                            r={80}
+                            colors={['#ffffff', '#f0f0ff', 'transparent']}
+                        />
+                    </Circle>
+                </Group>
+            )}
         </Group>
     );
 };
 
-// Heavy Weather Levels - The 8 lower consciousness states
+// All Consciousness Levels - Complete staircase from lower to enlightenment
 const LEVELS = [
-    { id: 'shame', label: 'Shame', color: '#6B21A8' },
-    { id: 'guilt', label: 'Guilt', color: '#7C3AED' },
-    { id: 'apathy', label: 'Apathy', color: '#4B5563' },
-    { id: 'grief', label: 'Grief', color: '#1E40AF' },
-    { id: 'fear', label: 'Fear', color: '#F59E0B' },
-    { id: 'desire', label: 'Desire', color: '#DC2626' },
-    { id: 'anger', label: 'Anger', color: '#EF4444' },
-    { id: 'pride', label: 'Pride', color: '#10B981' },
+    // Lower Levels (Underground) - Dark, heavy colors
+    { id: 'shame', label: 'Shame', color: '#6B21A8', category: 'lower' },      // Deep purple
+    { id: 'guilt', label: 'Guilt', color: '#7C3AED', category: 'lower' },      // Purple
+    { id: 'apathy', label: 'Apathy', color: '#4B5563', category: 'lower' },    // Dark gray
+    { id: 'grief', label: 'Grief', color: '#1E40AF', category: 'lower' },      // Dark blue
+    { id: 'fear', label: 'Fear', color: '#B45309', category: 'lower' },        // Dark orange
+    { id: 'desire', label: 'Desire', color: '#DC2626', category: 'lower' },    // Red
+    { id: 'anger', label: 'Anger', color: '#EF4444', category: 'lower' },      // Bright red
+    { id: 'pride', label: 'Pride', color: '#F97316', category: 'lower' },      // Orange
+    
+    // Linear Mind Levels (Ground Floor) - Clearer, more balanced colors
+    { id: 'courage', label: 'Courage', color: '#3B82F6', category: 'linear' },     // Blue
+    { id: 'neutrality', label: 'Neutrality', color: '#6B7280', category: 'linear' }, // Gray
+    { id: 'willingness', label: 'Willingness', color: '#059669', category: 'linear' }, // Emerald green
+    { id: 'acceptance', label: 'Acceptance', color: '#0D9488', category: 'linear' },   // Teal
+    { id: 'reason', label: 'Reason', color: '#0891B2', category: 'linear' },          // Cyan
+    
+    // Spiritual Reality Levels (Upper Chambers) - Warm, radiant colors
+    { id: 'love', label: 'Love', color: '#EC4899', category: 'spiritual' },     // Pink
+    { id: 'joy', label: 'Joy', color: '#FBBF24', category: 'spiritual' },       // Golden yellow
+    { id: 'peace', label: 'Peace', color: '#8B5CF6', category: 'spiritual' },   // Violet
+    
+    // Enlightenment Levels (Sky Temple) - Pure light
+    { id: 'enlightenment', label: 'Enlightenment', color: '#FFFFFF', category: 'enlightenment' },
 ];
 
 // --- Label with Enhanced Typography ---
@@ -502,13 +589,11 @@ export const LevelStairsMenu: React.FC<{ onSelectSection: (id: string) => void }
                             key={s.id}
                             index={i}
                             color={s.color}
+                            category={s.category}
                             scrollPos={scrollPos}
                             entranceProgress={entranceProgress}
                         />
                     ))}
-
-                    {/* Static Stickman */}
-                    <SkiaStickman />
                 </Canvas>
 
                 <View style={StyleSheet.absoluteFill} pointerEvents="box-none">

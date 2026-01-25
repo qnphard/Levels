@@ -12,6 +12,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { getLevelById } from '../data/levels';
+import { getTranscendingContent } from '../data/transcendingData';
 import { RootStackParamList } from '../navigation/types';
 import {
   useThemeColors,
@@ -31,6 +32,7 @@ import { LivingBackground } from '../components/LivingBackground';
 import { KineticText } from '../components/KineticText';
 import { GlassSurface } from '../components/GlassSurface';
 import { GradientDivider } from '../components/GradientDivider';
+import { RichContent } from '../components/RichContent';
 import { HapticOrchestrator } from '../services/HapticOrchestrator';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -45,6 +47,7 @@ export default function LevelDetailScreen() {
   const glowEnabled = useGlowEnabled();
   const { levelId } = route.params;
   const level = getLevelById(levelId);
+  const transcendingContent = getTranscendingContent(levelId);
 
   const luminousAccent = useMemo(() => {
     if (!level) return theme.primary;
@@ -137,7 +140,7 @@ export default function LevelDetailScreen() {
 
           <View style={styles.headerContent}>
             <View style={styles.eyebrowContainer}>
-              <Text style={typography.styles.eyebrow}>CONSCIOUSNESS LEVEL {level.level}</Text>
+              <Text style={[typography.styles.eyebrow, { color: theme.textSecondary }]}>CONSCIOUSNESS LEVEL {level.level}</Text>
             </View>
 
             <KineticText
@@ -164,92 +167,161 @@ export default function LevelDetailScreen() {
           </View>
         </View>
 
-        {/* Content Section: Description */}
-        <View style={styles.editorialSection} key={structureRefreshKey}>
-          <EditableText
-            screen="level-detail"
-            section={levelId}
-            id="description"
-            originalContent={String(level.description || '')}
-            textStyle={typography.styles.body}
-            type="paragraph"
-          />
-          <ContentBuilder
-            screen="level-detail"
-            section={levelId}
-            onStructureChange={handleStructureChange}
-          />
-        </View>
+        {/* NEW: Transcending Content Structure */}
+        {transcendingContent && transcendingContent.corePattern ? (
+          <>
+            {/* The Core Pattern */}
+            <View style={styles.editorialSection} key={structureRefreshKey}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="layers-outline" size={22} color={accentColor} />
+                <Text style={[typography.styles.h2, { color: accentColor }]}>The Core Pattern</Text>
+              </View>
+              <RichContent content={transcendingContent.corePattern} accentColor={accentColor} />
+            </View>
 
-        <GradientDivider opacity={0.3} />
+            <GradientDivider opacity={0.3} />
 
-        {/* Characteristics - in GlassSurface */}
-        <GlassSurface style={styles.glassSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={typography.styles.h2}>You Might Notice</Text>
-          </View>
-          {level.characteristics.map((char, index) => (
-            <View key={index} style={styles.listItem}>
-              <View style={[styles.bullet, { backgroundColor: accentColor }]} />
+            {/* Ego Dynamics */}
+            <GlassSurface style={styles.glassSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="warning-outline" size={22} color={accentColor} />
+                <Text style={[typography.styles.h2, { color: theme.textPrimary }]}>Ego Dynamics</Text>
+              </View>
+              <RichContent content={transcendingContent.egoDynamics} accentColor={accentColor} />
+            </GlassSurface>
+
+            {/* Spiritual Context */}
+            <GlassSurface style={styles.glassSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="sparkles-outline" size={22} color={accentColor} />
+                <Text style={[typography.styles.h2, { color: theme.textPrimary }]}>The Spiritual Context</Text>
+              </View>
+              <RichContent content={transcendingContent.spiritualContext} accentColor={accentColor} />
+            </GlassSurface>
+
+            {/* The Path Through */}
+            <GlassSurface
+              style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.5) }]}
+              intensity={60}
+            >
+              <View style={styles.sectionHeader}>
+                <Ionicons name="compass-outline" size={22} color={accentColor} />
+                <Text style={[typography.styles.h2, { color: accentColor }]}>The Path Through</Text>
+              </View>
+              <RichContent content={transcendingContent.pathThrough} accentColor={accentColor} />
+            </GlassSurface>
+
+            {/* Dualities Table */}
+            {transcendingContent.dualities.length > 0 && (
+              <GlassSurface style={styles.glassSection}>
+                <View style={styles.sectionHeader}>
+                  <Ionicons name="swap-horizontal-outline" size={22} color={accentColor} />
+                  <Text style={[typography.styles.h2, { color: theme.textPrimary }]}>Transformation Path</Text>
+                </View>
+                <View style={styles.dualitiesHeader}>
+                  <Text style={[styles.dualityLabel, { color: theme.textSecondary }]}>From</Text>
+                  <Text style={[styles.dualityLabel, { color: accentColor }]}>To</Text>
+                </View>
+                {transcendingContent.dualities.map((duality, index) => (
+                  <View key={index} style={styles.dualityRow}>
+                    <Text style={[styles.dualityFrom, { color: theme.textSecondary }]}>
+                      {duality.from}
+                    </Text>
+                    <Ionicons name="arrow-forward" size={14} color={toRgba(accentColor, 0.6)} />
+                    <Text style={[styles.dualityTo, { color: theme.textPrimary }]}>
+                      {duality.to}
+                    </Text>
+                  </View>
+                ))}
+              </GlassSurface>
+            )}
+          </>
+        ) : (
+          /* FALLBACK: Original content structure for levels not yet audited */
+          <>
+            <View style={styles.editorialSection} key={structureRefreshKey}>
               <EditableText
                 screen="level-detail"
                 section={levelId}
-                id={`characteristic-${index}`}
-                originalContent={char}
-                textStyle={styles.listText}
+                id="description"
+                originalContent={String(level.description || '')}
+                textStyle={typography.styles.body}
                 type="paragraph"
               />
-            </View>
-          ))}
-        </GlassSurface>
-
-        {/* Physical Signs - in GlassSurface */}
-        <GlassSurface style={styles.glassSection}>
-          <View style={styles.sectionHeader}>
-            <Ionicons name="body-outline" size={22} color={accentColor} />
-            <Text style={typography.styles.h2}>In Your Body</Text>
-          </View>
-          {level.physicalSigns.map((sign, index) => (
-            <View key={index} style={styles.listItem}>
-              <EditableText
+              <ContentBuilder
                 screen="level-detail"
                 section={levelId}
-                id={`physical-sign-${index}`}
-                originalContent={sign}
-                textStyle={styles.listText}
-                type="paragraph"
+                onStructureChange={handleStructureChange}
               />
             </View>
-          ))}
-        </GlassSurface>
 
-        {/* The Trap */}
-        <GlassSurface
-          style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.3) }]}
-          intensity={20}
-        >
-          <View style={styles.sectionHeader}>
-            <Ionicons name="alert-circle-outline" size={22} color={accentColor} />
-            <Text style={[typography.styles.h2, { color: accentColor }]}>The Trap</Text>
-          </View>
-          <Text style={[typography.styles.body, { fontStyle: 'italic', opacity: 0.9 }]}>
-            {String(level.trapDescription || '')}
-          </Text>
-        </GlassSurface>
+            <GradientDivider opacity={0.3} />
 
-        {/* The Way Through */}
-        <GlassSurface
-          style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.5) }]}
-          intensity={60}
-        >
-          <View style={styles.sectionHeader}>
-            <Ionicons name="compass-outline" size={22} color={accentColor} />
-            <Text style={[typography.styles.h2, { color: accentColor }]}>The Way Through</Text>
-          </View>
-          <Text style={typography.styles.body}>
-            {level.wayThrough}
-          </Text>
-        </GlassSurface>
+            <GlassSurface style={styles.glassSection}>
+              <View style={styles.sectionHeader}>
+                <Text style={typography.styles.h2}>You Might Notice</Text>
+              </View>
+              {level.characteristics.map((char, index) => (
+                <View key={index} style={styles.listItem}>
+                  <View style={[styles.bullet, { backgroundColor: accentColor }]} />
+                  <EditableText
+                    screen="level-detail"
+                    section={levelId}
+                    id={`characteristic-${index}`}
+                    originalContent={char}
+                    textStyle={styles.listText}
+                    type="paragraph"
+                  />
+                </View>
+              ))}
+            </GlassSurface>
+
+            <GlassSurface style={styles.glassSection}>
+              <View style={styles.sectionHeader}>
+                <Ionicons name="body-outline" size={22} color={accentColor} />
+                <Text style={typography.styles.h2}>In Your Body</Text>
+              </View>
+              {level.physicalSigns.map((sign, index) => (
+                <View key={index} style={styles.listItem}>
+                  <EditableText
+                    screen="level-detail"
+                    section={levelId}
+                    id={`physical-sign-${index}`}
+                    originalContent={sign}
+                    textStyle={styles.listText}
+                    type="paragraph"
+                  />
+                </View>
+              ))}
+            </GlassSurface>
+
+            <GlassSurface
+              style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.3) }]}
+              intensity={20}
+            >
+              <View style={styles.sectionHeader}>
+                <Ionicons name="alert-circle-outline" size={22} color={accentColor} />
+                <Text style={[typography.styles.h2, { color: theme.textPrimary }]}>The Trap</Text>
+              </View>
+              <Text style={[typography.styles.body, { fontStyle: 'italic', opacity: 0.9, color: theme.textPrimary }]}>
+                {String(level.trapDescription || '')}
+              </Text>
+            </GlassSurface>
+
+            <GlassSurface
+              style={[styles.glassSection, { borderColor: toRgba(accentColor, 0.5) }]}
+              intensity={60}
+            >
+              <View style={styles.sectionHeader}>
+                <Ionicons name="compass-outline" size={22} color={accentColor} />
+                <Text style={[typography.styles.h2, { color: theme.textPrimary }]}>The Way Through</Text>
+              </View>
+              <Text style={[typography.styles.body, { color: theme.textPrimary }]}>
+                {level.wayThrough}
+              </Text>
+            </GlassSurface>
+          </>
+        )}
 
         {/* Actions */}
         <View style={styles.actionsContainer}>
@@ -390,6 +462,7 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       flex: 1,
       ...typography.styles.body,
       fontSize: 16,
+      color: theme.textPrimary,
     },
     actionsContainer: {
       paddingHorizontal: spacing.lg,
@@ -404,6 +477,38 @@ const getStyles = (theme: ThemeColors, accent: string, glowEnabled: boolean) =>
       color: toRgba(theme.textPrimary, 0.6),
       fontSize: 14,
       letterSpacing: 0.5,
+    },
+    // Dualities table styles
+    dualitiesHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      paddingBottom: spacing.sm,
+      marginBottom: spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: toRgba(theme.textSecondary, 0.2),
+    },
+    dualityLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    dualityRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: spacing.sm,
+      gap: spacing.sm,
+    },
+    dualityFrom: {
+      flex: 1,
+      fontSize: 14,
+      fontStyle: 'italic',
+    },
+    dualityTo: {
+      flex: 1,
+      fontSize: 14,
+      fontWeight: '500',
+      textAlign: 'right',
     },
     errorText: {
       color: theme.error,

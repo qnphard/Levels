@@ -291,10 +291,15 @@ export default function JourneyMapScreen() {
   });
 
   const openChapter = (level: ConsciousnessLevel, view: ChapterView) => {
-    navigation.navigate('LevelChapter', {
-      levelId: level.id,
-      initialView: view,
-    });
+    // Skip LevelChapter's overview - go directly to LevelDetail (transcending page)
+    if (view === 'overview') {
+      navigation.navigate('LevelDetail', { levelId: level.id });
+    } else {
+      navigation.navigate('LevelChapter', {
+        levelId: level.id,
+        initialView: view,
+      });
+    }
   };
 
   const handleLevelPress = (level: ConsciousnessLevel) => {
