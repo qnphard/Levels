@@ -2,6 +2,12 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Levels Polly TTS backend (HTTP API -> Lambda -> Polly + S3)
 
+Parameters:
+  FfmpegSarApplicationId:
+    Type: String
+    Description: "Serverless Application Repository ApplicationId for the ffmpeg layer"
+    Default: arn:aws:serverlessrepo:us-east-1:145266761615:applications/ffmpeg-lambda-layer
+
 Globals:
   Function:
     Runtime: nodejs20.x
@@ -11,6 +17,15 @@ Globals:
       - x86_64
 
 Resources:
+  FfmpegLayer:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location:
+        # Serverless Application Repository app (published by serverlesspub)
+        # This installs ffmpeg/ffprobe under /opt/bin/
+        ApplicationId: !Ref FfmpegSarApplicationId
+        SemanticVersion: 1.0.0
+
   AudioBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -43,6 +58,10 @@ Resources:
         Variables:
           AUDIO_BUCKET: !Ref AudioBucket
           SIGNED_URL_TTL_SECONDS: "3600"
+          ENABLE_AUDIO_MIXING: "1"
+          FFMPEG_PATH: "/opt/bin/ffmpeg"
+      Layers:
+        - !GetAtt FfmpegLayer.Outputs.LayerVersion
       Policies:
         - Statement:
             - Effect: Allow

@@ -141,10 +141,10 @@ export async function synthesize(options: SynthesizeOptions): Promise<string[]> 
         engine = 'neural',
         // These are currently ignored by Polly backend unless you implement mixing server-side.
         // We keep them in the interface so the UI doesn't break.
-        brainwave = 'theta', // eslint-disable-line @typescript-eslint/no-unused-vars
-        binauralVolume = 0.15, // eslint-disable-line @typescript-eslint/no-unused-vars
-        ambient = 'none', // eslint-disable-line @typescript-eslint/no-unused-vars
-        ambientVolume = 0.1, // eslint-disable-line @typescript-eslint/no-unused-vars
+        brainwave = 'theta',
+        binauralVolume = 0.15,
+        ambient = 'none',
+        ambientVolume = 0.1,
         refAudio = null // eslint-disable-line @typescript-eslint/no-unused-vars
     } = options;
 
@@ -178,6 +178,11 @@ export async function synthesize(options: SynthesizeOptions): Promise<string[]> 
                 voiceId,
                 engine,
                 outputFormat: 'mp3',
+                // Optional layers (backend may choose to bake into mp3 if supported)
+                brainwave,
+                binauralVolume,
+                ambient,
+                ambientVolume,
             }),
             signal: controller.signal,
         });

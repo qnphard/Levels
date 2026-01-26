@@ -33,7 +33,7 @@ try {
 }
 
 $stackName = if ($env:POLLY_STACK_NAME) { $env:POLLY_STACK_NAME } else { "levels-polly-tts" }
-$region = if ($env:AWS_REGION) { $env:AWS_REGION } else { "us-east-1" }
+$region = if ($env:AWS_REGION) { $env:AWS_REGION } else { "eu-west-1" }
 
 Write-Host "Deploying stack '$stackName' to region '$region'..."
 
@@ -50,7 +50,7 @@ try {
   & $samCmd deploy `
     --stack-name $stackName `
     --resolve-s3 `
-    --capabilities CAPABILITY_IAM `
+    --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND `
     --region $region `
     --no-confirm-changeset
 } finally {
