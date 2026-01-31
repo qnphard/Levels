@@ -127,6 +127,9 @@ jobs:
         run: |
           cd android
           ./gradlew clean
+          # After clean, android/build is removed - recreate autolinking file required by generateAutolinkingPackageList
+          mkdir -p build/generated/autolinking
+          echo '{"dependencies":[]}' > build/generated/autolinking/autolinking.json
           # Build universal APK with PNG crunching disabled
           ./gradlew assembleRelease -x lint -x test --no-daemon
           # Also try to build bundle and convert to universal APK if needed
