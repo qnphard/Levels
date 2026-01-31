@@ -56,26 +56,28 @@ jobs:
       - name: Prebuild Android (if needed)
         run: |
           if [ ! -d "android" ]; then
-            npx expo prebuild --platform android --no-install
+            echo "Android folder does not exist, running full prebuild..."
+            npx expo prebuild --platform android --skip-dependency-update react-native,react
           else
-            echo "Android folder exists, skipping prebuild"
+            echo "Android folder exists, will run prebuild in next step for autolinking"
           fi
 
       - name: Generate React Native autolinking
         run: |
-          # Ensure autolinking directory exists
-          mkdir -p android/build/generated/autolinking
-          # For Expo projects, run prebuild to ensure autolinking files are generated
-          # Use --no-install to avoid reinstalling dependencies
-          # This will regenerate autolinking without deleting the android folder
-          npx expo prebuild --platform android --no-install 2>&1 | head -20 || echo "Prebuild completed"
+          # Run expo prebuild to generate autolinking files
+          # This is required for the Gradle build to work
+          echo "Running expo prebuild to generate autolinking files..."
+          npx expo prebuild --platform android --skip-dependency-update react-native,react
+          
           # Verify the autolinking file exists
           if [ -f "android/build/generated/autolinking/autolinking.json" ]; then
             echo "✓ Autolinking file generated successfully"
             ls -lh android/build/generated/autolinking/autolinking.json
           else
-            echo "⚠ Autolinking file not found, creating minimal version..."
-            echo '{"dependencies":[]}' > android/build/generated/autolinking/autolinking.json
+            echo "⚠ Autolinking file not found after prebuild"
+            echo "Checking android/build directory:"
+            ls -la android/build/ || echo "android/build does not exist"
+            exit 1
           fi
 
       - name: Cache Gradle dependencies
