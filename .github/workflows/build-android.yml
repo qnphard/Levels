@@ -62,23 +62,14 @@ jobs:
             echo "Android folder exists, will run prebuild in next step for autolinking"
           fi
 
-      - name: Generate React Native autolinking
+      - name: Prebuild Android (sync config)
         run: |
-          # Run expo prebuild to generate autolinking files
-          # This is required for the Gradle build to work
-          echo "Running expo prebuild to generate autolinking files..."
+          # Run expo prebuild to sync native config (android folder already exists from repo)
+          # Note: prebuild does not create android/build/ - that is created by Gradle.
+          # autolinking.json is created in the Build step after gradlew clean.
+          echo "Running expo prebuild to sync native config..."
           npx expo prebuild --platform android --skip-dependency-update react-native,react
-          
-          # Verify the autolinking file exists
-          if [ -f "android/build/generated/autolinking/autolinking.json" ]; then
-            echo "✓ Autolinking file generated successfully"
-            ls -lh android/build/generated/autolinking/autolinking.json
-          else
-            echo "⚠ Autolinking file not found after prebuild"
-            echo "Checking android/build directory:"
-            ls -la android/build/ || echo "android/build does not exist"
-            exit 1
-          fi
+          echo "Prebuild finished. android/build/ and autolinking.json will be created during Gradle build."
 
       - name: Cache Gradle dependencies
         uses: actions/cache@v4
