@@ -2,7 +2,7 @@
  * StickmanController - Animated character that walks the spiral
  */
 import React, { useRef } from 'react';
-import { useFrame } from '@react-three/fiber/native';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { spiralPose, lerpAngle, SpiralConfig, DEFAULT_SPIRAL } from '../mathSpiral';
 

@@ -261,7 +261,7 @@ export default function HomeScreen() {
                 ].join(', '),
               }
             ]}
-            onPress={() => navigation.navigate('RoomOfLevels')}
+            onPress={() => navigation.navigate('RoomOfLevels2')}
             activeOpacity={0.9}
           >
             <LinearGradient

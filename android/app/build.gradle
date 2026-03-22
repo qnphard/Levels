@@ -99,7 +99,10 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
+            // Prefer project keystore (committed); else Android Studio default in ~/.android/
+            def projectStore = file("${projectDir}/debug.keystore")
+            def homeStore = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storeFile projectStore.exists() ? projectStore : homeStore
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'

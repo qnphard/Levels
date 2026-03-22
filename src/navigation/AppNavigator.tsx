@@ -46,6 +46,7 @@ import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
 import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
 import YourMeditationsScreen from '../screens/YourMeditationsScreen';
 import RoomOfLevelsScreen from '../screens/RoomOfLevelsScreen';
+import RoomOfLevels2Screen from '../screens/RoomOfLevels2Screen';
 import AnimationShowcaseScreen from '../screens/AnimationShowcaseScreen';
 import LevelContentMenuScreen from '../screens/LevelContentMenuScreen';
 import TechniquesScreen from '../screens/TechniquesScreen';
@@ -334,6 +335,11 @@ export default function AppNavigator() {
         <Stack.Screen
           name="RoomOfLevels"
           component={RoomOfLevelsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="RoomOfLevels2"
+          component={RoomOfLevels2Screen}
           options={{ headerShown: false }}
         />
         <Stack.Screen

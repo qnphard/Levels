@@ -2,7 +2,7 @@
  * CameraRig - Smooth follow camera for orthographic view
  */
 import React, { useRef } from 'react';
-import { useFrame, useThree } from '@react-three/fiber/native';
+import { useFrame, useThree } from '@react-three/fiber';
 import { spiralPose, SpiralConfig, DEFAULT_SPIRAL } from '../mathSpiral';
 
 interface CameraRigProps {

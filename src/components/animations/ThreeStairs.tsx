@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, Suspense } from 'react';
 import { View, StyleSheet, Text, ActivityIndicator } from 'react-native';
-import { Canvas, useFrame } from '@react-three/fiber/native';
+import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 // Step colors (bottom to top)

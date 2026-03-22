@@ -1,7 +1,7 @@
 import 'react-native-reanimated';
 import React, { useEffect, useState, useCallback } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { View, StyleSheet, Platform, Text } from 'react-native';
+import { View, StyleSheet, Platform, Text, InteractionManager } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as NavigationBar from 'expo-navigation-bar';
 import AppNavigator from './src/navigation/AppNavigator';
@@ -20,12 +20,19 @@ function AppContent() {
   const mode = useThemeMode();
   const { showTutorial, dismissTutorial } = useTutorialPopup();
 
-  // Hide Android navigation bar (immersive mode)
+  // Defer until after first paint. In __DEV__, skip hiding the nav bar: Metro / dev overlays
+  // cause rapid onWindowFocusChanged(false) and ReactHost logs ReactNoCrashSoftException — that
+  // line is usually noise, not the hang; skipping nav-bar API calls here avoids extra churn.
   useEffect(() => {
-    if (Platform.OS === 'android') {
-      NavigationBar.setVisibilityAsync('hidden');
-      NavigationBar.setBehaviorAsync('overlay-swipe');
-    }
+    if (Platform.OS !== 'android') return;
+    if (__DEV__) return;
+    const task = InteractionManager.runAfterInteractions(() => {
+      requestAnimationFrame(() => {
+        NavigationBar.setVisibilityAsync('hidden').catch(() => undefined);
+        NavigationBar.setBehaviorAsync('overlay-swipe').catch(() => undefined);
+      });
+    });
+    return () => task.cancel();
   }, []);
 
   return (
@@ -51,50 +58,37 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export default function App() {
-  const [appIsReady, setAppIsReady] = useState(false);
+  /** Dev client shows "Bundling 100%…" until React mounts; delaying AppContent for the video splash races ReactHost and can leave that overlay stuck (see RN SoftException on onWindowFocusChange). */
+  const devSkipVideoSplash = __DEV__;
+  const [appIsReady, setAppIsReady] = useState(devSkipVideoSplash);
   const [isSplashReady, setIsSplashReady] = useState(false);
-  const [isSplashFinished, setIsSplashFinished] = useState(false);
+  const [isSplashFinished, setIsSplashFinished] = useState(devSkipVideoSplash);
 
-  // 1. Initial Prep (Lightweight)
   useEffect(() => {
-    async function prepare() {
-      try {
-        // Just verify basic things or minimal async here
-      } catch (e) {
-        console.warn(e);
-      }
-      // Note: We do NOT set appIsReady(true) here anymore.
-      // We will wait for the video to be ready first.
-    }
-    prepare();
-  }, []);
+    if (!devSkipVideoSplash) return;
+    SplashScreen.hideAsync().catch(() => undefined);
+    loadSkia().catch((e) => console.warn(e));
+  }, [devSkipVideoSplash]);
 
-  // 2. Hide Native Splash & Start App Load ONCE VIDEO IS READY
+  // Production: hide native splash only after video is ready, then hydrate.
   useEffect(() => {
+    if (devSkipVideoSplash) return;
     if (isSplashReady) {
       const startAppLoad = async () => {
         try {
-          // Hide native splash immediately so video is visible
           await SplashScreen.hideAsync();
-
-          // Wait a brief moment to let video playback stabilize on main thread
-          await new Promise(resolve => setTimeout(resolve, 300));
-
-          // NOW start heavy lifting (hydration, fonts, etc)
+          await new Promise((resolve) => setTimeout(resolve, 300));
           await loadSkia();
-
-          // Finally, mark app as ready to mount underneath
           setAppIsReady(true);
         } catch (e) {
-          console.warn("Failed to load app:", e);
-          // Fallback
+          console.warn('Failed to load app:', e);
           await SplashScreen.hideAsync();
           setAppIsReady(true);
         }
       };
       startAppLoad();
     }
-  }, [isSplashReady]);
+  }, [isSplashReady, devSkipVideoSplash]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -103,13 +97,9 @@ export default function App() {
           <UserProgressProvider>
             <ContentEditProvider>
               <View style={{ flex: 1 }}>
-                {/* Mount App Content only when ready (underneath video) */}
-                {appIsReady && (
-                  <AppContent />
-                )}
+                {appIsReady && <AppContent />}
 
-                {/* Keep Video Overlay until it finishes AND app is ready */}
-                {!isSplashFinished && (
+                {!devSkipVideoSplash && !isSplashFinished && (
                   <VideoSplashScreen
                     onReady={() => setIsSplashReady(true)}
                     onFinish={() => setIsSplashFinished(true)}

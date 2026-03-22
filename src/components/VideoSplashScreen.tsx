@@ -15,6 +15,19 @@ export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onFinish, 
     const video = useRef<Video>(null);
     const opacity = useSharedValue(1);
     const [videoEnded, setVideoEnded] = useState(false);
+    const readyRef = useRef(false);
+
+    const signalReady = () => {
+        if (readyRef.current) return;
+        readyRef.current = true;
+        onReady();
+    };
+
+    /** Native splash stays until `onReady` → if `onLoad` never fires (Expo Go, codec, huge asset), don't hang forever. */
+    useEffect(() => {
+        const t = setTimeout(() => signalReady(), 8000);
+        return () => clearTimeout(t);
+    }, []);
 
     const onPlaybackStatusUpdate = (status: any) => {
         setStatus(status);
@@ -35,7 +48,7 @@ export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onFinish, 
     }, [videoEnded, allowFinish]);
 
     const onScanLoad = () => {
-        onReady();
+        signalReady();
     };
 
     const animatedStyle = useAnimatedStyle(() => ({
@@ -54,6 +67,7 @@ export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onFinish, 
                 shouldPlay={true}
                 onPlaybackStatusUpdate={onPlaybackStatusUpdate}
                 onLoad={onScanLoad}
+                onError={() => signalReady()}
             />
         </Animated.View>
     );

@@ -12,6 +12,6 @@ config.resolver.extraNodeModules = {
 };
 config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
 config.resolver.sourceExts = [...config.resolver.sourceExts, 'ts', 'tsx', 'js', 'jsx', 'json', 'wasm'];
-config.resolver.assetExts = [...config.resolver.assetExts, 'wasm'];
+config.resolver.assetExts = [...new Set([...config.resolver.assetExts, 'wasm', 'riv'])];
 
 module.exports = config;

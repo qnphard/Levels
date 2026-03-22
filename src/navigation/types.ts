@@ -36,6 +36,7 @@ export type RootStackParamList = {
     Profile: undefined;
     LevelRoom: { levelId: string; initialHotspot?: string };
     RoomOfLevels: undefined;
+    RoomOfLevels2: undefined;
     RoomOfLevels3D: undefined;
     AnimationShowcase: undefined;
     LevelContentMenu: { levelId: string };

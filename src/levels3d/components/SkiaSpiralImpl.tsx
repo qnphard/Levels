@@ -460,7 +460,7 @@ export const SkiaSpiralImpl = () => {
     const scrollStart = useSharedValue(0);
 
     const navigateToMenu = (id: string) => {
-        navigation.navigate('LevelContentMenu', { levelId: id });
+        navigation.navigate('LevelRoom', { levelId: id });
     };
 
     // Pan gesture for vertical scrolling
