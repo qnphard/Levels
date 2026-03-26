@@ -1,7 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { AI_CONFIG } from '../config/aiConfig';
 
-const genAI = new GoogleGenerativeAI(AI_CONFIG.GEMINI_API_KEY);
+function getGenAI(): GoogleGenerativeAI | null {
+    const key = AI_CONFIG.GEMINI_API_KEY?.trim();
+    if (!key) return null;
+    return new GoogleGenerativeAI(key);
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TYPES
@@ -56,6 +60,49 @@ export interface GeneratedScript {
       background: string;
       volumeAdvice?: string;
    };
+}
+
+function normalizeGeneratedScript(parsed: unknown): GeneratedScript {
+    if (!parsed || typeof parsed !== 'object') {
+        throw new Error('Model returned invalid JSON (not an object).');
+    }
+    const p = parsed as Record<string, unknown>;
+    const rawSections = Array.isArray(p.sections) ? p.sections : [];
+    const sections: ScriptSection[] = [];
+
+    for (let i = 0; i < rawSections.length; i++) {
+        const s = rawSections[i];
+        if (!s || typeof s !== 'object') continue;
+        const o = s as Record<string, unknown>;
+        const name = typeof o.name === 'string' && o.name.trim() ? o.name.trim() : `Section ${i + 1}`;
+        const approxSeconds = typeof o.approxSeconds === 'number' && o.approxSeconds > 0 ? o.approxSeconds : 45;
+        const lineArr = Array.isArray(o.lines) ? o.lines : [];
+        const lines = lineArr.filter((l): l is string => typeof l === 'string' && l.trim().length > 0);
+        if (lines.length > 0) {
+            sections.push({ name, approxSeconds, lines });
+        }
+    }
+
+    if (sections.length === 0) {
+        throw new Error('Model JSON had no speakable lines (missing or empty "sections[].lines").');
+    }
+
+    const hints = p.audioHints && typeof p.audioHints === 'object' ? (p.audioHints as Record<string, unknown>) : {};
+    return {
+        title: typeof p.title === 'string' && p.title.trim() ? p.title.trim() : 'Guided meditation',
+        intent: typeof p.intent === 'string' ? p.intent : '',
+        safety:
+            typeof p.safety === 'string' && p.safety.trim().length >= 10
+                ? p.safety
+                : 'If anything feels too intense, you can open your eyes, feel your feet, and pause.',
+        sections,
+        silenceCues: Array.isArray(p.silenceCues) ? (p.silenceCues as SilenceCue[]) : [],
+        audioHints: {
+            binaural: typeof hints.binaural === 'string' ? hints.binaural : 'none',
+            background: typeof hints.background === 'string' ? hints.background : 'none',
+            volumeAdvice: typeof hints.volumeAdvice === 'string' ? hints.volumeAdvice : undefined,
+        },
+    };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -288,8 +335,9 @@ export const geminiService = {
     * Generates a Hawkins-aligned meditation script with structured JSON output.
     */
    generateScript: async (options: GenerationOptions): Promise<GeneratedScript> => {
-      if (!AI_CONFIG.GEMINI_API_KEY) {
-         throw new Error('Gemini API Key is missing. Please add it to aiConfig.ts');
+      const genAI = getGenAI();
+      if (!genAI) {
+         throw new Error('Gemini API key is missing. Set EXPO_PUBLIC_GEMINI_API_KEY in your .env file.');
       }
 
       const {
@@ -333,7 +381,11 @@ Output ONLY valid JSON. No markdown, no code blocks, no explanation.
       try {
          const result = await model.generateContent(userPrompt);
          const response = await result.response;
-         let text = response.text().trim();
+         const raw = response.text();
+         if (raw == null || typeof raw !== 'string') {
+            throw new Error('Empty response from Gemini.');
+         }
+         let text = raw.trim();
 
          // Strip markdown code blocks if present
          if (text.startsWith('```json')) {
@@ -347,17 +399,29 @@ Output ONLY valid JSON. No markdown, no code blocks, no explanation.
          }
          text = text.trim();
 
-         const script: GeneratedScript = JSON.parse(text);
-
-         // Integrity check: ensure safety line exists
-         if (!script.safety || script.safety.length < 10) {
-            script.safety = 'If anything feels too intense, you can open your eyes, feel your feet, and pause.';
+         let parsed: unknown;
+         try {
+            parsed = JSON.parse(text);
+         } catch {
+            throw new Error('Model did not return valid JSON. Try again or use template mode (no API key).');
          }
 
+         const script = normalizeGeneratedScript(parsed);
          return script;
-      } catch (error) {
+      } catch (error: unknown) {
          console.error('Gemini Generation Error:', error);
-         throw error;
+         const msg = error instanceof Error ? error.message : String(error);
+         if (/403|leaked|API key/i.test(msg)) {
+            throw new Error(
+               'Gemini refused this API key (invalid, revoked, or reported as leaked). Create a new key in Google AI Studio and set EXPO_PUBLIC_GEMINI_API_KEY.',
+            );
+         }
+         if (/404|no longer available|not found/i.test(msg)) {
+            throw new Error(
+               `This Gemini model is not available for your project (${AI_CONFIG.MODEL_NAME}). In AI Studio → Models, pick an id your key can use and set EXPO_PUBLIC_GEMINI_MODEL (e.g. gemini-3-flash-preview or gemini-2.5-flash-preview).`,
+            );
+         }
+         throw error instanceof Error ? error : new Error(msg);
       }
    },
 
@@ -366,11 +430,13 @@ Output ONLY valid JSON. No markdown, no code blocks, no explanation.
     */
    scriptToText: (script: GeneratedScript): string => {
       const lines: string[] = [];
-
-      for (const section of script.sections) {
-         lines.push(...section.lines);
+      const sections = Array.isArray(script?.sections) ? script.sections : [];
+      for (const section of sections) {
+         if (!section || !Array.isArray(section.lines)) continue;
+         for (const line of section.lines) {
+            if (typeof line === 'string' && line.trim()) lines.push(line.trim());
+         }
       }
-
       return lines.join(' ');
    },
 };

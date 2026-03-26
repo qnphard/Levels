@@ -92,26 +92,36 @@ export default function TutorialPopup({ visible, onDismiss }: TutorialPopupProps
   );
 }
 
-// Hook to manage tutorial popup visibility
-export function useTutorialPopup() {
+/**
+ * @param splashSequenceComplete — In production, false until the video splash has finished and been dismissed.
+ *   Dev builds skip that video, so pass true. Without this gate, Modal renders above the splash on device builds.
+ */
+export function useTutorialPopup(splashSequenceComplete: boolean) {
   const [showTutorial, setShowTutorial] = useState(false);
 
   useEffect(() => {
+    if (!splashSequenceComplete) return;
+
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     (async () => {
       try {
         const shown = await AsyncStorage.getItem(TUTORIAL_SHOWN_KEY);
-        if (!shown) {
-          // Small delay to ensure app is fully loaded
-          setTimeout(() => {
-            setShowTutorial(true);
-          }, 1000);
-        }
+        if (shown || cancelled) return;
+        timer = setTimeout(() => {
+          if (!cancelled) setShowTutorial(true);
+        }, 1000);
       } catch (error) {
-        // If there's an error, don't show the tutorial
         console.warn('Failed to check tutorial status:', error);
       }
     })();
-  }, []);
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [splashSequenceComplete]);
 
   const handleDismiss = async () => {
     try {

@@ -20,12 +20,15 @@ import PracticeSelector, {
 } from '../../components/PracticeSelector';
 import useTickSound from '../../hooks/useTickSound';
 import { useOnboardingStore } from '../../store/onboardingStore';
+import { useThemeColors } from '../../theme/colors';
+import { LivingBackground } from '../../components/LivingBackground';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'FirstBreath'>;
 
 type BreathPhase = 'inhale' | 'holdIn' | 'exhale' | 'holdOut' | 'steady' | 'shaking';
 
 const FirstBreathScreen = () => {
+    const theme = useThemeColors();
     const navigation = useNavigation<NavigationProp>();
     const isFocused = useIsFocused();
     const { playTick } = useTickSound();
@@ -233,10 +236,13 @@ const FirstBreathScreen = () => {
 
     if (!selectedPractice) {
         return (
-            <PracticeSelector
-                onSelect={handleSelectPractice}
-                onSkip={handleSkip}
-            />
+            <View style={{ flex: 1, backgroundColor: theme.background }}>
+                <LivingBackground />
+                <PracticeSelector
+                    onSelect={handleSelectPractice}
+                    onSkip={handleSkip}
+                />
+            </View>
         );
     }
 

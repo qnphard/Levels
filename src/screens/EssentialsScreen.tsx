@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useContext } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,8 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
   useThemeColors,
@@ -49,6 +51,17 @@ const toRgba = (hex: string, alpha: number): string => {
 
 export default function EssentialsScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const tabBarHeight = useContext(BottomTabBarHeightContext);
+  const insets = useSafeAreaInsets();
+  /** Tab bar is position:absolute; reserve its height + extra so the mandala clears labels and nav. */
+  const mandalaBottomPadding = useMemo(() => {
+    const bar =
+      typeof tabBarHeight === 'number' && tabBarHeight > 0
+        ? tabBarHeight
+        : insets.bottom;
+    return bar + 28;
+  }, [tabBarHeight, insets.bottom]);
+
   const theme = useThemeColors();
   const glowEnabled = useGlowEnabled();
   const styles = getStyles(theme);
@@ -187,8 +200,8 @@ export default function EssentialsScreen() {
         </Text>
       </View>
 
-      {/* Radial Layout */}
-      <View style={styles.contentContainer}>
+      {/* Radial Layout — paddingBottom keeps the wheel above the floating tab bar */}
+      <View style={[styles.contentContainer, { paddingBottom: mandalaBottomPadding }]}>
         <RadialMenuLayout
           items={essentialItems}
           onItemPress={handleEssentialPress}
@@ -262,7 +275,8 @@ const getStyles = (theme: ThemeColors) =>
     },
     floatingSubtitleContainer: {
       paddingHorizontal: spacing.xl,
-      marginTop: -spacing.sm,
+      marginTop: 0,
+      marginBottom: spacing.sm,
       zIndex: 50,
     },
     subtitle: {
@@ -276,7 +290,6 @@ const getStyles = (theme: ThemeColors) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingBottom: 110, // Increased to offset the absolute tab bar and move mandala into visible center
-      marginTop: -20, // Pull up to reduce excessive top space
+      marginTop: spacing.sm,
     },
   });

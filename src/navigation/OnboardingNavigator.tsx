@@ -23,6 +23,8 @@ export const OnboardingNavigator = () => {
             screenOptions={{
                 headerShown: false,
                 gestureEnabled: false, // Force flow completion
+                // Avoid default native stack light background (iOS) so theme + screen fills stay aligned.
+                contentStyle: { backgroundColor: 'transparent' },
             }}
         >
             <Stack.Screen name="Welcome" component={WelcomeScreen} />

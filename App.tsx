@@ -15,10 +15,10 @@ import CelebrationProvider from './src/components/CelebrationProvider';
 import { AtmosphereOverlay } from './src/components/AtmosphereOverlay';
 import { VideoSplashScreen } from './src/components/VideoSplashScreen';
 
-function AppContent() {
+function AppContent({ splashSequenceComplete }: { splashSequenceComplete: boolean }) {
   const theme = useThemeColors();
   const mode = useThemeMode();
-  const { showTutorial, dismissTutorial } = useTutorialPopup();
+  const { showTutorial, dismissTutorial } = useTutorialPopup(splashSequenceComplete);
 
   // Defer until after first paint. In __DEV__, skip hiding the nav bar: Metro / dev overlays
   // cause rapid onWindowFocusChanged(false) and ReactHost logs ReactNoCrashSoftException — that
@@ -97,7 +97,9 @@ export default function App() {
           <UserProgressProvider>
             <ContentEditProvider>
               <View style={{ flex: 1 }}>
-                {appIsReady && <AppContent />}
+                {appIsReady && (
+                    <AppContent splashSequenceComplete={devSkipVideoSplash || isSplashFinished} />
+                )}
 
                 {!devSkipVideoSplash && !isSplashFinished && (
                   <VideoSplashScreen

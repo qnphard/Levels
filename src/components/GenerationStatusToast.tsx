@@ -57,7 +57,9 @@ export default function GenerationStatusToast() {
                         <View style={styles.textContainer}>
                             <Text style={styles.statusText}>{getStatusText()}</Text>
                             {progress === 'error' ? (
-                                <Text style={styles.errorText} numberOfLines={1}>{error}</Text>
+                                <Text style={styles.errorText} numberOfLines={4}>
+                                    {error}
+                                </Text>
                             ) : (
                                 <View style={styles.progressBarBg}>
                                     <View style={[styles.progressBarFill, { width: `${progressValue}%` }]} />

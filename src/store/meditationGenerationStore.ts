@@ -3,7 +3,12 @@ import { Audio } from 'expo-av';
 import { geminiService, MeditationPurpose, MeditationStyle, MeditationDuration, GeneratedScript } from '../services/geminiService';
 import * as voiceService from '../services/voiceTTSService';
 import { AI_CONFIG } from '../config/aiConfig';
-import { generateMeditationScript, sectionsToText } from '../data/meditationScripts';
+import {
+    generateMeditationScript,
+    sectionsToText,
+    purposeForTemplate,
+    durationMinutesForTemplate,
+} from '../data/meditationScripts';
 import { useSavedMeditationsStore } from './savedMeditationsStore';
 
 interface GenerationParams {
@@ -93,12 +98,30 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
                 } catch (err) {
                     console.warn('Gemini generation failed, falling back to templates:', err);
                     // Fallback to old template system
-                    const sections = generateMeditationScript(params.purpose as any, params.duration as any);
+                    const sections = generateMeditationScript(
+                        purposeForTemplate(params.purpose),
+                        durationMinutesForTemplate(params.duration),
+                    );
                     scriptText = sectionsToText(sections);
                 }
             } else {
-                const sections = generateMeditationScript(params.purpose as any, params.duration as any);
+                const sections = generateMeditationScript(
+                    purposeForTemplate(params.purpose),
+                    durationMinutesForTemplate(params.duration),
+                );
                 scriptText = sectionsToText(sections);
+            }
+
+            scriptText = String(scriptText ?? '').trim();
+            if (!scriptText.length) {
+                const sections = generateMeditationScript(
+                    purposeForTemplate(params.purpose),
+                    durationMinutesForTemplate(params.duration),
+                );
+                scriptText = sectionsToText(sections).trim();
+            }
+            if (!scriptText.length) {
+                throw new Error('Could not build a meditation script. Check Gemini response or templates.');
             }
 
             console.log('[MeditationGen] Script generated, length:', scriptText.length, 'chars');
@@ -116,7 +139,7 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
             // 2. Synthesize Audio
             if (params.usePremiumVoice) {
                 // Generate audio URLs (one or more segments)
-                const uris = await voiceService.synthesize({
+                const urisRaw = await voiceService.synthesize({
                     text: scriptText,
                     speed: params.speed,
                     voiceId: params.voiceId,
@@ -126,6 +149,10 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
                     ambient: params.ambient,
                     ambientVolume: params.ambientVolume,
                 });
+                const uris = Array.isArray(urisRaw) ? urisRaw.filter((u) => typeof u === 'string' && u.length > 0) : [];
+                if (uris.length === 0) {
+                    throw new Error('Voice synthesis returned no audio. Check your TTS backend and EXPO_PUBLIC_TTS_API_URL.');
+                }
 
                 // Store URI, mark complete.
                 console.log('[MeditationGen] TTS complete, got', uris.length, 'audio URIs');
@@ -158,7 +185,12 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
 
         } catch (err: any) {
             console.error('[MeditationGen] Generation failed:', err);
-            const errorMessage = err?.message || 'Failed to generate';
+            const errorMessage =
+                typeof err?.message === 'string' && err.message
+                    ? err.message
+                    : typeof err === 'string'
+                      ? err
+                      : 'Failed to generate';
             console.error('[MeditationGen] Error message:', errorMessage);
             if (interval) clearInterval(interval);
             set({ error: errorMessage, progress: 'error', isGenerating: false });
