@@ -6,7 +6,7 @@ import React, {
   useState,
   useEffect,
 } from 'react';
-import { useColorScheme } from 'react-native';
+import { useColorScheme, TextStyle } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { typography as typographyFull } from './typography';
 
@@ -456,8 +456,12 @@ export const typography = {
   h4: typographyFull.sizes.caption,
   body: typographyFull.sizes.body,
   small: typographyFull.sizes.small,
-  bold: typographyFull.weights.bold,
-  regular: typographyFull.weights.regular,
+  bold: typographyFull.weights.bold as TextStyle['fontWeight'],
+  regular: typographyFull.weights.regular as TextStyle['fontWeight'],
+  medium: typographyFull.weights.medium as TextStyle['fontWeight'],
+  semibold: '600' as TextStyle['fontWeight'],
+  /** Extra-small label size (not in core scale). */
+  tiny: 10,
 };
 
 export const spacing = {

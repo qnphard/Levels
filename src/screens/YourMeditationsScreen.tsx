@@ -8,7 +8,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import { RootStackParamList } from '../navigation/types';
 import { useSavedMeditationsStore } from '../store/savedMeditationsStore';
-import { getPollyVoiceLabel } from '../services/voiceTTSService';
+import { getPollyVoiceLabel, getPollyEngineLabel } from '../services/voiceTTSService';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -52,7 +52,9 @@ export default function YourMeditationsScreen() {
           audioUrls,
           category: 'Find Peace',
           isPremium: true,
-          instructor: `Voice: ${getPollyVoiceLabel(String(m.voiceId ?? 'Joanna'))}`,
+          instructor: `Voice: ${getPollyVoiceLabel(String(m.voiceId ?? 'Joanna'))}${
+            m.pollyEngine ? ` · ${getPollyEngineLabel(m.pollyEngine)}` : ''
+          }`,
           // Layered audio (optional)
           brainwave: (m.brainwave ?? 'none') as any,
           binauralVolume: typeof m.binauralVolume === 'number' ? m.binauralVolume : 0.15,

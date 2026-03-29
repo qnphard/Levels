@@ -11,7 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
+import { RootStackParamList } from '../navigation/types';
 import {
   useThemeColors,
   useThemeMode,
@@ -26,6 +26,7 @@ import {
 import { useContentEdit } from '../context/ContentEditContext';
 
 import { useOnboardingStore } from '../store/onboardingStore';
+import { useAuth } from '../context/AuthContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -42,6 +43,7 @@ export default function SettingsScreen() {
   const setShowTutorialAgain = useOnboardingStore((s) => s.setShowTutorialAgain);
   const showOnboarding = useOnboardingStore((s) => s.showOnboarding);
   const setShowOnboarding = useOnboardingStore((s) => s.setShowOnboarding);
+  const { user, signOutUser, firebaseConfigured } = useAuth();
 
   const styles = getStyles(theme);
 
@@ -118,6 +120,31 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {firebaseConfigured && user ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Account</Text>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => void signOutUser()}
+            >
+              <View style={styles.settingLeft}>
+                <Ionicons
+                  name="log-out-outline"
+                  size={24}
+                  color={theme.textSecondary}
+                />
+                <View style={styles.settingTextContainer}>
+                  <Text style={styles.settingLabel}>Sign out</Text>
+                  <Text style={styles.settingDescription}>
+                    {user.email ?? user.uid}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
         {/* Tutorial Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Tutorial & Guidance</Text>
@@ -144,7 +171,7 @@ export default function SettingsScreen() {
             />
           </View>
 
-          {/* Show Daily Practices Toggle */}
+          {/* First-run onboarding (intention → spectrum → breath) */}
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
               <Ionicons
@@ -153,9 +180,9 @@ export default function SettingsScreen() {
                 color={theme.textSecondary}
               />
               <View style={styles.settingTextContainer}>
-                <Text style={styles.settingLabel}>Show Daily Practices</Text>
+                <Text style={styles.settingLabel}>Show first-run onboarding</Text>
                 <Text style={styles.settingDescription}>
-                  Show breathing and letting go practices on each app launch
+                  Guided intention, check-in, and first breath flow when you have not finished it yet
                 </Text>
               </View>
             </View>

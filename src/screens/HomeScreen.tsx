@@ -1,4 +1,6 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import TutorialPopup, { useTutorialPopup } from '../components/TutorialPopup';
+import { useOnboardingStore } from '../store/onboardingStore';
 import {
   View,
   Text,
@@ -6,6 +8,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Linking,
+  AppState,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +21,7 @@ import MeditationCard from '../components/MeditationCard';
 import ArticleCard from '../components/ArticleCard';
 import PrimaryButton from '../components/PrimaryButton';
 import SOSBottomSheet from '../components/SOSBottomSheet';
+import IntentionSessionModal from '../components/IntentionSessionModal';
 import { Article } from '../types';
 import {
   useThemeColors,
@@ -32,13 +36,40 @@ import {
 } from '../theme/colors';
 import { useUserStore } from '../store/userStore';
 import { getLevelById } from '../data/levels';
+import { getLocalCalendarDateString } from '../utils/localCalendarDate';
+import { useSplashFinished } from '../context/SplashContext';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function HomeScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const isOnboardingComplete = useOnboardingStore((s) => s.isComplete);
+  const intention = useOnboardingStore((s) => s.intention);
+  const hasCompletedIntentionPrompt = useOnboardingStore(
+    (s) => s.hasCompletedIntentionPrompt
+  );
+  const hasSeenTutorial = useOnboardingStore((s) => s.hasSeenTutorial);
+  const intentionPromptSnoozeDateLocal = useOnboardingStore(
+    (s) => s.intentionPromptSnoozeDateLocal
+  );
+  const setIntentionPromptSnoozeDateLocal = useOnboardingStore(
+    (s) => s.setIntentionPromptSnoozeDateLocal
+  );
+  const setHasCompletedIntentionPrompt = useOnboardingStore(
+    (s) => s.setHasCompletedIntentionPrompt
+  );
+  /** Glow/theme popup runs only after intention is answered — avoids blocking or skipping the session “What brings you here?” on auto-login. */
+  const { showTutorial, dismissTutorial } = useTutorialPopup(
+    isOnboardingComplete && hasSeenTutorial && hasCompletedIntentionPrompt
+  );
+  const [showIntentionModal, setShowIntentionModal] = useState(false);
+  const sessionIntentionShownRef = useRef(false);
+  /** Re-run “snoozed for today?” when app foregrounds or the local calendar day may have changed. */
+  const [foregroundTick, setForegroundTick] = useState(0);
+  const [minuteTick, setMinuteTick] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [showSOS, setShowSOS] = useState(false);
+  const splashFinished = useSplashFinished();
   const theme = useThemeColors();
   const toggleTheme = useThemeToggle();
   const glowEnabled = useGlowEnabled();
@@ -54,6 +85,59 @@ export default function HomeScreen() {
     selectedCategory === 'All'
       ? sampleMeditations
       : sampleMeditations.filter((m) => m.category === selectedCategory);
+
+  /** If intention was set in first-run onboarding, mark prompt complete (migration for existing installs). */
+  useEffect(() => {
+    if (intention != null && !hasCompletedIntentionPrompt) {
+      setHasCompletedIntentionPrompt(true);
+    }
+  }, [intention, hasCompletedIntentionPrompt, setHasCompletedIntentionPrompt]);
+
+  const snoozedForToday = useMemo(() => {
+    const today = getLocalCalendarDateString();
+    return intentionPromptSnoozeDateLocal === today;
+  }, [intentionPromptSnoozeDateLocal, foregroundTick, minuteTick]);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        sessionIntentionShownRef.current = false;
+        setForegroundTick((n) => n + 1);
+      }
+    });
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => setMinuteTick((n) => n + 1), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  /**
+   * “What brings you here?” on Home — every time you enter the app (foreground), unless snoozed for today.
+   * First-run onboarding + tutorial stack must be done first. Glow tutorial still waits on hasCompletedIntentionPrompt.
+   * Waits for the intro video splash to finish so Modal doesn’t stack above it.
+   */
+  useEffect(() => {
+    if (!isOnboardingComplete) return;
+    if (!hasSeenTutorial) return;
+    if (!splashFinished) return;
+    if (snoozedForToday) return;
+    if (sessionIntentionShownRef.current) return;
+
+    const t = setTimeout(() => {
+      sessionIntentionShownRef.current = true;
+      setShowIntentionModal(true);
+    }, 600);
+    return () => clearTimeout(t);
+  }, [isOnboardingComplete, hasSeenTutorial, snoozedForToday, foregroundTick, splashFinished]);
+
+  const handleIntentionModalFinished = (opts?: { snoozeToday?: boolean }) => {
+    setShowIntentionModal(false);
+    if (opts?.snoozeToday) {
+      setIntentionPromptSnoozeDateLocal(getLocalCalendarDateString());
+    }
+  };
 
   // Get appropriate practice based on time of day
   const getTodaysPractice = () => {
@@ -261,7 +345,7 @@ export default function HomeScreen() {
                 ].join(', '),
               }
             ]}
-            onPress={() => navigation.navigate('RoomOfLevels')}
+            onPress={() => navigation.navigate('RoomOfLevels2')}
             activeOpacity={0.9}
           >
             <LinearGradient
@@ -291,6 +375,35 @@ export default function HomeScreen() {
                 </View>
                 <View style={styles.roomIconContainer}>
                   <Ionicons name="cloud-outline" size={32} color="#FFFFFF" />
+                </View>
+              </View>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* Room of Levels v2 (beta) — wellness door room */}
+        <View style={styles.room2Module}>
+          <TouchableOpacity
+            style={styles.room2Card}
+            onPress={() => navigation.navigate('RoomOfLevels2')}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={['#ecfdf5', '#d1fae5', '#a7f3d0']}
+              style={styles.room2Gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <View style={styles.room2Content}>
+                <View style={styles.room2TextSection}>
+                  <Text style={styles.room2Label}>Beta</Text>
+                  <Text style={styles.room2Title}>The Room of Levels</Text>
+                  <Text style={styles.room2Subtitle}>
+                    Calm room & doors — experimental new entrance
+                  </Text>
+                </View>
+                <View style={styles.room2IconWrap}>
+                  <Ionicons name="leaf-outline" size={28} color="#047857" />
                 </View>
               </View>
             </LinearGradient>
@@ -448,6 +561,11 @@ export default function HomeScreen() {
 
       {/* SOS Bottom Sheet */}
       <SOSBottomSheet visible={showSOS} onClose={() => setShowSOS(false)} />
+      <TutorialPopup visible={showTutorial} onDismiss={dismissTutorial} />
+      <IntentionSessionModal
+        visible={showIntentionModal}
+        onFinished={handleIntentionModalFinished}
+      />
     </LinearGradient>
   );
 }
@@ -814,6 +932,62 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       height: 50,
       borderRadius: 25,
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    room2Module: {
+      paddingHorizontal: spacing.lg,
+      marginBottom: spacing.md,
+    },
+    room2Card: {
+      borderRadius: borderRadius.lg,
+      overflow: 'hidden',
+      borderWidth: 1,
+      borderColor: 'rgba(5, 150, 105, 0.35)',
+      elevation: 4,
+      shadowColor: '#059669',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+    },
+    room2Gradient: {
+      paddingVertical: spacing.md,
+      paddingHorizontal: spacing.lg,
+    },
+    room2Content: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    room2TextSection: {
+      flex: 1,
+      marginRight: spacing.sm,
+    },
+    room2Label: {
+      fontSize: 9,
+      color: '#047857',
+      fontWeight: 'bold',
+      textTransform: 'uppercase',
+      letterSpacing: 1.2,
+      marginBottom: 2,
+    },
+    room2Title: {
+      fontSize: 17,
+      color: '#064e3b',
+      fontWeight: 'bold',
+      marginBottom: 2,
+    },
+    room2Subtitle: {
+      fontSize: 11,
+      color: '#065f46',
+      fontStyle: 'italic',
+      opacity: 0.9,
+    },
+    room2IconWrap: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: 'rgba(255,255,255,0.65)',
       alignItems: 'center',
       justifyContent: 'center',
     },

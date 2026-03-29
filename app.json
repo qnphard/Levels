@@ -2,6 +2,8 @@
   "expo": {
     "name": "Levels",
     "slug": "meditation-app",
+    "scheme": "levels",
+    "newArchEnabled": true,
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/play-store-thumbnail.png",
@@ -19,7 +21,7 @@
         "foregroundImage": "./assets/images/play-store-thumbnail.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.meditationapp",
+      "package": "com.anonymous.levels",
       "permissions": [
         "INTERNET",
         "WAKE_LOCK"
@@ -37,7 +39,8 @@
     "owner": "qnphard",
     "plugins": [
       "expo-dev-client",
-      "./plugins/withDisablePngCrunching"
+      "./plugins/withDisablePngCrunching",
+      "expo-video"
     ]
   }
 }

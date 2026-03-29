@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.anonymous.meditationapp'
+    namespace 'com.anonymous.levels'
     defaultConfig {
-        applicationId 'com.anonymous.meditationapp'
+        applicationId 'com.anonymous.levels'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -99,7 +99,10 @@ android {
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
+            // Prefer project keystore (committed); else Android Studio default in ~/.android/
+            def projectStore = file("${projectDir}/debug.keystore")
+            def homeStore = file("${System.getProperty("user.home")}/.android/debug.keystore")
+            storeFile projectStore.exists() ? projectStore : homeStore
             storePassword 'android'
             keyAlias 'androiddebugkey'
             keyPassword 'android'

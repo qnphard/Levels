@@ -6,6 +6,7 @@ import {
   Modal,
   Pressable,
   TouchableOpacity,
+  InteractionManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -92,26 +93,46 @@ export default function TutorialPopup({ visible, onDismiss }: TutorialPopupProps
   );
 }
 
-// Hook to manage tutorial popup visibility
-export function useTutorialPopup() {
+/**
+ * Home-screen tutorial only — pass `enabled` when first-run onboarding is done so this
+ * does not fire over OnboardingNavigator / TutorialNavigator. Render on HomeScreen only.
+ */
+export function useTutorialPopup(enabled: boolean) {
   const [showTutorial, setShowTutorial] = useState(false);
+  /** False until AsyncStorage has been read — avoids stacking modals before we know if the glow/theme tutorial will show. */
+  const [tutorialPopupResolved, setTutorialPopupResolved] = useState(!enabled);
 
   useEffect(() => {
-    (async () => {
-      try {
-        const shown = await AsyncStorage.getItem(TUTORIAL_SHOWN_KEY);
-        if (!shown) {
-          // Small delay to ensure app is fully loaded
-          setTimeout(() => {
-            setShowTutorial(true);
-          }, 1000);
+    if (!enabled) {
+      setShowTutorial(false);
+      setTutorialPopupResolved(true);
+      return;
+    }
+    setTutorialPopupResolved(false);
+    let cancelled = false;
+    InteractionManager.runAfterInteractions(() => {
+      if (cancelled) return;
+      (async () => {
+        try {
+          const shown = await AsyncStorage.getItem(TUTORIAL_SHOWN_KEY);
+          if (!cancelled) {
+            setTutorialPopupResolved(true);
+            if (!shown) {
+              setShowTutorial(true);
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to check tutorial status:', error);
+          if (!cancelled) {
+            setTutorialPopupResolved(true);
+          }
         }
-      } catch (error) {
-        // If there's an error, don't show the tutorial
-        console.warn('Failed to check tutorial status:', error);
-      }
-    })();
-  }, []);
+      })();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [enabled]);
 
   const handleDismiss = async () => {
     try {
@@ -126,6 +147,7 @@ export function useTutorialPopup() {
   return {
     showTutorial,
     dismissTutorial: handleDismiss,
+    tutorialPopupResolved,
   };
 }
 

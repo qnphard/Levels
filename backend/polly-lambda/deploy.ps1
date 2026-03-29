@@ -70,10 +70,31 @@ if (!$apiUrl -or $apiUrl -eq "None") {
 }
 
 $envPath = Join-Path $projectRoot ".env"
-$envLine = "EXPO_PUBLIC_TTS_API_URL=$apiUrl"
+$ttsKey = "EXPO_PUBLIC_TTS_API_URL"
+$ttsLine = "${ttsKey}=$apiUrl"
 
-Write-Host "Writing $envPath"
-Set-Content -Path $envPath -Value $envLine -Encoding UTF8
+# Merge into .env — never wipe other keys (Firebase, Gemini, etc.).
+$outLines = [System.Collections.ArrayList]@()
+$replaced = $false
+if (Test-Path -LiteralPath $envPath) {
+  foreach ($line in Get-Content -LiteralPath $envPath -Encoding UTF8) {
+    if ($line -match "^\s*${ttsKey}\s*=") {
+      [void]$outLines.Add($ttsLine)
+      $replaced = $true
+    } else {
+      [void]$outLines.Add($line)
+    }
+  }
+}
+if (-not $replaced) {
+  if ($outLines.Count -gt 0 -and [string]$outLines[$outLines.Count - 1] -ne "") {
+    [void]$outLines.Add("")
+  }
+  [void]$outLines.Add($ttsLine)
+}
+
+Write-Host "Updating $envPath (preserving other variables)"
+Set-Content -LiteralPath $envPath -Value ($outLines -as [string[]]) -Encoding UTF8
 
 Write-Host ""
 Write-Host "Done." -ForegroundColor Green

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
-import * as SplashScreen from 'expo-splash-screen';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { useVideoPlayer, VideoView } from '../shims/expoVideo';
+import { useEventListener } from 'expo';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 
 interface VideoSplashScreenProps {
@@ -11,17 +11,16 @@ interface VideoSplashScreenProps {
 }
 
 export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onFinish, onReady, allowFinish }) => {
-    const [status, setStatus] = useState<any>({});
-    const video = useRef<Video>(null);
+    const player = useVideoPlayer(require('../assets/animations/splash.mp4'), (p) => {
+        p.loop = false;
+        p.play();
+    });
     const opacity = useSharedValue(1);
     const [videoEnded, setVideoEnded] = useState(false);
 
-    const onPlaybackStatusUpdate = (status: any) => {
-        setStatus(status);
-        if (status.didJustFinish && !videoEnded) {
-            setVideoEnded(true);
-        }
-    };
+    useEventListener(player, 'playToEnd', () => {
+        setVideoEnded(true);
+    });
 
     useEffect(() => {
         if (videoEnded && allowFinish) {
@@ -32,11 +31,7 @@ export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onFinish, 
             });
             setTimeout(onFinish, 500);
         }
-    }, [videoEnded, allowFinish]);
-
-    const onScanLoad = () => {
-        onReady();
-    };
+    }, [videoEnded, allowFinish, onFinish]);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value
@@ -44,16 +39,12 @@ export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onFinish, 
 
     return (
         <Animated.View style={[StyleSheet.absoluteFill, styles.container, animatedStyle]}>
-            <Video
-                ref={video}
+            <VideoView
+                player={player}
                 style={StyleSheet.absoluteFill}
-                source={require('../assets/animations/splash.mp4')}
-                useNativeControls={false}
-                resizeMode={ResizeMode.CONTAIN}
-                isLooping={false}
-                shouldPlay={true}
-                onPlaybackStatusUpdate={onPlaybackStatusUpdate}
-                onLoad={onScanLoad}
+                contentFit="contain"
+                nativeControls={false}
+                onFirstFrameRender={onReady}
             />
         </Animated.View>
     );

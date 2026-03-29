@@ -174,7 +174,48 @@ const CLOSINGS: Record<MeditationPurpose, string[]> = {
 
 // Helper function to pick random item
 function pickRandom<T>(arr: T[]): T {
+    if (!Array.isArray(arr) || arr.length === 0) {
+        throw new Error('pickRandom: empty or invalid array');
+    }
     return arr[Math.floor(Math.random() * arr.length)];
+}
+
+/**
+ * Maps `MeditationGenerator` / Gemini purpose ids to template keys used in this file.
+ * Calling templates with Gemini ids (e.g. sleepRest) leaves OPENINGS[purpose] undefined and crashes on .length.
+ */
+const APP_PURPOSE_TO_TEMPLATE: Record<string, MeditationPurpose> = {
+    sleepRest: 'sleep',
+    findingCalm: 'calm',
+    focusClarity: 'focus',
+    morningAwakening: 'morning',
+    stressRelief: 'stress_relief',
+    selfCompassion: 'self_compassion',
+    sleep: 'sleep',
+    calm: 'calm',
+    focus: 'focus',
+    morning: 'morning',
+};
+
+export function purposeForTemplate(purpose: string): MeditationPurpose {
+    return APP_PURPOSE_TO_TEMPLATE[purpose] ?? 'calm';
+}
+
+const APP_DURATION_TO_MINUTES: Record<string, MeditationDuration> = {
+    short: 5,
+    medium: 10,
+    long: 15,
+    '5': 5,
+    '10': 10,
+    '15': 15,
+    '20': 20,
+};
+
+export function durationMinutesForTemplate(duration: string | number): MeditationDuration {
+    if (typeof duration === 'number' && [5, 10, 15, 20].includes(duration)) {
+        return duration as MeditationDuration;
+    }
+    return APP_DURATION_TO_MINUTES[String(duration)] ?? 10;
 }
 
 // Generate a meditation script

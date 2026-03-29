@@ -1,13 +1,20 @@
 /**
  * AI Configuration
- * 
- * To use the Gemini AI features, get an API key from:
- * https://aistudio.google.com/
+ *
+ * Set `EXPO_PUBLIC_GEMINI_API_KEY` in `.env` (never commit keys — Google disables leaked keys).
+ * https://aistudio.google.com/apikey
  */
 
+const geminiKey =
+    (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_GEMINI_API_KEY) || '';
+
 export const AI_CONFIG = {
-    GEMINI_API_KEY: 'AIzaSyBvipdttynkt5JhdrCYTF-gKlAnUdp0J0g', // Enter your API key here
+    GEMINI_API_KEY: geminiKey,
     OPENAI_API_KEY: '', // Add your OpenAI API key here
-    MODEL_NAME: 'gemini-3-pro-preview',
+    /**
+     * Gemini 3 Flash. Override with EXPO_PUBLIC_GEMINI_MODEL if your project lists a different id.
+     */
+    MODEL_NAME:
+        (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_GEMINI_MODEL) || 'gemini-3-flash-preview',
     TTS_PROVIDER: 'openai', // 'openai' or 'xtts-v2' (fallback)
 };

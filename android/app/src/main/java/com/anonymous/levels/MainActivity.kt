@@ -1,4 +1,4 @@
-package com.anonymous.meditationapp
+package com.anonymous.levels
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

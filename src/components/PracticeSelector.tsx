@@ -119,9 +119,11 @@ export const PRACTICES: Practice[] = [
 interface PracticeSelectorProps {
     onSelect: (practice: Practice) => void;
     onSkip?: () => void;
+    /** Tighter top spacing when shown inside a modal with its own header */
+    compact?: boolean;
 }
 
-const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip }) => {
+const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip, compact }) => {
     const [activeTab, setActiveTab] = useState<PracticeType>('breathing');
     const theme = useThemeColors();
     const glowEnabled = useGlowEnabled();
@@ -130,7 +132,7 @@ const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onSelect, onSkip })
     const filteredPractices = PRACTICES.filter(p => p.type === activeTab);
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, compact && styles.containerCompact]}>
             <Text style={styles.title}>Choose Your Practice</Text>
             <Text style={styles.subtitle}>
                 Select a tool to help shift your state of being.
@@ -245,6 +247,9 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) => StyleSheet.cr
         flex: 1,
         backgroundColor: 'transparent',
         paddingTop: 60,
+    },
+    containerCompact: {
+        paddingTop: 8,
     },
     title: {
         fontSize: 28,

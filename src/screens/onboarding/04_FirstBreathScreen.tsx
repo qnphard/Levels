@@ -19,7 +19,7 @@ import PracticeSelector, {
     PRACTICES
 } from '../../components/PracticeSelector';
 import useTickSound from '../../hooks/useTickSound';
-import { useOnboardingStore } from '../../store/onboardingStore';
+import { completeFirstRunOnboardingFlow } from '../../services/onboardingCompletion';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'FirstBreath'>;
 
@@ -29,7 +29,6 @@ const FirstBreathScreen = () => {
     const navigation = useNavigation<NavigationProp>();
     const isFocused = useIsFocused();
     const { playTick } = useTickSound();
-    const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
     const [selectedPractice, setSelectedPractice] = useState<Practice | null>(null);
     const [showingDetail, setShowingDetail] = useState(false);
     const [timeLeft, setTimeLeft] = useState(60);
@@ -214,7 +213,7 @@ const FirstBreathScreen = () => {
 
     const handleSkip = () => {
         // Skip practice entirely - complete onboarding and go to main app
-        completeOnboarding();
+        void completeFirstRunOnboardingFlow();
         navigation.dispatch(
             CommonActions.reset({
                 index: 0,

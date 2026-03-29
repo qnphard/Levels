@@ -25,12 +25,14 @@ const TutorialNavigator = () => {
     return (
         <Stack.Navigator
             id={undefined}
+            initialRouteName="TutorialJourneyMap"
             screenOptions={{
                 headerShown: false,
                 animation: 'slide_from_right',
                 contentStyle: { backgroundColor: 'transparent' },
             }}
         >
+            {/** Welcome copy now opens first-run onboarding; keep screen for replay / future use */}
             <Stack.Screen name="TutorialWelcome" component={TutorialWelcome} />
             <Stack.Screen name="TutorialJourneyMap" component={TutorialJourneyMap} />
             <Stack.Screen name="TutorialLevelChapter" component={TutorialLevelChapter} />

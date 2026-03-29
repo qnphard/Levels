@@ -122,6 +122,7 @@ export default function MeditationGeneratorScreen() {
             style,
             speed,
             voiceId,
+            pollyEngine: 'generative',
             brainwave: selectedBrainwave,
             binauralVolume,
             ambient: selectedAmbient,
@@ -387,7 +388,7 @@ export default function MeditationGeneratorScreen() {
                             <Ionicons name="mic-outline" size={24} color="#6366f1" />
                         </View>
                         <View style={styles.voiceInfoText}>
-                            <Text style={styles.voiceInfoTitle}>Polly Neural Voice</Text>
+                            <Text style={styles.voiceInfoTitle}>Amazon Polly (generative)</Text>
                             <Text style={styles.voiceInfoSubtitle}>{voiceService.getPollyVoiceLabel(voiceId)}</Text>
                         </View>
                         {usePremiumVoice && (

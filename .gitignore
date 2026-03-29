@@ -35,6 +35,7 @@ Books/
 *.jks
 *.p12
 *.keystore
+!android/app/debug.keystore
 *.pem
 
 # Android

@@ -34,10 +34,11 @@ const RadialMenuLayout: React.FC<RadialMenuLayoutProps> = ({
         });
     }, []);
 
-    // Calculate radii based on actual width
-    const scale = Math.min(layout.width, layout.height) / 1000;
-    const INNER_RADIUS = layout.width * 0.28;
-    const OUTER_RADIUS = layout.width * 0.47;
+    // Scale from the smaller dimension so the full diagram fits (avoids overflow under tab bar / short viewports)
+    const fit = Math.min(layout.width, layout.height);
+    const scale = fit / 1000;
+    const INNER_RADIUS = fit * 0.28;
+    const OUTER_RADIUS = fit * 0.47;
     const CENTER_RADIUS = 55 * scale;
 
     const getCoords = useCallback((index: number, total: number, radius: number) => {
@@ -135,7 +136,12 @@ const RadialMenuLayout: React.FC<RadialMenuLayoutProps> = ({
 
 const styles = StyleSheet.create({
     container: {
-        ...StyleSheet.absoluteFillObject,
+        flex: 1,
+        width: '100%',
+        minHeight: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
     },
     hotspot: {
         position: 'absolute',

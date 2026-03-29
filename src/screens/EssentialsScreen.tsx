@@ -187,7 +187,7 @@ export default function EssentialsScreen() {
         </Text>
       </View>
 
-      {/* Radial Layout */}
+      {/* Radial Layout — tab bar no longer overlays (see MainTabs tabBarStyle) */}
       <View style={styles.contentContainer}>
         <RadialMenuLayout
           items={essentialItems}
@@ -276,7 +276,6 @@ const getStyles = (theme: ThemeColors) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      paddingBottom: 110, // Increased to offset the absolute tab bar and move mandala into visible center
-      marginTop: -20, // Pull up to reduce excessive top space
+      marginTop: -20,
     },
   });

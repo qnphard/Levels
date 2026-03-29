@@ -1,9 +1,18 @@
+import type { NavigatorScreenParams } from '@react-navigation/native';
 import { Meditation } from '../types';
+
+export type MainTabParamList = {
+    Home: undefined;
+    Journey: undefined;
+    Explore: undefined;
+    Journal: undefined;
+    Practices: undefined;
+};
 
 export type RootStackParamList = {
     Tutorial: undefined;
     Onboarding: undefined;
-    Main: undefined;
+    Main: NavigatorScreenParams<MainTabParamList> | undefined;
     Player: { meditation: Meditation };
     JourneyMap: undefined;
     LevelDetail: { levelId: string };
@@ -36,16 +45,9 @@ export type RootStackParamList = {
     Profile: undefined;
     LevelRoom: { levelId: string; initialHotspot?: string };
     RoomOfLevels: undefined;
+    RoomOfLevels2: undefined;
     RoomOfLevels3D: undefined;
     AnimationShowcase: undefined;
     LevelContentMenu: { levelId: string };
     PracticePlayer: { practiceId: string };
-};
-
-export type MainTabParamList = {
-    Home: undefined;
-    Journey: undefined;
-    Explore: undefined;
-    Journal: undefined;
-    Practices: undefined;
 };

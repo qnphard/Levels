@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
@@ -46,6 +46,7 @@ import LossAndAbandonmentScreen from '../screens/LossAndAbandonmentScreen';
 import MeditationGeneratorScreen from '../screens/MeditationGeneratorScreen';
 import YourMeditationsScreen from '../screens/YourMeditationsScreen';
 import RoomOfLevelsScreen from '../screens/RoomOfLevelsScreen';
+import RoomOfLevels2Screen from '../screens/RoomOfLevels2Screen';
 import AnimationShowcaseScreen from '../screens/AnimationShowcaseScreen';
 import LevelContentMenuScreen from '../screens/LevelContentMenuScreen';
 import TechniquesScreen from '../screens/TechniquesScreen';
@@ -55,6 +56,8 @@ import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
 
 import { RootStackParamList, MainTabParamList } from './types';
+
+export type { RootStackParamList, MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -94,7 +97,6 @@ function MainTabs() {
           borderTopColor: 'transparent',
           paddingTop: 6,
           height: 70,
-          position: 'absolute',
           elevation: 0,
         },
         tabBarBackground: () => (
@@ -147,11 +149,33 @@ export default function AppNavigator() {
   const hasSeenTutorial = useOnboardingStore((s) => s.hasSeenTutorial);
   const showTutorialAgain = useOnboardingStore((s) => s.showTutorialAgain);
 
-  // Show onboarding if:
-  // 1. showOnboarding toggle is enabled (default)
-  // 2. AND user hasn't completed this session's onboarding yet
+  const [onboardingHydrated, setOnboardingHydrated] = useState(() =>
+    useOnboardingStore.persist.hasHydrated()
+  );
+
+  useEffect(() => {
+    if (useOnboardingStore.persist.hasHydrated()) {
+      setOnboardingHydrated(true);
+      return;
+    }
+    return useOnboardingStore.persist.onFinishHydration(() => {
+      setOnboardingHydrated(true);
+    });
+  }, []);
+
+  // First-run onboarding (OnboardingNavigator): once `isComplete` is true, this stack is skipped.
+  // Tutorial (TutorialNavigator): separate flow after first-run; repeatable via settings.
+  // Future "every app open" entry should use `showAppEntryOnboarding` (onboardingStore), not these flags.
   const shouldShowOnboarding = showOnboarding && !isOnboardingComplete;
   const shouldShowTutorial = isOnboardingComplete && (!hasSeenTutorial || showTutorialAgain);
+
+  if (!onboardingHydrated) {
+    return (
+      <View style={styles.hydrationGate}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
@@ -337,6 +361,11 @@ export default function AppNavigator() {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name="RoomOfLevels2"
+          component={RoomOfLevels2Screen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name="AnimationShowcase"
           component={AnimationShowcaseScreen}
           options={{ headerShown: false }}
@@ -356,3 +385,11 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  hydrationGate: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

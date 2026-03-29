@@ -198,6 +198,12 @@ export default function PracticePlayerScreen() {
     }
 
     if (showingDetail) {
+        const isDark = theme.mode === 'dark';
+        const cardBg = isDark ? 'rgba(255,255,255,0.06)' : theme.elevatedCard;
+        const iconWrapBg = isDark ? 'rgba(255,255,255,0.06)' : theme.surface;
+        const tagBg = isDark ? 'rgba(255,255,255,0.08)' : theme.surface;
+        const metaIcon = theme.textMuted;
+
         return (
             <View style={[styles.detailContainer, { backgroundColor: theme.background }]}>
                 <LivingBackground />
@@ -210,7 +216,10 @@ export default function PracticePlayerScreen() {
                 </View>
 
                 <ScrollView style={styles.detailScroll} showsVerticalScrollIndicator={false}>
-                    <View style={styles.detailIconContainer}>
+                    <View style={[
+                        styles.detailIconContainer,
+                        { backgroundColor: iconWrapBg, borderColor: theme.border },
+                    ]}>
                         <Ionicons
                             name={practice.icon}
                             size={48}
@@ -218,24 +227,24 @@ export default function PracticePlayerScreen() {
                         />
                     </View>
 
-                    <View style={styles.glassCard}>
-                        <Text style={styles.detailSectionTitle}>The Practice</Text>
-                        <Text style={styles.detailText}>{practice.explanation}</Text>
+                    <View style={[styles.glassCard, { backgroundColor: cardBg, borderColor: theme.border }]}>
+                        <Text style={[styles.detailSectionTitle, { color: theme.textMuted }]}>The Practice</Text>
+                        <Text style={[styles.detailText, { color: theme.textPrimary }]}>{practice.explanation}</Text>
                     </View>
 
-                    <View style={styles.glassCard}>
-                        <Text style={styles.detailSectionTitle}>Instructions</Text>
-                        <Text style={styles.detailText}>{practice.instruction}</Text>
+                    <View style={[styles.glassCard, { backgroundColor: cardBg, borderColor: theme.border }]}>
+                        <Text style={[styles.detailSectionTitle, { color: theme.textMuted }]}>Instructions</Text>
+                        <Text style={[styles.detailText, { color: theme.textPrimary }]}>{practice.instruction}</Text>
                     </View>
 
                     <View style={styles.detailTags}>
-                        <View style={styles.detailTag}>
-                            <Ionicons name="time-outline" size={14} color="rgba(255,255,255,0.4)" />
-                            <Text style={styles.detailTagText}>{practice.totalDuration}s Session</Text>
+                        <View style={[styles.detailTag, { backgroundColor: tagBg }]}>
+                            <Ionicons name="time-outline" size={14} color={metaIcon} />
+                            <Text style={[styles.detailTagText, { color: theme.textSecondary }]}>{practice.totalDuration}s Session</Text>
                         </View>
-                        <View style={styles.detailTag}>
-                            <Ionicons name="sparkles-outline" size={14} color="rgba(255,255,255,0.4)" />
-                            <Text style={styles.detailTagText}>{practice.bestFor}</Text>
+                        <View style={[styles.detailTag, { backgroundColor: tagBg }]}>
+                            <Ionicons name="sparkles-outline" size={14} color={metaIcon} />
+                            <Text style={[styles.detailTagText, { color: theme.textSecondary }]}>{practice.bestFor}</Text>
                         </View>
                     </View>
                 </ScrollView>
@@ -354,33 +363,27 @@ const styles = StyleSheet.create({
         width: 80,
         height: 80,
         borderRadius: 24,
-        backgroundColor: 'rgba(255,255,255,0.05)',
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
         marginVertical: 32,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
     },
     glassCard: {
-        backgroundColor: 'rgba(255,255,255,0.05)',
         borderRadius: 20,
         padding: 20,
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.1)',
     },
     detailSectionTitle: {
         fontSize: 14,
         fontWeight: '700',
-        color: 'rgba(255,255,255,0.4)',
         textTransform: 'uppercase',
         letterSpacing: 1,
         marginBottom: 12,
     },
     detailText: {
         fontSize: 15,
-        color: 'rgba(255,255,255,0.8)',
         lineHeight: 24,
     },
     detailTags: {
@@ -392,14 +395,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: 6,
-        backgroundColor: 'rgba(255,255,255,0.05)',
         paddingHorizontal: 12,
         paddingVertical: 6,
         borderRadius: 10,
     },
     detailTagText: {
         fontSize: 12,
-        color: 'rgba(255,255,255,0.4)',
         fontWeight: '500',
     },
     startButton: {

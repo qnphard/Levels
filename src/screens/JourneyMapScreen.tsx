@@ -39,10 +39,8 @@ import { useUserProgress } from '../context/UserProgressContext';
 import EditableText from '../components/EditableText';
 import EditModeIndicator from '../components/EditModeIndicator';
 import OnboardingOverlay from '../components/OnboardingOverlay';
-import DailyCheckInModal from '../components/DailyCheckInModal';
 import FeatureExplanationOverlay from '../components/FeatureExplanationOverlay';
 import { useOnboardingStore } from '../store/onboardingStore';
-import { useUserStore } from '../store/userStore';
 
 if (
   Platform.OS === 'android' &&
@@ -149,15 +147,7 @@ export default function JourneyMapScreen() {
   const hasShownOverlay = useOnboardingStore((state) => state.hasShownOverlay);
   const setHasShownOverlay = useOnboardingStore((state) => state.setHasShownOverlay);
 
-  const lastCheckIn = useUserStore((state) => state.lastCheckIn);
-  const checkInHistory = useUserStore((state) => state.checkInHistory);
-
-  // Force canCheckIn to true for development so it opens every time
-  const canCheckIn = true;
-  const lastCheckInZone = checkInHistory.length > 0 ? checkInHistory[0].zone : null;
-
   const [showOnboardingOverlay, setShowOnboardingOverlay] = useState(false);
-  const [showCheckInModal, setShowCheckInModal] = useState(false);
   const [showJourneyExplanation, setShowJourneyExplanation] = useState(false);
 
   const seenExplanations = useOnboardingStore((s) => s.seenExplanations);
@@ -173,27 +163,15 @@ export default function JourneyMapScreen() {
         setShowOnboardingOverlay(true);
       }, 1500);
       return () => clearTimeout(timer);
-    } else {
-      // Logic for first-time page explanations or check-in
-      const hasSeenJourneyExplanation = seenExplanations.includes('journey');
-
-      if (!hasSeenJourneyExplanation) {
-        setShowJourneyExplanation(true);
-      } else if (canCheckIn) {
-        const timer = setTimeout(() => {
-          setShowCheckInModal(true);
-        }, 2000);
-        return () => clearTimeout(timer);
-      }
     }
-  }, [hasShownOverlay, canCheckIn, seenExplanations]);
+    const hasSeenJourneyExplanation = seenExplanations.includes('journey');
+    if (!hasSeenJourneyExplanation) {
+      setShowJourneyExplanation(true);
+    }
+  }, [hasShownOverlay, seenExplanations]);
 
   useEffect(() => {
     const backAction = () => {
-      if (showCheckInModal) {
-        setShowCheckInModal(false);
-        return true;
-      }
       if (showOnboardingOverlay) {
         handleCloseOverlay();
         return true;
@@ -213,7 +191,7 @@ export default function JourneyMapScreen() {
     );
 
     return () => backHandler.remove();
-  }, [showCheckInModal, showOnboardingOverlay, navigation]);
+  }, [showOnboardingOverlay, navigation]);
 
   const handleCloseOverlay = () => {
     setShowOnboardingOverlay(false);
@@ -695,10 +673,6 @@ export default function JourneyMapScreen() {
       <OnboardingOverlay
         visible={showOnboardingOverlay}
         onClose={handleCloseOverlay}
-      />
-      <DailyCheckInModal
-        visible={showCheckInModal}
-        onClose={() => setShowCheckInModal(false)}
       />
       <FeatureExplanationOverlay
         visible={showJourneyExplanation}

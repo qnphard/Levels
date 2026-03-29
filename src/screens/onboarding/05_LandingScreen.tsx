@@ -4,6 +4,7 @@ import { useNavigation, CommonActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import { useOnboardingStore, Zone, Intention } from '../../store/onboardingStore';
+import { completeFirstRunOnboardingFlow } from '../../services/onboardingCompletion';
 import { useUserStore } from '../../store/userStore';
 
 // Map Zone enum to level IDs from levels.ts
@@ -25,7 +26,6 @@ type FeedbackState = 'asking' | 'lighter' | 'same';
 
 const LandingScreen = () => {
     const navigation = useNavigation<any>();
-    const completeOnboarding = useOnboardingStore((s) => s.completeOnboarding);
     const currentZone = useOnboardingStore((s) => s.currentZone);
     const userName = useOnboardingStore((s) => s.name);
     const intention = useOnboardingStore((s) => s.intention);
@@ -66,7 +66,7 @@ const LandingScreen = () => {
         if (currentZone) {
             addCheckIn(currentZone);
         }
-        completeOnboarding();
+        void completeFirstRunOnboardingFlow();
 
         // Navigate directly to the matching level chapter
         const levelId = currentZone ? ZONE_TO_LEVEL_ID[currentZone] : null;
