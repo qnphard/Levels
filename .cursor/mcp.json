@@ -2,21 +2,6 @@
   "mcpServers": {
     "rivemcp": {
       "command": "C:\\Users\\Admin\\.gemini\\antigravity\\scratch\\Levels2\\rivemcp-win-x64.exe"
-    },
-    "gbox-android": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@gbox.ai/mcp-server@latest"
-      ],
-      "env": {
-        "GBOX_API_KEY": "gbox_4W4NuWVGNJGrVjSoSfNoFxqBcLZdrMqzRKNMTdoijnigfzRiV0"
-      }
     }
   }
 }
-
-
-
-
-
