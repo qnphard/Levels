@@ -6,7 +6,7 @@ import { RootStackParamList } from '../navigation/types';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-/** Legacy route — forward to Skia v2 (atrium + MP4 wings). */
+/** Legacy route: stairs room — forward to Skia v2 room journey. */
 export default function RoomOfLevelsScreen() {
     const navigation = useNavigation<NavigationProp>();
 

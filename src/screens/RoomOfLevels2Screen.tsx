@@ -8,7 +8,7 @@ import RoomOfLevelsSkiaExperience from '../levels3d/components/RoomOfLevelsSkiaE
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-/** Room of Levels v2 — atrium (Skia + joystick); wings = full-screen MP4 + tap labels. */
+/** Room of Levels v2 — Skia + Reanimated room; walk animation then navigate to level. */
 export default function RoomOfLevels2Screen() {
     const navigation = useNavigation<NavigationProp>();
 

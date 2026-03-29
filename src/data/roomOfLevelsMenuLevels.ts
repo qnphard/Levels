@@ -32,5 +32,5 @@ export const ROOM_OF_LEVELS_MENU_LEVELS: RoomMenuLevel[] = [
 /** Shame … Pride (8 levels, includes Grief) — “lower / heavier” wing */
 export const ROOM_LOWER_LEVELS: RoomMenuLevel[] = ROOM_OF_LEVELS_MENU_LEVELS.slice(0, 8);
 
-/** Courage … Enlightenment (9 levels) — “higher / lighter” wing */
-export const ROOM_HIGHER_LEVELS: RoomMenuLevel[] = ROOM_OF_LEVELS_MENU_LEVELS.slice(8);
+/** Courage … Peace (8 levels) — “higher / lighter” wing; Light/enlightenment not on this video row */
+export const ROOM_HIGHER_LEVELS: RoomMenuLevel[] = ROOM_OF_LEVELS_MENU_LEVELS.slice(8, -1);

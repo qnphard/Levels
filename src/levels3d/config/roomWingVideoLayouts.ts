@@ -1,29 +1,67 @@
 /**
- * Label anchor positions (% of the wing screen in RoomWingVideoMenu; video is STRETCH-filled).
+ * Label anchor positions (% of the wing stage in RoomWingVideoMenu).
+ * Video fills the stage (iOS: STRETCH; Android: CONTAIN + scaleX after naturalSize). Tune if a clip changes.
  */
 export type WingLabelSlot = { topPct: number; leftPct: number };
 
-/** Lower / force wing — 8 portals, row of 4 + row of 4 (matches typical Kling layout). */
+/**
+ * Lower / force wing — same % anchors as power wing (portal slot order: top L→R, bottom L→R).
+ * shame…grief ↔ courage…joy; fear…pride ↔ neutrality…peace.
+ */
 export const LOWER_WING_LABEL_LAYOUT: Record<string, WingLabelSlot> = {
-    shame: { topPct: 16, leftPct: 14 },
-    guilt: { topPct: 16, leftPct: 38 },
-    apathy: { topPct: 16, leftPct: 62 },
-    grief: { topPct: 16, leftPct: 86 },
-    fear: { topPct: 30, leftPct: 14 },
-    desire: { topPct: 30, leftPct: 38 },
-    anger: { topPct: 30, leftPct: 62 },
-    pride: { topPct: 30, leftPct: 86 },
+    shame: { topPct: 31.3, leftPct: 8.2 },
+    guilt: { topPct: 55.3, leftPct: 21.1 },
+    apathy: { topPct: 31.3, leftPct: 32.8 },
+    grief: { topPct: 55.3, leftPct: 45.5 },
+    fear: { topPct: 31.3, leftPct: 56.5 },
+    desire: { topPct: 55.3, leftPct: 69 },
+    anger: { topPct: 31.3, leftPct: 79 },
+    pride: { topPct: 55.3, leftPct: 92 },
 };
 
-/** Higher / power wing — 9 portals, 3x3 grid in upper area. */
+/**
+ * Lower / force wing label colors: sampled from `levels-of-force-room.mp4` (8 columns, vivid glow pixels).
+ * Regenerate: `ffmpeg -y -i assets/videos/levels-of-force-room.mp4 -ss 00:00:01 -vframes 1 scripts/_force.png`
+ * then `node scripts/sample-portal-colors.cjs scripts/_force.png force`.
+ */
+export const LOWER_WING_PORTAL_PILL_COLORS: Record<string, string> = {
+    shame: '#9b2208',
+    guilt: '#dd602d',
+    apathy: '#5c5a6f',
+    grief: '#6c49a2',
+    fear: '#3b6b78',
+    desire: '#b84312',
+    anger: '#ff8f1a',
+    pride: '#ca4f60',
+};
+
+/**
+ * Higher / power wing: sampled from `power-levels-room.mp4`.
+ * Regenerate: `ffmpeg -y -i assets/videos/power-levels-room.mp4 -ss 00:00:01 -vframes 1 scripts/_frame.png`
+ * then `node scripts/sample-portal-colors.cjs scripts/_frame.png`.
+ */
+export const HIGHER_WING_PORTAL_PILL_COLORS: Record<string, string> = {
+    courage: '#aaf444',
+    willingness: '#45a7f5',
+    reason: '#2d84f2',
+    joy: '#fb57af',
+    neutrality: '#cb71f5',
+    acceptance: '#bd69e4',
+    love: '#f74442',
+    peace: '#fcdb38',
+};
+
+/**
+ * Higher / power wing — 8 portals in an arc (`power-levels-room.mp4`).
+ * Order matches ROOM_HIGHER_LEVELS. Tuned on device (two rows of four).
+ */
 export const HIGHER_WING_LABEL_LAYOUT: Record<string, WingLabelSlot> = {
-    courage: { topPct: 14, leftPct: 20 },
-    neutrality: { topPct: 14, leftPct: 50 },
-    willingness: { topPct: 14, leftPct: 80 },
-    acceptance: { topPct: 24, leftPct: 20 },
-    reason: { topPct: 24, leftPct: 50 },
-    love: { topPct: 24, leftPct: 80 },
-    joy: { topPct: 34, leftPct: 20 },
-    peace: { topPct: 34, leftPct: 50 },
-    enlightenment: { topPct: 34, leftPct: 80 },
+    courage: { topPct: 31.3, leftPct: 8.2 },
+    willingness: { topPct: 31.3, leftPct: 32.8 },
+    reason: { topPct: 31.3, leftPct: 55.9 },
+    joy: { topPct: 31.3, leftPct: 78.2 },
+    neutrality: { topPct: 55.3, leftPct: 21.1 },
+    acceptance: { topPct: 55.3, leftPct: 43.8 },
+    love: { topPct: 55.3, leftPct: 67.5 },
+    peace: { topPct: 55.3, leftPct: 91 },
 };
