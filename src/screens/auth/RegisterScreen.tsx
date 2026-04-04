@@ -157,10 +157,20 @@ export default function RegisterScreen() {
           >
             <Text style={styles.secondaryBtnText}>Continue with Google</Text>
           </TouchableOpacity>
-        ) : __DEV__ && firebaseConfigured ? (
+        ) : firebaseConfigured ? (
           <Text style={styles.devHint}>
-            Google sign-in: set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (…apps.googleusercontent.com). If you see
-            invalid_client, add redirect URIs in Google Cloud → Credentials → your Web client: https://auth.expo.io/@qnphard/meditation-app and com.anonymous.levels:/oauthredirect
+            {__DEV__ ? (
+              <>
+                Google sign-in: set EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (…apps.googleusercontent.com). If you see
+                invalid_client, add redirect URIs in Google Cloud → Credentials → your Web client:
+                https://auth.expo.io/@qnphard/meditation-app and com.anonymous.levels:/oauthredirect
+              </>
+            ) : (
+              <>
+                Google sign-in is not included in this build. Add the repository secret
+                EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (same value as your local .env) and rebuild the APK.
+              </>
+            )}
           </Text>
         ) : null}
 

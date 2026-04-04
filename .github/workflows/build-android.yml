@@ -4,6 +4,10 @@ name: Build Android APK
 # Add these names under: Repo → Settings → Secrets and variables → Actions → New repository secret
 # Use the same values as your local .env (see .env.example). Missing secrets = empty strings in the APK
 # and production will show FirebaseConfigScreen instead of the app.
+#
+# "Continue with Google" requires at least EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID (Web OAuth client id ending in
+# .apps.googleusercontent.com). Firebase keys alone are not enough. Optionally set EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
+# for Android-specific OAuth (release SHA-1) if token exchange fails on device.
 
 on:
   workflow_dispatch:  # Allows manual triggering
@@ -41,6 +45,16 @@ jobs:
             echo "::warning::Firebase EXPO_PUBLIC_* secrets are not all set. The APK will not load the main app in production until you add repository secrets (see workflow header comment)."
           else
             echo "Firebase public env present for bundle (keys not printed)."
+          fi
+
+      - name: Warn if Google OAuth secret missing (no Continue with Google in APK)
+        run: |
+          if [ -z "$EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID" ] && [ -z "$EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID" ] && [ -z "$EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID" ]; then
+            echo "::warning::No EXPO_PUBLIC_GOOGLE_* OAuth secrets set. Add EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID at minimum (same as local .env) or the Sign in with Google button will be hidden in the release APK."
+          elif [ -n "$EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID" ] && [[ "$EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID" != *".apps.googleusercontent.com"* ]]; then
+            echo "::warning::EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID should end with .apps.googleusercontent.com or the app will hide Google sign-in."
+          else
+            echo "Google OAuth public env present for bundle (values not printed)."
           fi
 
       - name: Free disk space
