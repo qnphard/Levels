@@ -1,5 +1,6 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import { FinishReason, GoogleGenerativeAI } from '@google/generative-ai';
 import { AI_CONFIG } from '../config/aiConfig';
+import { MEDITATION_DURATION_MIN_WORDS } from '../config/meditationDuration';
 
 function getGenAI(): GoogleGenerativeAI | null {
     const key = AI_CONFIG.GEMINI_API_KEY?.trim();
@@ -105,6 +106,71 @@ function normalizeGeneratedScript(parsed: unknown): GeneratedScript {
     };
 }
 
+function flattenScriptLines(script: GeneratedScript): string {
+    const lines: string[] = [];
+    const sections = Array.isArray(script?.sections) ? script.sections : [];
+    for (const section of sections) {
+        if (!section?.lines) continue;
+        for (const line of section.lines) {
+            if (typeof line === 'string' && line.trim()) lines.push(line.trim());
+        }
+    }
+    return lines.join(' ');
+}
+
+function wordCountFromScript(script: GeneratedScript): number {
+    return flattenScriptLines(script).split(/\s+/).filter(Boolean).length;
+}
+
+function stripCodeFences(text: string): string {
+    let t = text.trim();
+    if (t.startsWith('```json')) t = t.slice(7);
+    else if (t.startsWith('```')) t = t.slice(3);
+    t = t.trim();
+    if (t.endsWith('```')) t = t.slice(0, -3);
+    return t.trim();
+}
+
+function parseModelJson(raw: string): unknown {
+    const text = stripCodeFences(raw);
+    return JSON.parse(text);
+}
+
+async function expandScriptToMinWords(
+    genAI: GoogleGenerativeAI,
+    script: GeneratedScript,
+    duration: MeditationDuration,
+    style: MeditationStyle,
+    minWords: number,
+): Promise<GeneratedScript> {
+    const model = genAI.getGenerativeModel({
+        model: AI_CONFIG.MODEL_NAME,
+        generationConfig: {
+            maxOutputTokens: 8192,
+            temperature: 0.65,
+        },
+    });
+
+    const payload = JSON.stringify(script);
+    const prompt = `The meditation JSON below is TOO SHORT for text-to-speech. Listeners need roughly ${minWords}+ spoken words for duration tier "${duration}" (style: ${style}).
+
+Expand by ADDING more entries to each section's "lines" array — especially the longest / core sections. Keep the same JSON shape, same section order and names when possible. Use short speakable lines, [pause], [breathe], and "..." as in the original.
+
+Do not remove the safety string. Output ONLY valid JSON (no markdown).
+
+CURRENT JSON:
+${payload}`;
+
+    const result = await model.generateContent(prompt);
+    const response = await result.response;
+    const raw = response.text();
+    if (raw == null || typeof raw !== 'string') {
+        throw new Error('Empty response from expansion pass.');
+    }
+    const parsed = parseModelJson(raw);
+    return normalizeGeneratedScript(parsed);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // HAWKINS-ALIGNED MAPPINGS
 // ─────────────────────────────────────────────────────────────────────────────
@@ -180,24 +246,28 @@ const STYLE_BLUEPRINTS: Record<MeditationStyle, string> = {
 
 const DURATION_BUDGETS: Record<MeditationDuration, string> = {
    short: `
-        Duration: 3-5 minutes
+        Duration tier: 3-5 minutes of listening time (required).
+        - Sum of section "approxSeconds" must land between 180 and 300.
+        - Spoken text: roughly 400–650 words at ~130 wpm, PLUS pause markers (... / [pause] / [breathe]) — markers add silence in TTS, so they count toward total time.
         - 0:00–0:30  Arrival & permission
         - 0:30–2:45  Core practice
         - 2:45–end   Closing + carry-forward
     `,
    medium: `
-        Duration: 5-10 minutes
+        Duration tier: 5-10 minutes of listening time (required).
+        - Sum of section "approxSeconds" must land between 300 and 600.
+        - Spoken text: roughly 650–1,300 words at ~130 wpm, PLUS generous pause markers — under-filling this tier (e.g. only ~1 minute of audio) is a failure.
         - 0:00–1:00  Arrival + grounding
         - 1:00–7:30  Core practice (2 waves)
         - 7:30–end   Integration + closing
     `,
    long: `
-        Duration: 15-20 minutes
+        Duration tier: 15-20 minutes of listening time (required).
+        - Sum of section "approxSeconds" must land between 900 and 1200.
+        - Spoken text: roughly 1,900–2,600 words at ~130 wpm, PLUS long pauses via markers between phrases — longer does NOT mean "fewer lines"; it means more space between lines and deeper core sections.
         - 0:00–2:00   Arrival + body settling
         - 2:00–14:00  Core practice (3 waves + deeper silence)
         - 14:00–end   Integration + closing
-        
-        LONGER ≠ MORE WORDS. Longer = more silence, slower pacing, fewer concepts.
     `,
 };
 
@@ -251,7 +321,8 @@ OTHER RULES:
 • No medical claims, no guaranteed outcomes
 • No mention of "calibration numbers" or claims about consciousness levels
 • Prefer fewer concepts, more spaciousness
-• Reading speed: 130 words per minute (calculate word count accordingly)
+• Target density: roughly 130 spoken words per minute at normal pace; shorter lines sound clearer when synthesized. If VOICE PACE is below 1.0, use fewer words per line; if above 1.0, you may use slightly longer lines.
+• The user's DURATION tier (short / medium / long) is binding: produce enough sections and lines (and pause markers) that total listening time matches that tier. A script that would only run ~1 minute when synthesized is invalid for "medium" or "long".
 • Tone: calm, grounded, neutral, human—no expert signaling, no spiritual authority
 
 ═══════════════════════════════════════════════════════════════════════════════
@@ -304,26 +375,26 @@ SECTION STRUCTURE (required order):
 Each "lines" array should contain SHORT, speakable sentences—one thought per line.
 
 ═══════════════════════════════════════════════════════════════════════════════
-PAUSE MARKERS (Critical for Natural Speech)
+PAUSE MARKERS (TTS pipeline — not spoken aloud)
 ═══════════════════════════════════════════════════════════════════════════════
 
-To avoid robotic delivery, INSERT PAUSE MARKERS throughout the script:
+The app sends this script to Amazon Polly. Markers below are converted to **silent pauses** in audio — listeners never hear the words "pause" or "breathe".
 
-• Use "..." (three dots) for short pauses (1-2 seconds) — between phrases
-• Use "[pause]" for medium pauses (3-5 seconds) — after important statements
-• Use "[breathe]" for breath cues (5-7 seconds) — inviting conscious breaths
+• Use "..." (ellipsis) for a short pause between phrases
+• Use "[pause]" for a medium pause after important statements
+• Use "[breathe]" for a longer breath-invitation pause after grounding or key transitions
 
 PLACEMENT RULES:
-• After every 1-2 sentences, add "..." or "[pause]"
-• After arrival/grounding instructions, add "[breathe]"
-• Before transitions between sections, add "[pause]"
-• After invitations to notice something, add "..." to let them notice
+• After every 1-2 sentences, add "..." or "[pause]" where a pause helps
+• After arrival/grounding instructions, consider "[breathe]"
+• Before transitions between sections, use "[pause]" or a blank line between lines
 • During "Letting Go" style, add "[pause]" after each step (Locate, Allow, Soften, etc.)
 
-EXAMPLE:
+EXAMPLE (markers become silence in the final audio):
 "Notice where your body makes contact with the surface beneath you... [pause] There's nothing to do right now... [breathe] Just this moment, as it is."
 
 NEVER create long blocks of continuous speech. The script should feel spacious.
+Do not add stage directions in brackets other than [pause] and [breathe]. No emojis or markdown in spoken lines.
 `;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -354,6 +425,11 @@ export const geminiService = {
       const model = genAI.getGenerativeModel({
          model: AI_CONFIG.MODEL_NAME,
          systemInstruction: SYSTEM_PROMPT,
+         generationConfig: {
+            // Default model caps are often too low for long JSON meditations; without this, output can truncate to a short script (~1 min TTS).
+            maxOutputTokens: 8192,
+            temperature: 0.75,
+         },
       });
 
       const userPrompt = `
@@ -370,40 +446,59 @@ ${STYLE_BLUEPRINTS[style]}
 
 BINAURAL: ${binaural}
 BACKGROUND: ${background}
-VOICE PACE: ${voicePace}
+VOICE PACE: ${voicePace} (1.0 = default; lower = slower/sparser wording; higher = slightly more content per section)
 
 ${userGoal ? `USER GOAL: "${userGoal}"` : ''}
-${avoidThemes ? `AVOID THEMES: "${avoidThemes}"` : ''}
+${avoidThemes ? `AVOID THEMES / DO NOT USE: "${avoidThemes}"` : ''}
 
 Output ONLY valid JSON. No markdown, no code blocks, no explanation.
+
+Before you finish: verify the duration tier — for "medium", total words in all "lines" plus realistic pause time from markers should fill ~5–10 minutes of listening, not ~1 minute.
 `;
 
       try {
          const result = await model.generateContent(userPrompt);
          const response = await result.response;
+         const cand = response.candidates?.[0];
+         const finish = cand?.finishReason;
+         if (finish === FinishReason.MAX_TOKENS) {
+            console.warn('[Gemini] First draft hit MAX_TOKENS — output may be short; expansion pass will run if needed.');
+         }
+
          const raw = response.text();
          if (raw == null || typeof raw !== 'string') {
             throw new Error('Empty response from Gemini.');
          }
-         let text = raw.trim();
-
-         // Strip markdown code blocks if present
-         if (text.startsWith('```json')) {
-            text = text.slice(7);
-         }
-         if (text.startsWith('```')) {
-            text = text.slice(3);
-         }
-         if (text.endsWith('```')) {
-            text = text.slice(0, -3);
-         }
-         text = text.trim();
 
          let parsed: unknown;
          try {
-            parsed = JSON.parse(text);
+            parsed = parseModelJson(raw);
          } catch {
             throw new Error('Model did not return valid JSON. Try again or use template mode (no API key).');
+         }
+
+         let script = normalizeGeneratedScript(parsed);
+         const minWords = MEDITATION_DURATION_MIN_WORDS[duration];
+         let words = wordCountFromScript(script);
+
+         for (let attempt = 0; words < minWords && attempt < 4; attempt++) {
+            const target = Math.round(minWords * (1 + attempt * 0.12));
+            console.warn(
+               `[Gemini] Script short for ${duration} (${words} words, need ~${minWords}); expansion attempt ${attempt + 1}/${4} (target ${target}).`
+            );
+            try {
+               script = await expandScriptToMinWords(genAI, script, duration, style, target);
+               words = wordCountFromScript(script);
+            } catch (expandErr) {
+               console.warn('[Gemini] Expansion pass failed:', expandErr);
+               break;
+            }
+         }
+
+         if (words < minWords) {
+            console.warn(
+               `[Gemini] Still below target after expansions (${words}/${minWords} words). Client-side padding will lengthen TTS.`
+            );
          }
 
          const script = normalizeGeneratedScript(parsed);
@@ -428,15 +523,5 @@ Output ONLY valid JSON. No markdown, no code blocks, no explanation.
    /**
     * Converts a GeneratedScript to plain speakable text for TTS.
     */
-   scriptToText: (script: GeneratedScript): string => {
-      const lines: string[] = [];
-      const sections = Array.isArray(script?.sections) ? script.sections : [];
-      for (const section of sections) {
-         if (!section || !Array.isArray(section.lines)) continue;
-         for (const line of section.lines) {
-            if (typeof line === 'string' && line.trim()) lines.push(line.trim());
-         }
-      }
-      return lines.join(' ');
-   },
+   scriptToText: (script: GeneratedScript): string => flattenScriptLines(script),
 };

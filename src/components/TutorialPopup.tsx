@@ -6,6 +6,7 @@ import {
   Modal,
   Pressable,
   TouchableOpacity,
+  InteractionManager,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -93,35 +94,45 @@ export default function TutorialPopup({ visible, onDismiss }: TutorialPopupProps
 }
 
 /**
- * @param splashSequenceComplete — In production, false until the video splash has finished and been dismissed.
- *   Dev builds skip that video, so pass true. Without this gate, Modal renders above the splash on device builds.
+ * Home-screen tutorial only — pass `enabled` when first-run onboarding is done so this
+ * does not fire over OnboardingNavigator / TutorialNavigator. Render on HomeScreen only.
  */
-export function useTutorialPopup(splashSequenceComplete: boolean) {
+export function useTutorialPopup(enabled: boolean) {
   const [showTutorial, setShowTutorial] = useState(false);
+  /** False until AsyncStorage has been read — avoids stacking modals before we know if the glow/theme tutorial will show. */
+  const [tutorialPopupResolved, setTutorialPopupResolved] = useState(!enabled);
 
   useEffect(() => {
-    if (!splashSequenceComplete) return;
-
+    if (!enabled) {
+      setShowTutorial(false);
+      setTutorialPopupResolved(true);
+      return;
+    }
+    setTutorialPopupResolved(false);
     let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-
-    (async () => {
-      try {
-        const shown = await AsyncStorage.getItem(TUTORIAL_SHOWN_KEY);
-        if (shown || cancelled) return;
-        timer = setTimeout(() => {
-          if (!cancelled) setShowTutorial(true);
-        }, 1000);
-      } catch (error) {
-        console.warn('Failed to check tutorial status:', error);
-      }
-    })();
-
+    InteractionManager.runAfterInteractions(() => {
+      if (cancelled) return;
+      (async () => {
+        try {
+          const shown = await AsyncStorage.getItem(TUTORIAL_SHOWN_KEY);
+          if (!cancelled) {
+            setTutorialPopupResolved(true);
+            if (!shown) {
+              setShowTutorial(true);
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to check tutorial status:', error);
+          if (!cancelled) {
+            setTutorialPopupResolved(true);
+          }
+        }
+      })();
+    });
     return () => {
       cancelled = true;
-      if (timer) clearTimeout(timer);
     };
-  }, [splashSequenceComplete]);
+  }, [enabled]);
 
   const handleDismiss = async () => {
     try {
@@ -136,6 +147,7 @@ export function useTutorialPopup(splashSequenceComplete: boolean) {
   return {
     showTutorial,
     dismissTutorial: handleDismiss,
+    tutorialPopupResolved,
   };
 }
 

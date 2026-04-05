@@ -200,8 +200,8 @@ export default function EssentialsScreen() {
         </Text>
       </View>
 
-      {/* Radial Layout — paddingBottom keeps the wheel above the floating tab bar */}
-      <View style={[styles.contentContainer, { paddingBottom: mandalaBottomPadding }]}>
+      {/* Radial Layout — tab bar no longer overlays (see MainTabs tabBarStyle) */}
+      <View style={styles.contentContainer}>
         <RadialMenuLayout
           items={essentialItems}
           onItemPress={handleEssentialPress}
@@ -290,6 +290,6 @@ const getStyles = (theme: ThemeColors) =>
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
-      marginTop: spacing.sm,
+      marginTop: -20,
     },
   });

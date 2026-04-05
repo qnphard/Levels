@@ -1,4 +1,4 @@
-package com.anonymous.meditationapp
+package com.anonymous.levels
 
 import android.app.Application
 import android.content.res.Configuration

@@ -12,8 +12,7 @@ export const AI_CONFIG = {
     GEMINI_API_KEY: geminiKey,
     OPENAI_API_KEY: '', // Add your OpenAI API key here
     /**
-     * Gemini 3 Flash (Google AI / Vertex model id). Override with EXPO_PUBLIC_GEMINI_MODEL if your project lists a different name.
-     * @see https://ai.google.dev/gemini-api/docs/models
+     * Gemini 3 Flash. Override with EXPO_PUBLIC_GEMINI_MODEL if your project lists a different id.
      */
     MODEL_NAME:
         (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_GEMINI_MODEL) || 'gemini-3-flash-preview',

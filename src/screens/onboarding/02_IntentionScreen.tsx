@@ -4,46 +4,44 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { OnboardingStackParamList } from '../../navigation/OnboardingNavigator';
+import type { OnboardingStackParamList } from '../../navigation/OnboardingStackTypes';
 import { useOnboardingStore, Intention } from '../../store/onboardingStore';
 import { KineticText } from '../../components/KineticText';
+import { ONBOARDING_INTENTION_OPTIONS } from '../../data/onboardingIntentions';
 
 type NavigationProp = NativeStackNavigationProp<OnboardingStackParamList, 'Intention'>;
-
-const INTENTIONS = [
-    {
-        value: Intention.EmergencyRelief,
-        icon: 'flash-outline' as const,
-        title: 'Emergency Relief',
-        subtitle: "I'm struggling right now",
-        color: '#F472B6',
-    },
-    {
-        value: Intention.DailyPractice,
-        icon: 'sunny-outline' as const,
-        title: 'Daily Practice',
-        subtitle: 'Building a regular habit',
-        color: '#A78BFA',
-    },
-    {
-        value: Intention.Understanding,
-        icon: 'book-outline' as const,
-        title: 'Understanding',
-        subtitle: 'Learning about my feelings',
-        color: '#60A5FA',
-    },
-];
 
 const IntentionScreen = () => {
     const navigation = useNavigation<NavigationProp>();
     const setIntention = useOnboardingStore((s) => s.setIntention);
+    const setHasCompletedIntentionPrompt = useOnboardingStore(
+        (s) => s.setHasCompletedIntentionPrompt
+    );
 
-    const handleSelect = (intention: Intention) => {
-        setIntention(intention);
+    const handleSelect = (value: Intention) => {
+        setHasCompletedIntentionPrompt(true);
+        if (value === Intention.Understanding) {
+            setIntention(Intention.Understanding);
+            navigation.navigate('EnergyCheck');
+            return;
+        }
+        if (value === Intention.EmergencyRelief) {
+            setIntention(Intention.EmergencyRelief);
+            navigation.navigate('PracticePick');
+            return;
+        }
+        if (value === Intention.DailyPractice) {
+            setIntention(Intention.DailyPractice);
+            navigation.getParent()?.navigate('Main', { screen: 'Journal' });
+            return;
+        }
+        setIntention(value);
         navigation.navigate('SpectrumCheck');
     };
 
     const handleSkip = () => {
+        setIntention(Intention.DailyPractice);
+        setHasCompletedIntentionPrompt(true);
         navigation.navigate('SpectrumCheck');
     };
 
@@ -70,18 +68,18 @@ const IntentionScreen = () => {
             </View>
 
             <View style={styles.optionsContainer}>
-                {INTENTIONS.map((item, index) => (
+                {ONBOARDING_INTENTION_OPTIONS.map((item) => (
                     <TouchableOpacity
                         key={item.value}
                         style={styles.optionButton}
                         onPress={() => handleSelect(item.value)}
                         activeOpacity={0.8}
                     >
-                        <View style={[styles.iconContainer, { backgroundColor: `${item.color}20` }]}>
-                            <Ionicons name={item.icon} size={24} color={item.color} />
+                        <View style={[styles.iconContainer, { backgroundColor: `${item.accent}20` }]}>
+                            <Ionicons name={item.icon} size={24} color={item.accent} />
                         </View>
                         <View style={styles.optionText}>
-                            <Text style={[styles.optionTitle, { color: item.color }]}>{item.title}</Text>
+                            <Text style={[styles.optionTitle, { color: item.accent }]}>{item.title}</Text>
                             <Text style={styles.optionSubtitle}>{item.subtitle}</Text>
                         </View>
                         <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.3)" />

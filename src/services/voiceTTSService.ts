@@ -9,7 +9,7 @@
  *   - return one or more audio URLs (recommended), OR base64 audio as a fallback.
  */
 
-import { Audio } from 'expo-av';
+import { Audio, type AVPlaybackStatus } from 'expo-av';
 import * as FileSystem from 'expo-file-system/legacy';
 import { TTS_CONFIG } from '../config/ttsConfig';
 
@@ -47,7 +47,8 @@ export interface AmbientPreset {
     description: string;
 }
 
-export type PollyEngine = 'standard' | 'neural';
+/** Matches Amazon Polly `Engine` on SynthesizeSpeech (see AWS docs). */
+export type PollyEngine = 'standard' | 'neural' | 'generative' | 'long-form';
 
 export interface PollyVoicePreset {
     id: string; // Polly VoiceId
@@ -55,37 +56,55 @@ export interface PollyVoicePreset {
     locale: 'en-US' | 'en-GB';
     gender: 'Female' | 'Male';
     vibe: 'warm' | 'calm' | 'bright' | 'grounded';
+    /** Hint: voice supports generative engine in many regions (AWS voicelist). */
+    supportsGenerative?: boolean;
 }
 
-// Meditation-friendly Polly Neural voices (English)
-// Source: AWS Polly Available Voices / Neural voices docs (voice IDs are stable across regions that support Neural).
+// Meditation-friendly Polly voices (English). Generative availability varies by region.
 export const POLLY_VOICE_PRESETS: PollyVoicePreset[] = [
     // en-US
-    { id: 'Joanna', name: 'Joanna', locale: 'en-US', gender: 'Female', vibe: 'calm' },
-    { id: 'Matthew', name: 'Matthew', locale: 'en-US', gender: 'Male', vibe: 'grounded' },
-    { id: 'Ruth', name: 'Ruth', locale: 'en-US', gender: 'Female', vibe: 'warm' },
-    { id: 'Danielle', name: 'Danielle', locale: 'en-US', gender: 'Female', vibe: 'bright' },
-    { id: 'Gregory', name: 'Gregory', locale: 'en-US', gender: 'Male', vibe: 'warm' },
-    { id: 'Ivy', name: 'Ivy', locale: 'en-US', gender: 'Female', vibe: 'bright' },
-    { id: 'Kendra', name: 'Kendra', locale: 'en-US', gender: 'Female', vibe: 'warm' },
-    { id: 'Kimberly', name: 'Kimberly', locale: 'en-US', gender: 'Female', vibe: 'calm' },
-    { id: 'Salli', name: 'Salli', locale: 'en-US', gender: 'Female', vibe: 'bright' },
-    { id: 'Joey', name: 'Joey', locale: 'en-US', gender: 'Male', vibe: 'bright' },
-    { id: 'Justin', name: 'Justin', locale: 'en-US', gender: 'Male', vibe: 'bright' },
-    { id: 'Kevin', name: 'Kevin', locale: 'en-US', gender: 'Male', vibe: 'calm' },
-    { id: 'Stephen', name: 'Stephen', locale: 'en-US', gender: 'Male', vibe: 'grounded' },
+    { id: 'Joanna', name: 'Joanna', locale: 'en-US', gender: 'Female', vibe: 'calm', supportsGenerative: true },
+    { id: 'Matthew', name: 'Matthew', locale: 'en-US', gender: 'Male', vibe: 'grounded', supportsGenerative: true },
+    { id: 'Ruth', name: 'Ruth', locale: 'en-US', gender: 'Female', vibe: 'warm', supportsGenerative: true },
+    { id: 'Danielle', name: 'Danielle', locale: 'en-US', gender: 'Female', vibe: 'bright', supportsGenerative: true },
+    { id: 'Gregory', name: 'Gregory', locale: 'en-US', gender: 'Male', vibe: 'warm', supportsGenerative: true },
+    { id: 'Ivy', name: 'Ivy', locale: 'en-US', gender: 'Female', vibe: 'bright', supportsGenerative: true },
+    { id: 'Kendra', name: 'Kendra', locale: 'en-US', gender: 'Female', vibe: 'warm', supportsGenerative: true },
+    { id: 'Kimberly', name: 'Kimberly', locale: 'en-US', gender: 'Female', vibe: 'calm', supportsGenerative: true },
+    { id: 'Salli', name: 'Salli', locale: 'en-US', gender: 'Female', vibe: 'bright', supportsGenerative: true },
+    { id: 'Joey', name: 'Joey', locale: 'en-US', gender: 'Male', vibe: 'bright', supportsGenerative: true },
+    { id: 'Justin', name: 'Justin', locale: 'en-US', gender: 'Male', vibe: 'bright', supportsGenerative: true },
+    { id: 'Kevin', name: 'Kevin', locale: 'en-US', gender: 'Male', vibe: 'calm', supportsGenerative: true },
+    { id: 'Stephen', name: 'Stephen', locale: 'en-US', gender: 'Male', vibe: 'grounded', supportsGenerative: true },
 
     // en-GB
-    { id: 'Amy', name: 'Amy', locale: 'en-GB', gender: 'Female', vibe: 'warm' },
-    { id: 'Emma', name: 'Emma', locale: 'en-GB', gender: 'Female', vibe: 'calm' },
-    { id: 'Brian', name: 'Brian', locale: 'en-GB', gender: 'Male', vibe: 'grounded' },
-    { id: 'Arthur', name: 'Arthur', locale: 'en-GB', gender: 'Male', vibe: 'warm' },
+    { id: 'Amy', name: 'Amy', locale: 'en-GB', gender: 'Female', vibe: 'warm', supportsGenerative: true },
+    { id: 'Emma', name: 'Emma', locale: 'en-GB', gender: 'Female', vibe: 'calm', supportsGenerative: true },
+    { id: 'Brian', name: 'Brian', locale: 'en-GB', gender: 'Male', vibe: 'grounded', supportsGenerative: true },
+    { id: 'Arthur', name: 'Arthur', locale: 'en-GB', gender: 'Male', vibe: 'warm', supportsGenerative: true },
 ];
 
 export function getPollyVoiceLabel(voiceId: string) {
     const v = POLLY_VOICE_PRESETS.find((x) => x.id === voiceId);
     if (!v) return voiceId;
     return `${v.name} (${v.locale}, ${v.gender})`;
+}
+
+/** Short label for saved UI / debug */
+export function getPollyEngineLabel(engine?: string) {
+    if (!engine) return '';
+    switch (engine) {
+        case 'generative':
+            return 'Generative';
+        case 'neural':
+            return 'Neural';
+        case 'standard':
+            return 'Standard';
+        case 'long-form':
+            return 'Long-form';
+        default:
+            return engine;
+    }
 }
 
 // Ambient background sound presets
@@ -110,6 +129,13 @@ export interface SynthesizeOptions {
     refText?: string | null;
 }
 
+export type SynthesizeResult = {
+    audioUris: string[];
+    /** Engine the backend used (may differ if generative fell back to neural). */
+    engineUsed?: PollyEngine;
+    engineFallback?: boolean;
+};
+
 /**
  * Check if the Voice API is available
  */
@@ -133,12 +159,12 @@ export async function checkAvailability(): Promise<boolean> {
  * Returns one or more audio URIs that can be played with expo-av.
  * For long meditations, the backend should return multiple segments.
  */
-export async function synthesize(options: SynthesizeOptions): Promise<string[]> {
+export async function synthesize(options: SynthesizeOptions): Promise<SynthesizeResult> {
     const {
         text,
         speed = 1.0,
         voiceId = 'Joanna',
-        engine = 'neural',
+        engine = 'generative',
         // These are currently ignored by Polly backend unless you implement mixing server-side.
         // We keep them in the interface so the UI doesn't break.
         brainwave = 'theta',
@@ -195,14 +221,25 @@ export async function synthesize(options: SynthesizeOptions): Promise<string[]> 
             throw new Error(`TTS API Error (${response.status}): ${errBody.slice(0, 300)}...`);
         }
 
-        const result: any = await response.json();
+        const result: {
+            audioUrls?: string[];
+            audio_base64?: string;
+            format?: string;
+            engine?: PollyEngine;
+            engineFallback?: boolean;
+        } = await response.json();
+
+        const meta: Pick<SynthesizeResult, 'engineUsed' | 'engineFallback'> = {
+            engineUsed: result.engine,
+            engineFallback: Boolean(result.engineFallback),
+        };
 
         // Preferred: backend returns URLs (array)
         if (Array.isArray(result.audioUrls) && result.audioUrls.length > 0) {
             // Download to local cache so presigned URLs expiring won't break playback.
             // On web (or if cacheDirectory is unavailable), fall back to streaming URLs.
             if (!cacheDirectory || typeof downloadAsync !== 'function') {
-                return result.audioUrls;
+                return { audioUris: result.audioUrls, ...meta };
             }
 
             const localUris: string[] = [];
@@ -213,7 +250,7 @@ export async function synthesize(options: SynthesizeOptions): Promise<string[]> 
                 localUris.push(dl.uri);
             }
 
-            return localUris;
+            return { audioUris: localUris, ...meta };
         }
 
         // Fallback: base64 audio (single file)
@@ -221,7 +258,7 @@ export async function synthesize(options: SynthesizeOptions): Promise<string[]> 
             const ext = result.format || 'mp3';
             const fileUri = cacheDirectory + `meditation_${Date.now()}.${ext}`;
             await writeAsStringAsync(fileUri, result.audio_base64, { encoding: 'base64' });
-            return [fileUri];
+            return { audioUris: [fileUri], ...meta };
         }
 
         console.error('Response keys:', Object.keys(result));
@@ -270,6 +307,7 @@ export async function playAudio(audioUrl: string): Promise<Audio.Sound> {
 
 /**
  * Play multiple audio segments sequentially using a single Sound instance.
+ * Re-registers the status callback after each load — some platforms clear listeners on unload.
  */
 export async function playAudioSequence(audioUrls: string[]): Promise<Audio.Sound> {
     if (audioUrls.length === 0) {
@@ -282,26 +320,40 @@ export async function playAudioSequence(audioUrls: string[]): Promise<Audio.Soun
 
     const loadAndPlay = async (uri: string) => {
         await sound.unloadAsync().catch(() => undefined);
+        // Brief gap helps Android/iOS complete unload before the next load (avoids silent playback).
+        await new Promise<void>((r) => setTimeout(r, 50));
         await sound.loadAsync({ uri }, { shouldPlay: true });
     };
 
-    sound.setOnPlaybackStatusUpdate(async (status) => {
-        if (!status.isLoaded) return;
+    const onStatus = (status: AVPlaybackStatus) => {
+        if (!status.isLoaded) {
+            if ('error' in status && status.error) {
+                console.warn('[playAudioSequence] playback error', status.error);
+            }
+            return;
+        }
         if (!status.didJustFinish) return;
         if (isAdvancing) return;
         isAdvancing = true;
 
-        try {
-            index += 1;
-            if (index < audioUrls.length) {
-                await loadAndPlay(audioUrls[index]);
+        void (async () => {
+            try {
+                index += 1;
+                if (index < audioUrls.length) {
+                    await loadAndPlay(audioUrls[index]);
+                    sound.setOnPlaybackStatusUpdate(onStatus);
+                }
+            } catch (e) {
+                console.error('[playAudioSequence] failed advancing to segment', index, e);
+            } finally {
+                isAdvancing = false;
             }
-        } finally {
-            isAdvancing = false;
-        }
-    });
+        })();
+    };
 
+    sound.setOnPlaybackStatusUpdate(onStatus);
     await loadAndPlay(audioUrls[0]);
+    sound.setOnPlaybackStatusUpdate(onStatus);
     return sound;
 }
 
@@ -309,7 +361,7 @@ export async function playAudioSequence(audioUrls: string[]): Promise<Audio.Soun
  * Synthesize and play meditation in one call
  */
 export async function synthesizeAndPlay(options: SynthesizeOptions): Promise<Audio.Sound> {
-    const audioUrls = await synthesize(options);
-    return audioUrls.length === 1 ? playAudio(audioUrls[0]) : playAudioSequence(audioUrls);
+    const { audioUris } = await synthesize(options);
+    return audioUris.length === 1 ? playAudio(audioUris[0]) : playAudioSequence(audioUris);
 }
 

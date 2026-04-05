@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { MeditationPurpose, MeditationStyle, MeditationDuration } from '../services/geminiService';
+import type { PollyEngine } from '../services/voiceTTSService';
 
 export type SavedMeditation = {
   id: string;
@@ -11,6 +12,8 @@ export type SavedMeditation = {
   duration: MeditationDuration;
   style: MeditationStyle;
   voiceId: string;
+  /** Polly engine used for synthesis (e.g. generative, neural after fallback). */
+  pollyEngine?: PollyEngine;
   speed: number;
   brainwave: string;
   binauralVolume: number;
@@ -50,6 +53,7 @@ export const useSavedMeditationsStore = create<SavedMeditationsState>()(
           duration: m.duration,
           style: m.style,
           voiceId: (m as any).voiceId ?? 'Joanna',
+          pollyEngine: (m as any).pollyEngine,
           speed: m.speed,
           brainwave: m.brainwave,
           binauralVolume: m.binauralVolume,

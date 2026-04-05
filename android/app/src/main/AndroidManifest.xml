@@ -29,6 +29,13 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="exp+meditation-app"/>
       </intent-filter>
+      <!-- expo-auth-session Google OAuth redirect: makeRedirectUri uses applicationId:/oauthredirect -->
+      <intent-filter>
+        <action android:name="android.intent.action.VIEW"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <category android:name="android.intent.category.BROWSABLE"/>
+        <data android:scheme="com.anonymous.levels" android:pathPrefix="/oauthredirect"/>
+      </intent-filter>
     </activity>
   </application>
 </manifest>

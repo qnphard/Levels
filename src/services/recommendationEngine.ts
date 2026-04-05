@@ -1,10 +1,18 @@
-import { Zone } from '../store/onboardingStore';
+import { Zone, Intention } from '../store/onboardingStore';
 
 /**
  * Maps user state (intention, zone) to recommended Mandala IDs.
  */
-export const getRecommendedMandalaId = (intention: string, currentZone: Zone | null): string => {
-    const goal = intention.toLowerCase();
+export const getRecommendedMandalaId = (
+    intention: string | Intention | null,
+    currentZone: Zone | null
+): string => {
+    const goal =
+        intention == null
+            ? ''
+            : typeof intention === 'string'
+              ? intention.toLowerCase()
+              : String(intention).toLowerCase();
 
     // Primary Goal Mapping
     if (goal.includes('anxiety') || goal.includes('stress') || goal.includes('overwhelm')) {

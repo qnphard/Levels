@@ -1,24 +1,28 @@
 import 'react-native-reanimated';
-import React, { useEffect, useState, useCallback } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+
+// Required so the in-app browser can hand the OAuth redirect back to the app (Google sign-in).
+WebBrowser.maybeCompleteAuthSession();
 import { StatusBar } from 'expo-status-bar';
-import { View, StyleSheet, Platform, Text, InteractionManager } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { View, StyleSheet, Platform } from 'react-native';
 import * as NavigationBar from 'expo-navigation-bar';
 import AppNavigator from './src/navigation/AppNavigator';
+import { AuthGate } from './src/navigation/AuthGate';
+import { AuthProvider } from './src/context/AuthContext';
 import { UserProgressProvider } from './src/context/UserProgressContext';
 import { ContentEditProvider } from './src/context/ContentEditContext';
-import TutorialPopup, { useTutorialPopup } from './src/components/TutorialPopup';
 import { ThemeProvider, useThemeColors, useThemeMode } from './src/theme/colors';
 import { loadSkia } from './src/utils/skiaLoader';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import CelebrationProvider from './src/components/CelebrationProvider';
 import { AtmosphereOverlay } from './src/components/AtmosphereOverlay';
 import { VideoSplashScreen } from './src/components/VideoSplashScreen';
+import { SplashFinishedProvider } from './src/context/SplashContext';
 
 function AppContent({ splashSequenceComplete }: { splashSequenceComplete: boolean }) {
   const theme = useThemeColors();
   const mode = useThemeMode();
-  const { showTutorial, dismissTutorial } = useTutorialPopup(splashSequenceComplete);
 
   // Defer until after first paint. In __DEV__, skip hiding the nav bar: Metro / dev overlays
   // cause rapid onWindowFocusChanged(false) and ReactHost logs ReactNoCrashSoftException — that
@@ -42,7 +46,6 @@ function AppContent({ splashSequenceComplete }: { splashSequenceComplete: boolea
           <AppNavigator />
         </CelebrationProvider>
       </AtmosphereOverlay>
-      <TutorialPopup visible={showTutorial} onDismiss={dismissTutorial} />
       <StatusBar style={mode === 'dark' ? 'light' : 'dark'} />
     </View>
   );
@@ -64,6 +67,16 @@ export default function App() {
   const [isSplashReady, setIsSplashReady] = useState(false);
   const [isSplashFinished, setIsSplashFinished] = useState(devSkipVideoSplash);
 
+  // Dev: Fast Refresh can preserve App state so the video splash is skipped (isSplashFinished stays true).
+  // Reset only when something is non-initial so cold start does not thrash; remount/HMR clears stale flags.
+  useLayoutEffect(() => {
+    if (!__DEV__) return;
+    setIsSplashFinished((f) => (f ? false : f));
+    setIsSplashReady((r) => (r ? false : r));
+    setAppIsReady((a) => (a ? false : a));
+  }, []);
+
+  // 1. Initial Prep (Lightweight)
   useEffect(() => {
     if (!devSkipVideoSplash) return;
     SplashScreen.hideAsync().catch(() => undefined);
@@ -93,15 +106,21 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <UserProgressProvider>
-            <ContentEditProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            <SplashFinishedProvider finished={isSplashFinished}>
               <View style={{ flex: 1 }}>
-                {appIsReady && (
-                    <AppContent splashSequenceComplete={devSkipVideoSplash || isSplashFinished} />
-                )}
-
-                {!devSkipVideoSplash && !isSplashFinished && (
+                {/* Auth mounts immediately so Firebase + login stack behave like before; splash is only on top. */}
+                <AuthGate>
+                  <UserProgressProvider>
+                    <ContentEditProvider>
+                      <View style={{ flex: 1 }}>
+                        {appIsReady && <AppContent />}
+                      </View>
+                    </ContentEditProvider>
+                  </UserProgressProvider>
+                </AuthGate>
+                {!isSplashFinished && (
                   <VideoSplashScreen
                     onReady={() => setIsSplashReady(true)}
                     onFinish={() => setIsSplashFinished(true)}
@@ -109,9 +128,9 @@ export default function App() {
                   />
                 )}
               </View>
-            </ContentEditProvider>
-          </UserProgressProvider>
-        </ThemeProvider>
+            </SplashFinishedProvider>
+          </ThemeProvider>
+        </AuthProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

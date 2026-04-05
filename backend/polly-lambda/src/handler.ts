@@ -7,6 +7,19 @@ import { promises as fs } from "node:fs";
 import { spawn } from "node:child_process";
 
 const region = process.env.AWS_REGION || "us-east-1";
+/** Per AWS Polly docs — generative is not available in e.g. eu-west-1 (Ireland). */
+const GENERATIVE_ENGINE_REGIONS = new Set([
+  "us-east-1",
+  "eu-central-1",
+  "us-west-2",
+  "ap-northeast-1",
+  "ap-northeast-2",
+  "ap-southeast-1",
+  "eu-west-2",
+  "ca-central-1",
+]);
+/** Long-form engine is only in us-east-1 per Polly docs (unlike generative). */
+const LONG_FORM_ENGINE_REGIONS = new Set(["us-east-1"]);
 const AUDIO_BUCKET = process.env.AUDIO_BUCKET;
 const SIGNED_URL_TTL_SECONDS = Number(process.env.SIGNED_URL_TTL_SECONDS || "3600");
 const ENABLE_AUDIO_MIXING = (process.env.ENABLE_AUDIO_MIXING || "0") === "1";
@@ -15,7 +28,7 @@ const FFMPEG_PATH = process.env.FFMPEG_PATH || "/opt/bin/ffmpeg";
 const polly = new PollyClient({ region });
 const s3 = new S3Client({ region });
 
-type Engine = "standard" | "neural";
+type Engine = "standard" | "neural" | "generative" | "long-form";
 type OutputFormat = "mp3" | "ogg_vorbis" | "pcm";
 type Ambient = "none" | "rain" | "ocean" | "forest" | "wind";
 type Brainwave = "none" | "delta" | "theta" | "alpha" | "beta";
@@ -206,26 +219,76 @@ function escapeXml(text: string) {
 // Polly limit is 3000 chars for SSML, but we use 2000 to be safe
 const MAX_SSML_CHARS = 2000;
 
+/** Private-use chars — unlikely in user meditation text — hold slots until after escapeXml */
+const PH = {
+  breathe: "\uE020",
+  pause: "\uE021",
+  ellipsis: "\uE022",
+  para: "\uE023",
+} as const;
+
+/**
+ * Map Gemini stage markers to placeholders, escape spoken text, then substitute SSML breaks.
+ * [breathe], [pause], ... and paragraph breaks become silent pauses (not spoken).
+ */
+function plainTextToSsmlInner(text: string): string {
+  const normalized = text
+    .replace(/\r\n/g, "\n")
+    .replace(/[ \t]+/g, " ")
+    .replace(/\n{2,}/g, PH.para)
+    .replace(/\n/g, " ")
+    .replace(/\[breathe\]/gi, PH.breathe)
+    .replace(/\[pause\]/gi, PH.pause)
+    .replace(/\.{3}/g, PH.ellipsis)
+    .trim();
+
+  let escaped = escapeXml(normalized);
+  escaped = escaped
+    .replace(new RegExp(PH.breathe, "g"), '<break time="500ms"/>')
+    .replace(new RegExp(PH.pause, "g"), '<break time="350ms"/>')
+    .replace(new RegExp(PH.ellipsis, "g"), '<break time="200ms"/>')
+    .replace(new RegExp(PH.para, "g"), '<break time="700ms"/>');
+
+  // Gentle pauses after sentence-ending punctuation (already escaped).
+  return escaped.replace(/([.!?])\s+/g, '$1 <break time="350ms"/> ');
+}
+
 function buildSsml(text: string, speed: number) {
   // Polly prosody "rate" accepts: x-slow, slow, medium, fast, x-fast or a percentage.
   // We'll map 0.5..1.5 to 70%..110% for a more "meditation" pace by default.
   const s = clamp(speed || 1.0, 0.5, 1.5);
   const pct = Math.round(70 + ((s - 0.5) / 1.0) * 40); // 70..110
 
-  // Normalize whitespace and add gentle pauses between sentences.
-  const cleaned = text
-    .replace(/\r\n/g, "\n")
-    .replace(/[ \t]+/g, " ")
-    .trim();
+  const inner = plainTextToSsmlInner(text);
+  // Neural engine does not support prosody `pitch`; omit it so generative→neural fallback works.
+  return `<speak><prosody rate="${pct}%">${inner}</prosody></speak>`;
+}
 
-  // IMPORTANT: escape user text first, then insert SSML tags.
-  // If we escape after inserting tags, Polly will *speak* the tag text (e.g. "break time equals 350 milliseconds").
-  const escaped = escapeXml(cleaned);
+function isEngineNotSupportedError(err: unknown): boolean {
+  const e = err as { name?: string; Code?: string; message?: string };
+  if (e?.name === "EngineNotSupportedException") return true;
+  if (e?.Code === "EngineNotSupportedException") return true;
+  const msg = String(e?.message ?? err ?? "");
+  // Polly in unsupported regions often returns message "Invalid Engine parameter" (not EngineNotSupportedException).
+  return /EngineNotSupported|engine.*not.*supported|Invalid Engine parameter/i.test(msg);
+}
 
-  // Insert small breaks after sentence-ending punctuation (on escaped text).
-  const withPauses = escaped.replace(/([.!?])\s+/g, '$1 <break time="350ms"/> ');
+function normalizeEngineForRegion(engine: Engine, awsRegion: string): Engine {
+  if (engine === "generative" && !GENERATIVE_ENGINE_REGIONS.has(awsRegion)) {
+    console.warn("Polly generative engine not available in this region; using neural", { awsRegion });
+    return "neural";
+  }
+  if (engine === "long-form" && !LONG_FORM_ENGINE_REGIONS.has(awsRegion)) {
+    console.warn("Polly long-form engine only in us-east-1; using neural", { awsRegion });
+    return "neural";
+  }
+  return engine;
+}
 
-  return `<speak><prosody rate="${pct}%">${withPauses}</prosody></speak>`;
+/** Neural has a smaller SSML surface than standard/generative (e.g. some prosody). */
+function isUnsupportedNeuralFeatureError(err: unknown): boolean {
+  const msg = String((err as { message?: string })?.message ?? err ?? "");
+  return /Unsupported Neural feature/i.test(msg);
 }
 
 function chunkByWords(text: string, maxChars: number) {
@@ -308,6 +371,103 @@ function ensureSsmlFits(text: string, speed: number, depth = 0): { text: string;
   return [{ text: truncated, ssml: buildSsml(truncated, speed) }];
 }
 
+type ChunkSynthResult = {
+  index: number;
+  bytes: Buffer;
+  engineUsed: Engine;
+  chunkFallback: boolean;
+};
+
+/** One Polly call with generative→neural→standard fallbacks (same as previous sequential loop). */
+async function synthesizeSsmlChunk(
+  ssml: string,
+  index: number,
+  voiceId: string,
+  engine: Engine,
+  outputFormat: OutputFormat
+): Promise<ChunkSynthResult> {
+  if (ssml.length > 3000) {
+    throw new Error(`SSML chunk ${index} exceeds 3000 chars (${ssml.length})`);
+  }
+
+  let engineUsed: Engine = engine;
+  let chunkFallback = false;
+  let synth;
+
+  try {
+    synth = await polly.send(
+      new SynthesizeSpeechCommand({
+        TextType: "ssml",
+        Text: ssml,
+        VoiceId: voiceId as any,
+        Engine: engineUsed as any,
+        OutputFormat: outputFormat,
+        SampleRate: outputFormat === "pcm" ? "16000" : undefined,
+      })
+    );
+  } catch (firstErr: unknown) {
+    if (engineUsed === "generative" && isEngineNotSupportedError(firstErr)) {
+      console.warn("Polly generative not supported for this voice; retrying neural", { voiceId, index });
+      engineUsed = "neural";
+      try {
+        synth = await polly.send(
+          new SynthesizeSpeechCommand({
+            TextType: "ssml",
+            Text: ssml,
+            VoiceId: voiceId as any,
+            Engine: "neural",
+            OutputFormat: outputFormat,
+            SampleRate: outputFormat === "pcm" ? "16000" : undefined,
+          })
+        );
+      } catch (neuralErr: unknown) {
+        if (isUnsupportedNeuralFeatureError(neuralErr)) {
+          console.warn("Polly neural rejected SSML; retrying standard", { voiceId, index });
+          engineUsed = "standard";
+          synth = await polly.send(
+            new SynthesizeSpeechCommand({
+              TextType: "ssml",
+              Text: ssml,
+              VoiceId: voiceId as any,
+              Engine: "standard",
+              OutputFormat: outputFormat,
+              SampleRate: outputFormat === "pcm" ? "16000" : undefined,
+            })
+          );
+        } else {
+          throw neuralErr;
+        }
+      }
+    } else if (engineUsed === "neural" && isUnsupportedNeuralFeatureError(firstErr)) {
+      console.warn("Polly neural rejected SSML; retrying standard", { voiceId, index });
+      engineUsed = "standard";
+      synth = await polly.send(
+        new SynthesizeSpeechCommand({
+          TextType: "ssml",
+          Text: ssml,
+          VoiceId: voiceId as any,
+          Engine: "standard",
+          OutputFormat: outputFormat,
+          SampleRate: outputFormat === "pcm" ? "16000" : undefined,
+        })
+      );
+    } else {
+      throw firstErr;
+    }
+  }
+
+  if (engine === "generative" && engineUsed !== "generative") {
+    chunkFallback = true;
+  }
+
+  if (!synth!.AudioStream) {
+    throw new Error("Polly returned no AudioStream");
+  }
+
+  const bytes = Buffer.from(await synth!.AudioStream.transformToByteArray());
+  return { index, bytes, engineUsed, chunkFallback };
+}
+
 export async function handler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
   try {
     if (event.requestContext.http.method === "HEAD" && event.rawPath === "/health") {
@@ -331,7 +491,11 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     if (!text) return json(400, { error: "text is required" });
 
     const voiceId = body.voiceId || "Joanna";
-    const engine: Engine = (body.engine || "neural") as Engine;
+    const rawEngine = (body.engine || "generative") as string;
+    const engine: Engine = normalizeEngineForRegion(
+      (["standard", "neural", "generative", "long-form"].includes(rawEngine) ? rawEngine : "generative") as Engine,
+      region
+    );
     const outputFormat: OutputFormat = (body.outputFormat || "mp3") as OutputFormat;
     const speed = clamp(body.speed ?? 1.0, 0.5, 1.5);
 
@@ -375,37 +539,25 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
     const ssmlChunks = textChunks.flatMap((chunk) => ensureSsmlFits(chunk, speed));
 
     const partPaths: string[] = [];
+    let reportedEngine: Engine = engine;
+    let engineFallback = false;
 
-    for (let i = 0; i < ssmlChunks.length; i++) {
-      const ssml = ssmlChunks[i].ssml;
+    // Parallel Polly calls — sequential was too slow for 5–10+ min scripts and can exceed API Gateway limits.
+    const chunkResults = await Promise.all(
+      ssmlChunks.map((c, i) => synthesizeSsmlChunk(c.ssml, i, voiceId, engine, outputFormat))
+    );
+    chunkResults.sort((a, b) => a.index - b.index);
 
-      // Final safety check - Polly's actual limit is 3000 chars
-      if (ssml.length > 3000) {
-        console.error(`SSML chunk ${i} exceeds 3000 chars (${ssml.length}), truncating`);
-        // This should never happen with our chunking, but handle it gracefully
-        return json(400, { error: "A chunk exceeded Polly SSML limit. Reduce maxChars." });
-      }
+    for (const r of chunkResults) {
+      reportedEngine = r.engineUsed;
+      if (r.chunkFallback) engineFallback = true;
+    }
 
-      const synth = await polly.send(
-        new SynthesizeSpeechCommand({
-          TextType: "ssml",
-          Text: ssml,
-          // AWS SDK type is a union of known VoiceIds; allow runtime strings.
-          VoiceId: voiceId as any,
-          Engine: engine,
-          OutputFormat: outputFormat,
-          SampleRate: outputFormat === "pcm" ? "16000" : undefined,
-        })
-      );
+    const ext = outputFormat === "ogg_vorbis" ? "ogg" : outputFormat;
 
-      if (!synth.AudioStream) {
-        return json(500, { error: "Polly returned no AudioStream" });
-      }
-
-      const audioBytes = Buffer.from(await synth.AudioStream.transformToByteArray());
-
-      const ext = outputFormat === "ogg_vorbis" ? "ogg" : outputFormat;
-      const key = `polly/${requestHash}/part-${String(i).padStart(3, "0")}.${ext}`;
+    for (const r of chunkResults) {
+      const i = r.index;
+      const audioBytes = r.bytes;
 
       if (mixRequested) {
         const partPath = `/tmp/part-${String(i).padStart(3, "0")}.mp3`;
@@ -414,31 +566,84 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         continue;
       }
 
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: AUDIO_BUCKET,
-          Key: key,
-          Body: audioBytes,
-          ContentType:
-            outputFormat === "mp3"
-              ? "audio/mpeg"
-              : outputFormat === "ogg_vorbis"
-              ? "audio/ogg"
-              : "audio/pcm",
-          CacheControl: "public, max-age=31536000, immutable",
-        })
-      );
+      // Non-mixed: stash part paths for optional single-file concat (avoids client-side multi-segment bugs).
+      if (outputFormat === "mp3") {
+        const partPath = `/tmp/part-${String(i).padStart(3, "0")}.mp3`;
+        await fs.writeFile(partPath, audioBytes);
+        partPaths.push(partPath);
+      } else {
+        const key = `polly/${requestHash}/part-${String(i).padStart(3, "0")}.${ext}`;
+        await s3.send(
+          new PutObjectCommand({
+            Bucket: AUDIO_BUCKET,
+            Key: key,
+            Body: audioBytes,
+            ContentType:
+              outputFormat === "ogg_vorbis" ? "audio/ogg" : "audio/pcm",
+            CacheControl: "public, max-age=31536000, immutable",
+          })
+        );
+        const url = await getSignedUrl(
+          s3,
+          new GetObjectCommand({ Bucket: AUDIO_BUCKET, Key: key }),
+          { expiresIn: SIGNED_URL_TTL_SECONDS }
+        );
+        audioUrls.push(url);
+      }
+    }
 
-      const url = await getSignedUrl(
-        s3,
-        new GetObjectCommand({
-          Bucket: AUDIO_BUCKET,
-          Key: key,
-        }),
-        { expiresIn: SIGNED_URL_TTL_SECONDS }
-      );
-
-      audioUrls.push(url);
+    // Voice-only MP3: merge parts into one file when possible (Expo AV often drops audio after 1st segment when chaining URLs).
+    if (!mixRequested && outputFormat === "mp3" && partPaths.length > 0) {
+      let mergedOk = false;
+      if (partPaths.length > 1 && (await fileExists(FFMPEG_PATH))) {
+        try {
+          const voicePath = "/tmp/voice-merged.mp3";
+          await concatMp3Parts(partPaths, voicePath);
+          const mergedBytes = await fs.readFile(voicePath);
+          const mergedKey = `polly/${requestHash}/merged.mp3`;
+          await s3.send(
+            new PutObjectCommand({
+              Bucket: AUDIO_BUCKET,
+              Key: mergedKey,
+              Body: mergedBytes,
+              ContentType: "audio/mpeg",
+              CacheControl: "public, max-age=31536000, immutable",
+            })
+          );
+          const mergedUrl = await getSignedUrl(
+            s3,
+            new GetObjectCommand({ Bucket: AUDIO_BUCKET, Key: mergedKey }),
+            { expiresIn: SIGNED_URL_TTL_SECONDS }
+          );
+          audioUrls.length = 0;
+          audioUrls.push(mergedUrl);
+          mergedOk = true;
+        } catch (e) {
+          console.error("merge mp3 parts failed, falling back to per-part URLs", e);
+        }
+      }
+      if (!mergedOk) {
+        audioUrls.length = 0;
+        for (let i = 0; i < partPaths.length; i++) {
+          const key = `polly/${requestHash}/part-${String(i).padStart(3, "0")}.mp3`;
+          const bodyBuf = await fs.readFile(partPaths[i]);
+          await s3.send(
+            new PutObjectCommand({
+              Bucket: AUDIO_BUCKET,
+              Key: key,
+              Body: bodyBuf,
+              ContentType: "audio/mpeg",
+              CacheControl: "public, max-age=31536000, immutable",
+            })
+          );
+          const url = await getSignedUrl(
+            s3,
+            new GetObjectCommand({ Bucket: AUDIO_BUCKET, Key: key }),
+            { expiresIn: SIGNED_URL_TTL_SECONDS }
+          );
+          audioUrls.push(url);
+        }
+      }
     }
 
     if (mixRequested) {
@@ -476,10 +681,22 @@ export async function handler(event: APIGatewayProxyEventV2): Promise<APIGateway
         { expiresIn: SIGNED_URL_TTL_SECONDS }
       );
 
-      return json(200, { audioUrls: [url], segments: 1, mixed: true });
+      return json(200, {
+        audioUrls: [url],
+        segments: 1,
+        mixed: true,
+        engine: reportedEngine,
+        engineFallback,
+      });
     }
 
-    return json(200, { audioUrls, segments: audioUrls.length, mixed: false });
+    return json(200, {
+      audioUrls,
+      segments: audioUrls.length,
+      mixed: false,
+      engine: reportedEngine,
+      engineFallback,
+    });
   } catch (err: any) {
     console.error(err);
     return json(500, { error: err?.message || "Internal error" });

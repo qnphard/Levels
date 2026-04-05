@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
-import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { useVideoPlayer, VideoView } from '../../shims/expoVideo';
 import { Asset } from 'expo-asset';
 import { getAnimationAsset, hasAnimationAsset } from '../../assets/animations';
 
@@ -13,31 +13,50 @@ interface HybridAnimationProps {
    * e.g., 'desire-black-hole', 'power-vs-force'
    */
   animationName: string;
-  
+
   /**
    * Fallback code-based animation component
    */
   CodeAnimation: React.ComponentType<any>;
-  
+
   /**
    * Animation height
    */
   height?: number;
-  
+
   /**
    * Whether to prefer asset over code animation
    */
   preferAsset?: boolean;
-  
+
   /**
    * Auto-play for code animation fallback
    */
   autoPlay?: boolean;
-  
+
   /**
    * Callback when animation is interacted with
    */
   onInteraction?: () => void;
+}
+
+type HybridVideoProps = {
+  animationName: string;
+  height: number;
+};
+
+function HybridVideoPlayer({ animationName, height }: HybridVideoProps) {
+  const moduleRef = getAnimationAsset(animationName);
+  const player = useVideoPlayer(moduleRef!, (p) => {
+    p.loop = true;
+    p.play();
+  });
+
+  return (
+    <View style={[styles.container, { height }]}>
+      <VideoView player={player} style={styles.video} contentFit="contain" nativeControls={false} />
+    </View>
+  );
 }
 
 /**
@@ -54,8 +73,6 @@ export default function HybridAnimation({
 }: HybridAnimationProps) {
   const [assetLoaded, setAssetLoaded] = useState(false);
   const [assetError, setAssetError] = useState(false);
-  const [videoStatus, setVideoStatus] = useState<AVPlaybackStatus | null>(null);
-  const videoRef = React.useRef<Video>(null);
 
   // Try to load asset
   useEffect(() => {
@@ -66,24 +83,21 @@ export default function HybridAnimation({
 
     const loadAsset = async () => {
       try {
-        // Check if asset exists using static mapping
         if (!hasAnimationAsset(animationName)) {
-          // Asset not found, use code animation
           setAssetError(true);
           return;
         }
-        
-        // Get asset from static mapping
+
         const assetModule = getAnimationAsset(animationName);
         if (!assetModule) {
           setAssetError(true);
           return;
         }
-        
+
         const asset = Asset.fromModule(assetModule);
         await asset.downloadAsync();
         setAssetLoaded(true);
-      } catch (error) {
+      } catch {
         console.log(`Asset not found for ${animationName}, using code animation`);
         setAssetError(true);
       }
@@ -92,20 +106,9 @@ export default function HybridAnimation({
     loadAsset();
   }, [animationName, preferAsset]);
 
-  // Handle video playback
-  useEffect(() => {
-    if (assetLoaded && videoRef.current) {
-      videoRef.current.setIsLoopingAsync(true);
-      videoRef.current.playAsync();
-    }
-  }, [assetLoaded]);
-
   // If asset is preferred and loaded, show video
   if (preferAsset && assetLoaded && !assetError) {
-    const videoSource = getAnimationAsset(animationName);
-    
-    if (!videoSource) {
-      // Fallback to code animation if asset not found
+    if (!getAnimationAsset(animationName)) {
       return (
         <View style={[styles.container, { height }]}>
           <CodeAnimation autoPlay={autoPlay} onInteraction={onInteraction} />
@@ -113,25 +116,7 @@ export default function HybridAnimation({
       );
     }
 
-    return (
-      <View style={[styles.container, { height }]}>
-        <Video
-          ref={videoRef}
-          source={videoSource}
-          style={styles.video}
-          resizeMode={ResizeMode.CONTAIN}
-          isLooping
-          shouldPlay
-          onPlaybackStatusUpdate={(status) => {
-            setVideoStatus(status);
-            if (status.isLoaded && status.didJustFinish) {
-              // Restart video when it finishes
-              videoRef.current?.replayAsync();
-            }
-          }}
-        />
-      </View>
-    );
+    return <HybridVideoPlayer key={animationName} animationName={animationName} height={height} />;
   }
 
   // Fallback to code animation
@@ -159,4 +144,3 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 });
-

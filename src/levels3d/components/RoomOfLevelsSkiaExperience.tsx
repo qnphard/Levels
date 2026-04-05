@@ -18,6 +18,7 @@ import RoomWingVideoMenu from './RoomWingVideoMenu';
 type Phase = 'atrium' | 'wing';
 type WingId = 'lower' | 'higher';
 
+/** Atrium-only background (distinct from wing MP4s in `RoomWingVideoMenu`). */
 const VIDEO_ATRIUM = require('../../../assets/videos/power-vs-force-atrium.mp4');
 
 /** Match `RoomWingVideoMenu` so wing ↔ atrium feels consistent. */

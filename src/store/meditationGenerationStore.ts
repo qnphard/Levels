@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { Audio } from 'expo-av';
 import { geminiService, MeditationPurpose, MeditationStyle, MeditationDuration, GeneratedScript } from '../services/geminiService';
 import * as voiceService from '../services/voiceTTSService';
+import type { PollyEngine } from '../services/voiceTTSService';
 import { AI_CONFIG } from '../config/aiConfig';
 import {
     generateMeditationScript,
@@ -10,6 +11,7 @@ import {
     durationMinutesForTemplate,
 } from '../data/meditationScripts';
 import { useSavedMeditationsStore } from './savedMeditationsStore';
+import { padScriptTextToMinimumWords } from '../data/meditationPadding';
 
 interface GenerationParams {
     purpose: MeditationPurpose;
@@ -17,6 +19,8 @@ interface GenerationParams {
     style: MeditationStyle;
     usePremiumVoice: boolean;
     voiceId: string;
+    /** Amazon Polly engine; default generative in UI. */
+    pollyEngine?: PollyEngine;
     speed: number;
     brainwave: string;
     binauralVolume: number;
@@ -124,38 +128,52 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
                 throw new Error('Could not build a meditation script. Check Gemini response or templates.');
             }
 
-            console.log('[MeditationGen] Script generated, length:', scriptText.length, 'chars');
+            const padded = padScriptTextToMinimumWords(scriptText, params.duration);
+            scriptText = padded.text;
+            if (padded.padded) {
+                console.warn(
+                    '[MeditationGen] Script was below duration target; appended neutral padding:',
+                    padded.wordsBefore,
+                    '→',
+                    padded.wordsAfter,
+                    'words'
+                );
+            }
+
+            const approxWords = scriptText.split(/\s+/).filter(Boolean).length;
+            console.log('[MeditationGen] Script ready for TTS, length:', scriptText.length, 'chars, ~words:', approxWords);
             set({ generatedScript: script, scriptText, progress: 'synthesizing_audio', progressValue: 15 });
 
             // 2. Synthesize Audio
             // MeloTTS speed: very fast on GPU
-            // Estimation: 500 chars -> 10s. 
-            // Clamp betwen 5s and 60s.
+            // Rough UI pacing for the progress bar (~50 chars/s for synthesis wait). Cap at 15 min so long scripts don't imply "done in 1 minute".
             const estimatedDurationMs = (scriptText.length / 50) * 1000;
-            const clampedDuration = Math.max(5000, Math.min(estimatedDurationMs, 60000));
+            const clampedDuration = Math.max(5000, Math.min(estimatedDurationMs, 15 * 60 * 1000));
 
             animateProgress(15, 95, clampedDuration);
 
             // 2. Synthesize Audio
             if (params.usePremiumVoice) {
-                // Generate audio URLs (one or more segments)
-                const urisRaw = await voiceService.synthesize({
+                const engine = params.pollyEngine ?? 'generative';
+                const synth = await voiceService.synthesize({
                     text: scriptText,
                     speed: params.speed,
                     voiceId: params.voiceId,
-                    engine: 'neural',
+                    engine,
                     brainwave: params.brainwave,
                     binauralVolume: params.binauralVolume,
                     ambient: params.ambient,
                     ambientVolume: params.ambientVolume,
                 });
-                const uris = Array.isArray(urisRaw) ? urisRaw.filter((u) => typeof u === 'string' && u.length > 0) : [];
+                const uris = synth.audioUris.filter((u) => typeof u === 'string' && u.length > 0);
                 if (uris.length === 0) {
                     throw new Error('Voice synthesis returned no audio. Check your TTS backend and EXPO_PUBLIC_TTS_API_URL.');
                 }
 
+                const engineUsed = synth.engineUsed ?? engine;
+
                 // Store URI, mark complete.
-                console.log('[MeditationGen] TTS complete, got', uris.length, 'audio URIs');
+                console.log('[MeditationGen] TTS complete, got', uris.length, 'audio URIs', { engineUsed });
                 if (interval) clearInterval(interval);
                 set({ audioUris: uris, progress: 'completed', isGenerating: false, progressValue: 100 });
 
@@ -166,6 +184,7 @@ export const useMeditationGenerationStore = create<MeditationGenerationState>((s
                         duration: params.duration,
                         style: params.style,
                         voiceId: params.voiceId,
+                        pollyEngine: engineUsed,
                         speed: params.speed,
                         brainwave: params.brainwave,
                         binauralVolume: params.binauralVolume,

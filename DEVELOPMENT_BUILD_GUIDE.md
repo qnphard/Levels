@@ -31,7 +31,7 @@ A development build is a custom version of your app that includes:
 ```
 
 ### App Configuration (`app.json`)
-- **Package**: `com.anonymous.meditationapp`
+- **Package**: `com.anonymous.levels`
 - **Plugins**: `expo-dev-client`, `withDisablePngCrunching`
 - **Owner**: `qnphard`
 - **Project ID**: `c5126454-5b79-4b01-8fcc-afa954b0e275`

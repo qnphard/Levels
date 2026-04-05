@@ -191,7 +191,6 @@ const APP_PURPOSE_TO_TEMPLATE: Record<string, MeditationPurpose> = {
     morningAwakening: 'morning',
     stressRelief: 'stress_relief',
     selfCompassion: 'self_compassion',
-    // Aliases if older callers used short names
     sleep: 'sleep',
     calm: 'calm',
     focus: 'focus',
