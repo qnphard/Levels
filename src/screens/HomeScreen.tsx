@@ -22,6 +22,10 @@ import ArticleCard from '../components/ArticleCard';
 import PrimaryButton from '../components/PrimaryButton';
 import SOSBottomSheet from '../components/SOSBottomSheet';
 import IntentionSessionModal from '../components/IntentionSessionModal';
+import { CardSurface } from '../components/CardSurface';
+import { SkiaHeroBackdrop } from '../components/SkiaHeroBackdrop';
+import { FadeStagger } from '../components/motion/FadeStagger';
+import { SkeletonCard } from '../components/skeleton/SkeletonCard';
 import { Article } from '../types';
 import {
   useThemeColors,
@@ -32,7 +36,6 @@ import {
   spacing,
   borderRadius,
   ThemeColors,
-  toRgba,
 } from '../theme/colors';
 import { useUserStore } from '../store/userStore';
 import { getLevelById } from '../data/levels';
@@ -74,7 +77,7 @@ export default function HomeScreen() {
   const toggleTheme = useThemeToggle();
   const glowEnabled = useGlowEnabled();
   const toggleGlow = useGlowToggle();
-  const styles = useMemo(() => createStyles(theme, glowEnabled), [theme, glowEnabled]);
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
   const lastLevelId = useUserStore((s) => s.lastAccessedLevel);
   const lastLevel = useMemo(() => (lastLevelId ? getLevelById(lastLevelId) : null), [lastLevelId]);
@@ -228,244 +231,131 @@ export default function HomeScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        {/* Continue Journey / Start Here Module */}
-        <View style={styles.journeyModule}>
-          {lastLevel ? (
-            <TouchableOpacity
-              style={[
-                styles.journeyCard,
-                glowEnabled && {
-                  borderWidth: 2,
-                  borderColor: theme.mode === 'dark'
-                    ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.64)
-                    : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.48),
-                  shadowColor: (lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary,
-                  shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
-                  shadowRadius: 24,
-                  shadowOffset: { width: 0, height: 4 },
-                  backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
-                  ...(theme.mode !== 'dark' && { elevation: 6 }),
-                  boxShadow: [
-                    `0 0 30px ${theme.mode === 'dark'
-                      ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.42)
-                      : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.32)}`,
-                    `0 0 60px ${theme.mode === 'dark'
-                      ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.22)
-                      : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.16)}`,
-                    `inset 0 0 20px ${toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.1)}`,
-                  ].join(', '),
-                }
-              ]}
-              onPress={() => navigation.navigate('LevelChapter', { levelId: lastLevel.id })}
-              activeOpacity={0.9}
-            >
-              <LinearGradient
-                colors={(theme.mode === 'dark' ? (lastLevel.gradientDark ?? lastLevel.gradient) : lastLevel.gradient) || ['#6366F1', '#8B5CF6']}
-                style={styles.journeyGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+        <FadeStagger staggerMs={55} baseDelayMs={0}>
+          {/* Continue Journey / Start Here Module */}
+          <View style={styles.journeyModule}>
+            {lastLevel ? (
+              <CardSurface
+                variant="elevated"
+                pressable
+                glowColor={(lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary}
+                onPress={() => navigation.navigate('LevelChapter', { levelId: lastLevel.id })}
+                style={{ backgroundColor: 'transparent' }}
               >
-                {glowEnabled && (
-                  <View
-                    pointerEvents="none"
-                    style={[
-                      styles.cardGlow,
-                      {
-                        backgroundColor: theme.mode === 'dark'
-                          ? toRgba((lastLevel.gradientDark ?? lastLevel.gradient)?.[1] || theme.primary, 0.12)
-                          : toRgba((lastLevel.gradient)?.[1] || theme.primary, 0.04),
-                      },
-                    ]}
-                  />
-                )}
-                <View style={styles.journeyContent}>
-                  <View>
-                    <Text style={styles.journeyLabel}>Continue Journey</Text>
-                    <Text style={styles.journeyTitle}>{lastLevel.name}</Text>
+                <LinearGradient
+                  colors={(theme.mode === 'dark' ? (lastLevel.gradientDark ?? lastLevel.gradient) : lastLevel.gradient) || ['#6366F1', '#8B5CF6']}
+                  style={styles.journeyGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <View style={styles.journeyContent}>
+                    <View>
+                      <Text style={styles.journeyLabel}>Continue Journey</Text>
+                      <Text style={styles.journeyTitle}>{lastLevel.name}</Text>
+                    </View>
+                    <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
                   </View>
-                  <Ionicons name="arrow-forward-circle" size={32} color="#FFFFFF" />
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.journeyCard}
-              onPress={() => navigation.navigate('JourneyMap')}
-              activeOpacity={0.9}
-            >
-              <LinearGradient
-                colors={['#6366F1', '#8B5CF6']}
-                style={styles.journeyGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
+                </LinearGradient>
+              </CardSurface>
+            ) : (
+              <CardSurface
+                variant="elevated"
+                pressable
+                glowColor={theme.primary}
+                onPress={() => navigation.navigate('JourneyMap')}
+                style={{ backgroundColor: 'transparent' }}
               >
-                {glowEnabled && (
-                  <View
-                    pointerEvents="none"
-                    style={[
-                      styles.cardGlow,
-                      {
-                        backgroundColor: theme.mode === 'dark'
-                          ? toRgba(theme.primary, 0.12)
-                          : toRgba(theme.primary, 0.04),
-                      },
-                    ]}
-                  />
-                )}
-                <View style={styles.journeyContent}>
-                  <View>
-                    <Text style={styles.journeyLabel}>New Beginning</Text>
-                    <Text style={styles.journeyTitle}>Start Your Journey</Text>
+                <LinearGradient
+                  colors={['#6366F1', '#8B5CF6']}
+                  style={styles.journeyGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <View style={styles.journeyContent}>
+                    <View>
+                      <Text style={styles.journeyLabel}>New Beginning</Text>
+                      <Text style={styles.journeyTitle}>Start Your Journey</Text>
+                    </View>
+                    <Ionicons name="sparkles" size={32} color="#FFFFFF" />
                   </View>
-                  <Ionicons name="sparkles" size={32} color="#FFFFFF" />
-                </View>
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Room of Levels Entrance */}
-        <View style={styles.roomModule}>
-          <TouchableOpacity
-            style={[
-              styles.roomCard,
-              glowEnabled && {
-                borderWidth: 2,
-                borderColor: theme.mode === 'dark' ? toRgba('#4F46E5', 0.64) : toRgba('#4F46E5', 0.48),
-                shadowColor: '#4F46E5',
-                shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
-                shadowRadius: 24,
-                shadowOffset: { width: 0, height: 4 },
-                backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
-                ...(theme.mode !== 'dark' && { elevation: 6 }),
-                boxShadow: [
-                  `0 0 30px ${theme.mode === 'dark' ? toRgba('#4F46E5', 0.42) : toRgba('#4F46E5', 0.32)}`,
-                  `0 0 60px ${theme.mode === 'dark' ? toRgba('#4F46E5', 0.22) : toRgba('#4F46E5', 0.16)}`,
-                  `inset 0 0 20px ${toRgba('#4F46E5', 0.1)}`,
-                ].join(', '),
-              }
-            ]}
-            onPress={() => navigation.navigate('RoomOfLevels2')}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={['#1e1b4b', '#312e81']} // Deep indigo/stormy colors
-              style={styles.roomGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              {glowEnabled && (
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.cardGlow,
-                    {
-                      backgroundColor: theme.mode === 'dark'
-                        ? toRgba('#4F46E5', 0.12)
-                        : toRgba('#4F46E5', 0.04),
-                    },
-                  ]}
-                />
-              )}
-              <View style={styles.roomContent}>
-                <View style={styles.roomTextSection}>
-                  <Text style={styles.roomLabel}>Portal</Text>
-                  <Text style={styles.roomTitle}>The Room of Levels</Text>
-                  <Text style={styles.roomSubtitle}>Transform dense emotions into clarity</Text>
-                </View>
-                <View style={styles.roomIconContainer}>
-                  <Ionicons name="cloud-outline" size={32} color="#FFFFFF" />
-                </View>
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        {/* Room of Levels v2 (beta) — wellness door room */}
-        <View style={styles.room2Module}>
-          <TouchableOpacity
-            style={styles.room2Card}
-            onPress={() => navigation.navigate('RoomOfLevels2')}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={['#ecfdf5', '#d1fae5', '#a7f3d0']}
-              style={styles.room2Gradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-            >
-              <View style={styles.room2Content}>
-                <View style={styles.room2TextSection}>
-                  <Text style={styles.room2Label}>Beta</Text>
-                  <Text style={styles.room2Title}>The Room of Levels</Text>
-                  <Text style={styles.room2Subtitle}>
-                    Calm room & doors — experimental new entrance
-                  </Text>
-                </View>
-                <View style={styles.room2IconWrap}>
-                  <Ionicons name="leaf-outline" size={28} color="#047857" />
-                </View>
-              </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-
-        {/* Today's Practice Card */}
-        {todaysPractice && (
-          <View style={styles.todaysPracticeCard}>
-            <Text style={styles.todaysPracticeLabel}>Today's Practice</Text>
-            <Text style={styles.todaysPracticeTitle}>{todaysPractice.title}</Text>
-            <Text style={styles.todaysPracticeDescription}>
-              {todaysPractice.description}
-            </Text>
-            <PrimaryButton
-              label="Begin when you're ready"
-              onPress={() =>
-                navigation.navigate('Player', { meditation: todaysPractice })
-              }
-            />
+                </LinearGradient>
+              </CardSurface>
+            )}
           </View>
-        )}
 
-        {/* AI Generator Module */}
-        <View style={styles.generatorModule}>
-          <TouchableOpacity
-            style={styles.generatorCard}
-            onPress={() => navigation.navigate('MeditationGenerator')}
-            activeOpacity={0.9}
-          >
-            <LinearGradient
-              colors={['#8B5CF6', '#EC4899']}
-              style={styles.generatorGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+          {/* Room of Levels Entrance */}
+          <View style={styles.roomModule}>
+            <CardSurface
+              variant="hero"
+              pressable
+              glowColor="#4F46E5"
+              onPress={() => navigation.navigate('RoomOfLevels2')}
+              style={{ backgroundColor: 'transparent', minHeight: 120 }}
             >
-              {glowEnabled && (
-                <View
-                  pointerEvents="none"
-                  style={[
-                    styles.cardGlow,
-                    {
-                      backgroundColor: theme.mode === 'dark'
-                        ? toRgba('#EC4899', 0.12)
-                        : toRgba('#EC4899', 0.04),
-                    },
-                  ]}
-                />
-              )}
-              <View style={styles.generatorContent}>
-                <View style={styles.generatorTextSection}>
-                  <Text style={styles.generatorLabel}>Custom Practice</Text>
-                  <Text style={styles.generatorTitle}>Personalized Meditation</Text>
-                  <Text style={styles.generatorSubtitle}>Generate unique scripts & binaural beats</Text>
-                </View>
-                <View style={styles.generatorIconContainer}>
-                  <Ionicons name="sparkles" size={28} color="#FFFFFF" />
+              <View style={styles.roomHeroInner}>
+                <SkiaHeroBackdrop colors={['#1e1b4b', '#312e81']} />
+                <View style={styles.roomContent}>
+                  <View style={styles.roomTextSection}>
+                    <Text style={styles.roomLabel}>Portal</Text>
+                    <Text style={styles.roomTitle}>The Room of Levels</Text>
+                    <Text style={styles.roomSubtitle}>Transform dense emotions into clarity</Text>
+                  </View>
+                  <View style={styles.roomIconContainer}>
+                    <Ionicons name="cloud-outline" size={32} color="#FFFFFF" />
+                  </View>
                 </View>
               </View>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+            </CardSurface>
+          </View>
+
+          {/* Today's Practice Card */}
+          {todaysPractice && (
+            <View style={styles.todaysPracticeWrap}>
+              <CardSurface variant="elevated" glowColor="#F59E0B" style={styles.todaysPracticeInner}>
+                <Text style={styles.todaysPracticeLabel}>Today's Practice</Text>
+                <Text style={styles.todaysPracticeTitle}>{todaysPractice.title}</Text>
+                <Text style={styles.todaysPracticeDescription}>
+                  {todaysPractice.description}
+                </Text>
+                <PrimaryButton
+                  label="Begin when you're ready"
+                  onPress={() =>
+                    navigation.navigate('Player', { meditation: todaysPractice })
+                  }
+                />
+              </CardSurface>
+            </View>
+          )}
+
+          {/* AI Generator Module */}
+          <View style={styles.generatorModule}>
+            <CardSurface
+              variant="elevated"
+              pressable
+              glowColor="#8B5CF6"
+              onPress={() => navigation.navigate('MeditationGenerator')}
+              style={{ backgroundColor: 'transparent' }}
+            >
+              <LinearGradient
+                colors={['#8B5CF6', '#EC4899']}
+                style={styles.generatorGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <View style={styles.generatorContent}>
+                  <View style={styles.generatorTextSection}>
+                    <Text style={styles.generatorLabel}>Custom Practice</Text>
+                    <Text style={styles.generatorTitle}>Personalized Meditation</Text>
+                    <Text style={styles.generatorSubtitle}>Generate unique scripts & binaural beats</Text>
+                  </View>
+                  <View style={styles.generatorIconContainer}>
+                    <Ionicons name="sparkles" size={28} color="#FFFFFF" />
+                  </View>
+                </View>
+              </LinearGradient>
+            </CardSurface>
+          </View>
+        </FadeStagger>
 
         {/* Category Filter */}
         <ScrollView
@@ -512,7 +402,9 @@ export default function HomeScreen() {
               ? 'Available Practices'
               : selectedCategory}
           </Text>
-          {filteredMeditations.length > 0 ? (
+          {!splashFinished ? (
+            <SkeletonCard layout="meditation" count={3} />
+          ) : filteredMeditations.length > 0 ? (
             filteredMeditations.map((meditation) => (
               <MeditationCard
                 key={meditation.id}
@@ -556,7 +448,7 @@ export default function HomeScreen() {
         onPress={() => setShowSOS(true)}
         activeOpacity={0.8}
       >
-        <Ionicons name="medkit" size={24} color="#FFFFFF" />
+        <Ionicons name="medkit" size={24} color={theme.accentDanger} />
       </TouchableOpacity>
 
       {/* SOS Bottom Sheet */}
@@ -570,7 +462,7 @@ export default function HomeScreen() {
   );
 }
 
-const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
+const createStyles = (theme: ThemeColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -597,15 +489,14 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     welcomeText: {
       fontSize: typography.h1,
       fontWeight: 'bold',
-      color: theme.mode === 'dark' ? '#F8FAFC' : '#1E293B',
+      color: theme.textPrimary,
       marginBottom: spacing.xs,
       letterSpacing: -0.5,
     },
     subtitle: {
       fontSize: typography.body,
-      color: theme.mode === 'dark' ? '#CBD5E1' : '#475569',
+      color: theme.textSecondary,
       fontWeight: '400',
-      opacity: 0.9,
       fontStyle: 'italic',
     },
     categoryContainer: {
@@ -669,30 +560,12 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       marginTop: spacing.lg,
       fontStyle: 'italic',
     },
-    todaysPracticeCard: {
-      borderRadius: borderRadius.lg,
-      padding: spacing.lg,
-      backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
+    todaysPracticeWrap: {
       marginBottom: spacing.lg,
       marginHorizontal: spacing.lg,
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      ...(glowEnabled && {
-        borderWidth: 2,
-        borderColor: theme.mode === 'dark' ? toRgba('#F59E0B', 0.64) : toRgba('#F59E0B', 0.48),
-        shadowColor: '#F59E0B',
-        shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
-        shadowRadius: 24,
-        shadowOffset: { width: 0, height: 4 },
-        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
-        ...(theme.mode !== 'dark' && { elevation: 6 }),
-        boxShadow: [
-          `0 0 30px ${theme.mode === 'dark' ? toRgba('#F59E0B', 0.42) : toRgba('#F59E0B', 0.32)}`,
-          `0 0 60px ${theme.mode === 'dark' ? toRgba('#F59E0B', 0.22) : toRgba('#F59E0B', 0.16)}`,
-          `inset 0 0 20px ${toRgba('#F59E0B', 0.1)}`,
-        ].join(', '),
-      }),
-      overflow: 'hidden',
+    },
+    todaysPracticeInner: {
+      padding: spacing.lg,
     },
     todaysPracticeLabel: {
       fontSize: 10,
@@ -718,29 +591,6 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       paddingHorizontal: spacing.lg,
       marginTop: spacing.md,
       marginBottom: spacing.lg,
-    },
-    journeyCard: {
-      borderRadius: borderRadius.lg,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      ...(glowEnabled && {
-        borderWidth: 2,
-        borderColor: theme.mode === 'dark' ? toRgba(theme.primary, 0.8) : toRgba(theme.primary, 0.6),
-        shadowColor: theme.primary,
-        shadowOpacity: theme.mode === 'dark' ? 0.34 : 0.25,
-        shadowRadius: 24,
-        shadowOffset: { width: 0, height: 4 },
-        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
-        ...(theme.mode !== 'dark' && { elevation: 6 }),
-      }),
-      ...(!glowEnabled && {
-        elevation: 8,
-        shadowColor: theme.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.2,
-        shadowRadius: 12,
-      }),
     },
     journeyGradient: {
       padding: spacing.lg,
@@ -770,14 +620,16 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       width: 56,
       height: 56,
       borderRadius: 28,
-      backgroundColor: '#EF4444',
+      backgroundColor: theme.accentDangerSoft,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#EF4444',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.4,
-      shadowRadius: 12,
-      elevation: 8,
+      borderWidth: 1,
+      borderColor: theme.accentDanger,
+      shadowColor: theme.accentDanger,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.22,
+      shadowRadius: 8,
+      elevation: 6,
     },
     profileIcon: {
       width: 44,
@@ -792,43 +644,6 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
     generatorModule: {
       paddingHorizontal: spacing.lg,
       marginBottom: spacing.lg,
-    },
-    generatorCard: {
-      borderRadius: borderRadius.lg,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      ...(glowEnabled && {
-        borderWidth: 2,
-        borderColor: theme.mode === 'dark' ? 'rgba(139, 92, 246, 0.64)' : 'rgba(139, 92, 246, 0.48)', // Using bioGlow/Violet to match generator
-        shadowColor: '#8B5CF6',
-        shadowOpacity: theme.mode === 'dark' ? 0.27 : 0.2,
-        shadowRadius: 24,
-        shadowOffset: { width: 0, height: 4 },
-        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
-        ...(theme.mode !== 'dark' && { elevation: 6 }),
-        boxShadow: [
-          `0 0 30px ${theme.mode === 'dark' ? toRgba('#8B5CF6', 0.42) : toRgba('#8B5CF6', 0.32)}`,
-          `0 0 60px ${theme.mode === 'dark' ? toRgba('#8B5CF6', 0.22) : toRgba('#8B5CF6', 0.16)}`,
-          `inset 0 0 20px ${toRgba('#8B5CF6', 0.1)}`,
-        ].join(', '),
-      }),
-      ...(!glowEnabled && {
-        elevation: 6,
-        shadowColor: '#EC4899',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-      }),
-    },
-    cardGlow: {
-      position: 'absolute',
-      top: -8,
-      left: -8,
-      right: -8,
-      bottom: -8,
-      borderRadius: borderRadius.lg + 8,
-      opacity: 0.8,
     },
     generatorGradient: {
       padding: spacing.lg,
@@ -873,36 +688,18 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       paddingHorizontal: spacing.lg,
       marginBottom: spacing.lg,
     },
-    roomCard: {
-      borderRadius: borderRadius.lg,
+    roomHeroInner: {
+      minHeight: 120,
+      position: 'relative',
       overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: 'rgba(255, 255, 255, 0.1)',
-      ...(glowEnabled && {
-        borderWidth: 2,
-        borderColor: theme.mode === 'dark' ? toRgba('#4F46E5', 0.8) : toRgba('#4F46E5', 0.6),
-        shadowColor: '#4F46E5',
-        shadowOpacity: theme.mode === 'dark' ? 0.34 : 0.25,
-        shadowRadius: 24,
-        shadowOffset: { width: 0, height: 4 },
-        backgroundColor: theme.mode === 'dark' ? 'rgba(9, 19, 28, 0.75)' : theme.cardBackground,
-        ...(theme.mode !== 'dark' && { elevation: 6 }),
-      }),
-      ...(!glowEnabled && {
-        elevation: 6,
-        shadowColor: '#1e1b4b',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 10,
-      }),
-    },
-    roomGradient: {
-      padding: spacing.lg,
+      borderRadius: borderRadius.lg,
     },
     roomContent: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
+      padding: spacing.lg,
+      zIndex: 1,
     },
     roomTextSection: {
       flex: 1,
@@ -932,62 +729,6 @@ const createStyles = (theme: ThemeColors, glowEnabled: boolean) =>
       height: 50,
       borderRadius: 25,
       backgroundColor: 'rgba(255, 255, 255, 0.1)',
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    room2Module: {
-      paddingHorizontal: spacing.lg,
-      marginBottom: spacing.md,
-    },
-    room2Card: {
-      borderRadius: borderRadius.lg,
-      overflow: 'hidden',
-      borderWidth: 1,
-      borderColor: 'rgba(5, 150, 105, 0.35)',
-      elevation: 4,
-      shadowColor: '#059669',
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-    },
-    room2Gradient: {
-      paddingVertical: spacing.md,
-      paddingHorizontal: spacing.lg,
-    },
-    room2Content: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    room2TextSection: {
-      flex: 1,
-      marginRight: spacing.sm,
-    },
-    room2Label: {
-      fontSize: 9,
-      color: '#047857',
-      fontWeight: 'bold',
-      textTransform: 'uppercase',
-      letterSpacing: 1.2,
-      marginBottom: 2,
-    },
-    room2Title: {
-      fontSize: 17,
-      color: '#064e3b',
-      fontWeight: 'bold',
-      marginBottom: 2,
-    },
-    room2Subtitle: {
-      fontSize: 11,
-      color: '#065f46',
-      fontStyle: 'italic',
-      opacity: 0.9,
-    },
-    room2IconWrap: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: 'rgba(255,255,255,0.65)',
       alignItems: 'center',
       justifyContent: 'center',
     },

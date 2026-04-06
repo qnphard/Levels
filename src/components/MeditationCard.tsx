@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, Pressable } from 'react-native';
+import { View, Text, StyleSheet, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Meditation } from '../types';
 import {
@@ -12,6 +12,7 @@ import {
 } from '../theme/colors';
 import { LinearGradient } from 'expo-linear-gradient';
 import EditableText from './EditableText';
+import { PressableScale } from './motion/PressableScale';
 
 interface MeditationCardProps {
   meditation: Meditation;
@@ -150,9 +151,10 @@ export default function MeditationCard({
           style={styles.lightLiftShadow}
         />
       )}
-      <Pressable
-        onPress={onPress}
-        style={({ pressed }) => [
+      <PressableScale
+        onPress={onPress ?? (() => {})}
+        disabled={!onPress}
+        style={[
           styles.card,
           style,
           theme.mode === 'dark'
@@ -193,7 +195,6 @@ export default function MeditationCard({
                   `0 0 30px ${toRgba(glowTint, 0.4)}`, // Reduced from 0.5
                   `0 0 60px ${toRgba(glowTint, 0.2)}`, // Reduced from 0.25
                 ].join(', '),
-                transform: pressed ? [{ translateY: -3 }] : [],
               }
               : {
                 borderWidth: 1,
@@ -209,7 +210,6 @@ export default function MeditationCard({
                   `0 8px 20px rgba(15, 23, 42, 0.08)`,
                   `0 1px 2px rgba(2, 6, 23, 0.06)`,
                 ].join(', '),
-                transform: pressed ? [{ translateY: -3 }] : [],
               }),
         ]}
       >
@@ -337,7 +337,7 @@ export default function MeditationCard({
             </View>
           </View>
         </LinearGradient>
-      </Pressable>
+      </PressableScale>
     </View>
   );
 }

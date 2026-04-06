@@ -8,6 +8,7 @@ import SpectrumCheckScreen from '../screens/onboarding/03_SpectrumCheckScreen';
 import FirstBreathScreen from '../screens/onboarding/04_FirstBreathScreen';
 import LandingScreen from '../screens/onboarding/05_LandingScreen';
 import type { OnboardingStackParamList } from './OnboardingStackTypes';
+import { screenTransitions } from '../theme/transitions';
 
 export type { OnboardingStackParamList } from './OnboardingStackTypes';
 
@@ -21,6 +22,7 @@ export const OnboardingNavigator = () => {
       screenOptions={{
         headerShown: false,
         gestureEnabled: false,
+        ...screenTransitions.default,
       }}
     >
       <Stack.Screen name="Welcome" component={OnboardingWelcomeScreen} />

@@ -49,6 +49,9 @@ export const palette = {
   success500: '#72A880',
   warning500: '#E6C279',
   danger500: '#C26B6B',
+  /** Softer SOS / danger surfaces (less loud than pure red) */
+  rose400: '#F87171',
+  rose500: '#EF4444',
 
   night900: '#0F1C1F',
   night800: '#15272B',
@@ -175,6 +178,29 @@ export interface ThemeColors {
     warning: string;
     danger: string;
   };
+  /** Semantic card surfaces (single recipe vs ad-hoc rgba) */
+  surfaceCard: string;
+  surfaceCardElevated: string;
+  surfaceOverlay: string;
+  borderSubtle: string;
+  borderCard: string;
+  /** Accents (SOS, success, warning — use instead of raw hex in components) */
+  accentDanger: string;
+  accentDangerSoft: string;
+  accentSuccess: string;
+  accentWarning: string;
+  /** Bottom tab bar + headers */
+  tabBarActive: string;
+  tabBarInactive: string;
+  tabBarBackground: string;
+  headerTint: string;
+  /** Unified glow hues for cards (violet / rose technique split) */
+  glowPrimary: string;
+  glowSecondary: string;
+  glowBorder: string;
+  /** Skeleton shimmer */
+  skeletonBase: string;
+  skeletonHighlight: string;
 }
 
 const sharedCategoryChips = (mode: ThemeMode) => {
@@ -247,8 +273,9 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const canvasOverlay = isDark ? 'rgba(7,16,24,0.2)' : 'rgba(255,255,255,0)';
   const border = isDark ? 'rgba(255,255,255,0.06)' : palette.sand200;
   const textPrimary = isDark ? '#E0E1E8' : palette.stone800; // Lavender-gray off-white
-  const textSecondary = isDark ? 'rgba(224, 225, 232, 0.6)' : palette.stone600;
-  const textMuted = isDark ? 'rgba(224, 225, 232, 0.4)' : '#8F8B82';
+  /* Stronger secondary/muted for WCAG-ish readability on cards */
+  const textSecondary = isDark ? 'rgba(224, 225, 232, 0.72)' : palette.stone600;
+  const textMuted = isDark ? 'rgba(224, 225, 232, 0.52)' : '#6D6A62';
   // Updated to violet theme
   const primary = isDark ? palette.violet400 : palette.violet600;
   const primarySubtle = isDark ? palette.violet700 : palette.violet300;
@@ -265,6 +292,35 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
   const warning = palette.warning500;
   const warningSubtle = isDark ? 'rgba(230,194,121,0.18)' : 'rgba(230,194,121,0.32)';
   const error = palette.danger500;
+
+  const surfaceCard = cardBackground;
+  const surfaceCardElevated = isDark ? 'rgba(255,255,255,0.1)' : palette.sand100;
+  const surfaceOverlay = isDark ? 'rgba(7,8,18,0.55)' : 'rgba(255,255,255,0.72)';
+  const borderSubtle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,43,40,0.08)';
+  const borderCard = isDark ? 'rgba(255,255,255,0.1)' : palette.sand200;
+
+  const accentDanger = palette.rose500;
+  const accentDangerSoft = isDark ? 'rgba(248,113,113,0.22)' : 'rgba(239,68,68,0.14)';
+  const accentSuccess = palette.success500;
+  const accentWarning = palette.warning500;
+
+  const tabBarActive = isDark
+    ? 'rgba(167, 139, 250, 0.75)'
+    : primary;
+  const tabBarInactive = isDark
+    ? 'rgba(167, 139, 250, 0.5)'
+    : 'rgba(139, 92, 246, 0.5)';
+  const tabBarBackground = isDark
+    ? 'rgba(15, 28, 34, 0.85)'
+    : 'rgba(247, 245, 250, 0.9)';
+  const headerTint = primary;
+
+  const glowPrimary = palette.violet400;
+  const glowSecondary = palette.glowRose;
+  const glowBorder = isDark ? 'rgba(167, 139, 250, 0.45)' : 'rgba(124, 58, 237, 0.35)';
+
+  const skeletonBase = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(44,43,40,0.08)';
+  const skeletonHighlight = isDark ? 'rgba(255,255,255,0.16)' : 'rgba(255,255,255,0.85)';
 
   // Bioluminescent colors for ripple effects (updated to violet)
   const bioluminescence = {
@@ -340,6 +396,24 @@ const buildTheme = (mode: ThemeMode): ThemeColors => {
       warning,
       danger: palette.danger500,
     },
+    surfaceCard,
+    surfaceCardElevated,
+    surfaceOverlay,
+    borderSubtle,
+    borderCard,
+    accentDanger,
+    accentDangerSoft,
+    accentSuccess,
+    accentWarning,
+    tabBarActive,
+    tabBarInactive,
+    tabBarBackground,
+    headerTint,
+    glowPrimary,
+    glowSecondary,
+    glowBorder,
+    skeletonBase,
+    skeletonHighlight,
   };
 };
 
@@ -460,8 +534,7 @@ export const typography = {
   regular: typographyFull.weights.regular as TextStyle['fontWeight'],
   medium: typographyFull.weights.medium as TextStyle['fontWeight'],
   semibold: '600' as TextStyle['fontWeight'],
-  /** Extra-small label size (not in core scale). */
-  tiny: 10,
+  tiny: typographyFull.sizes.tiny,
 };
 
 export const spacing = {
@@ -471,6 +544,7 @@ export const spacing = {
   lg: 24,
   xl: 32,
   xxl: 48,
+  xxxl: 64,
 };
 
 export const borderRadius = {

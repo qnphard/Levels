@@ -32,6 +32,8 @@ export const typography = {
         body: 16,
         caption: 14,
         small: 12,
+        /** Extra-small labels, badges */
+        tiny: 10,
     },
 
     // Editorial Spacing

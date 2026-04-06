@@ -22,6 +22,7 @@ import {
   typography,
   borderRadius,
   ThemeColors,
+  toRgba,
 } from '../theme/colors';
 import { useContentEdit } from '../context/ContentEditContext';
 
@@ -43,7 +44,7 @@ export default function SettingsScreen() {
   const setShowTutorialAgain = useOnboardingStore((s) => s.setShowTutorialAgain);
   const showOnboarding = useOnboardingStore((s) => s.showOnboarding);
   const setShowOnboarding = useOnboardingStore((s) => s.setShowOnboarding);
-  const { user, signOutUser, firebaseConfigured } = useAuth();
+  const { user, signOutUser, firebaseConfigured, loginDevBypass, setLoginDevBypass } = useAuth();
 
   const styles = getStyles(theme);
 
@@ -137,6 +138,27 @@ export default function SettingsScreen() {
                   <Text style={styles.settingLabel}>Sign out</Text>
                   <Text style={styles.settingDescription}>
                     {user.email ?? user.uid}
+                  </Text>
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={theme.textSecondary} />
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        {__DEV__ && firebaseConfigured && loginDevBypass && !user ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Developer</Text>
+            <TouchableOpacity
+              style={styles.settingItem}
+              onPress={() => setLoginDevBypass(false)}
+            >
+              <View style={styles.settingLeft}>
+                <Ionicons name="code-slash-outline" size={24} color="#EA580C" />
+                <View style={styles.settingTextContainer}>
+                  <Text style={styles.settingLabel}>End dev session</Text>
+                  <Text style={styles.settingDescription}>
+                    Return to sign-in (Skip login was used)
                   </Text>
                 </View>
               </View>
@@ -253,7 +275,7 @@ const getStyles = (theme: ThemeColors) =>
     headerTitle: {
       fontSize: typography.h1,
       fontWeight: typography.bold,
-      color: theme.mode === 'dark' ? theme.textPrimary : '#1E293B',
+      color: theme.textPrimary,
       letterSpacing: -0.5,
     },
     placeholder: {
@@ -304,17 +326,17 @@ const getStyles = (theme: ThemeColors) =>
       lineHeight: 18,
     },
     onboardingResetButton: {
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      backgroundColor: theme.accentDangerSoft,
       paddingVertical: spacing.xs,
       paddingHorizontal: spacing.md,
       borderRadius: borderRadius.md,
       borderWidth: 1,
-      borderColor: 'rgba(239, 68, 68, 0.2)',
+      borderColor: toRgba(theme.accentDanger, 0.35),
     },
     onboardingResetText: {
       fontSize: typography.small,
       fontWeight: typography.bold,
-      color: '#EF4444',
+      color: theme.accentDanger,
     },
     bottomSpacer: {
       height: 40,

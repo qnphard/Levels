@@ -35,6 +35,9 @@ type AuthContextValue = {
   firebaseConfigured: boolean;
   devBypass: boolean;
   setDevBypass: (v: boolean) => void;
+  /** __DEV__ only: skip Firebase login and use the app without a signed-in user. */
+  loginDevBypass: boolean;
+  setLoginDevBypass: (v: boolean) => void;
   signInEmail: (
     email: string,
     password: string,
@@ -120,6 +123,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [devBypass, setDevBypass] = useState(false);
+  const [loginDevBypass, setLoginDevBypassState] = useState(false);
   const promptRef = useRef<(() => Promise<AuthSessionResult>) | null>(null);
   const googleStaySignedInRef = useRef(true);
 
@@ -139,6 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
+        if (__DEV__) setLoginDevBypassState(false);
         try {
           await onUserSignedIn(u);
         } catch (e) {
@@ -149,6 +154,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
     return unsub;
   }, [configured]);
+
+  const setLoginDevBypass = useCallback((v: boolean) => {
+    if (!__DEV__) return;
+    setLoginDevBypassState(v);
+  }, []);
 
   const signInEmail = useCallback(
     async (email: string, password: string, options?: SignInPersistenceOptions) => {
@@ -173,6 +183,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   );
 
   const signOutUser = useCallback(async () => {
+    if (__DEV__) setLoginDevBypassState(false);
     if (!configured) return;
     await signOut(getFirebaseAuth());
   }, [configured]);
@@ -195,6 +206,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       firebaseConfigured: configured,
       devBypass,
       setDevBypass,
+      loginDevBypass,
+      setLoginDevBypass,
       signInEmail,
       signUpEmail,
       signOutUser,
@@ -206,6 +219,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       configured,
       devBypass,
+      loginDevBypass,
+      setLoginDevBypass,
       signInEmail,
       signUpEmail,
       signOutUser,

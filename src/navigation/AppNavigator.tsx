@@ -54,6 +54,7 @@ import PracticePlayerScreen from '../screens/PracticePlayerScreen';
 
 import { Meditation } from '../types';
 import { useThemeColors } from '../theme/colors';
+import { screenTransitions } from '../theme/transitions';
 
 import { RootStackParamList, MainTabParamList } from './types';
 
@@ -86,12 +87,8 @@ function MainTabs() {
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        tabBarActiveTintColor: theme.mode === 'dark'
-          ? 'rgba(139, 92, 246, 0.75)' // Reduced opacity for dark theme
-          : theme.primary,
-        tabBarInactiveTintColor: theme.mode === 'dark'
-          ? 'rgba(167, 139, 250, 0.5)' // Muted violet for dark mode
-          : 'rgba(139, 92, 246, 0.5)', // Muted violet for light mode
+        tabBarActiveTintColor: theme.tabBarActive,
+        tabBarInactiveTintColor: theme.tabBarInactive,
         tabBarStyle: {
           backgroundColor: 'transparent',
           borderTopColor: 'transparent',
@@ -103,9 +100,7 @@ function MainTabs() {
           <SafeBlurView
             tint={theme.mode === 'dark' ? 'dark' : 'light'}
             intensity={45}
-            backgroundColor={theme.mode === 'dark'
-              ? 'rgba(15, 28, 34, 0.85)' // Dark violet-tinted background
-              : 'rgba(247, 245, 250, 0.9)'} // Light violet-tinted background
+            backgroundColor={theme.tabBarBackground}
             style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
           />
         ),
@@ -180,7 +175,13 @@ export default function AppNavigator() {
   return (
     <NavigationContainer>
       <GenerationStatusToast />
-      <Stack.Navigator id={undefined}>
+      <Stack.Navigator
+        id={undefined}
+        screenOptions={{
+          ...screenTransitions.default,
+          headerShown: false,
+        }}
+      >
         {shouldShowOnboarding && (
           <Stack.Screen
             name="Onboarding"
@@ -203,7 +204,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Player"
           component={PlayerScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
+          options={{ headerShown: false, ...screenTransitions.modal }}
         />
         <Stack.Screen
           name="Profile"
@@ -228,7 +229,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="LearnHub"
           component={LearnHubScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
+          options={{ headerShown: false, ...screenTransitions.modal }}
         />
         <Stack.Screen
           name="Chapter"
@@ -258,7 +259,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Settings"
           component={SettingsScreen}
-          options={{ headerShown: false, presentation: 'modal' }}
+          options={{ headerShown: false, ...screenTransitions.modal }}
         />
         <Stack.Screen
           name="CommonTraps"
@@ -374,7 +375,7 @@ export default function AppNavigator() {
         <Stack.Screen
           name="LevelContentMenu"
           component={LevelContentMenuScreen}
-          options={{ headerShown: false, animation: 'fade' }}
+          options={{ headerShown: false, ...screenTransitions.fade }}
         />
         <Stack.Screen
           name="PracticePlayer"

@@ -8,6 +8,7 @@ import TutorialCheckIn from '../screens/tutorial/04_TutorialCheckIn';
 import TutorialJournal from '../screens/tutorial/05_TutorialJournal';
 import TutorialSettings from '../screens/tutorial/06_TutorialSettings';
 import TutorialComplete from '../screens/tutorial/07_TutorialComplete';
+import { screenTransitions } from '../theme/transitions';
 
 export type TutorialStackParamList = {
     TutorialWelcome: undefined;
@@ -28,7 +29,7 @@ const TutorialNavigator = () => {
             initialRouteName="TutorialJourneyMap"
             screenOptions={{
                 headerShown: false,
-                animation: 'slide_from_right',
+                ...screenTransitions.default,
                 contentStyle: { backgroundColor: 'transparent' },
             }}
         >

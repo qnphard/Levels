@@ -16,6 +16,7 @@ export function AuthGate({ children }: Props) {
     firebaseConfigured,
     devBypass,
     setDevBypass,
+    loginDevBypass,
   } = useAuth();
 
   if (loading) {
@@ -37,6 +38,9 @@ export function AuthGate({ children }: Props) {
   }
 
   if (!user) {
+    if (__DEV__ && firebaseConfigured && loginDevBypass) {
+      return <>{children}</>;
+    }
     return <AuthNavigator />;
   }
 

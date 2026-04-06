@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer } from '@react-navigation/native';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import { screenTransitions } from '../theme/transitions';
 
 export type AuthStackParamList = {
   Login: undefined;
@@ -18,7 +19,7 @@ export default function AuthNavigator() {
         id={undefined}
         screenOptions={{
           headerShown: false,
-          animation: 'fade',
+          ...screenTransitions.fade,
         }}
       >
         <Stack.Screen name="Login" component={LoginScreen} />

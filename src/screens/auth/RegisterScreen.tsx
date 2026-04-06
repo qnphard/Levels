@@ -27,7 +27,13 @@ type Nav = NativeStackNavigationProp<AuthStackParamList, 'Register'>;
 export default function RegisterScreen() {
   const navigation = useNavigation<Nav>();
   const theme = useThemeColors();
-  const { signUpEmail, signInWithGoogle, googleSignInAvailable, firebaseConfigured } = useAuth();
+  const {
+    signUpEmail,
+    signInWithGoogle,
+    googleSignInAvailable,
+    firebaseConfigured,
+    setLoginDevBypass,
+  } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -180,6 +186,16 @@ export default function RegisterScreen() {
         >
           <Text style={styles.linkText}>Already have an account? Sign in</Text>
         </TouchableOpacity>
+
+        {__DEV__ && firebaseConfigured ? (
+          <TouchableOpacity
+            style={styles.devSkipBtn}
+            onPress={() => setLoginDevBypass(true)}
+            accessibilityLabel="Skip login for development"
+          >
+            <Text style={styles.devSkipText}>Skip login (dev only)</Text>
+          </TouchableOpacity>
+        ) : null}
       </KeyboardAvoidingView>
     </LinearGradient>
   );
@@ -266,6 +282,16 @@ function getStyles(theme: ReturnType<typeof useThemeColors>) {
       color: theme.textSecondary,
       marginBottom: spacing.lg,
       lineHeight: 20,
+    },
+    devSkipBtn: {
+      marginTop: spacing.xl,
+      paddingVertical: spacing.sm,
+      alignItems: 'center',
+    },
+    devSkipText: {
+      fontSize: typography.small,
+      color: '#EA580C',
+      fontWeight: '600',
     },
   });
 }
